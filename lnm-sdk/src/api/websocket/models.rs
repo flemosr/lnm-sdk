@@ -1,0 +1,308 @@
+use chrono::{DateTime, Utc};
+use rand::Rng;
+use serde::{de, Deserialize, Deserializer, Serialize};
+use serde_json::Value;
+use std::{collections::HashSet, fmt, sync::Arc};
+
+use super::error::{Result, WebSocketApiError};
+
+#[derive(Debug)]
+pub enum ConnectionState {
+    Connected,
+    Disconnected,
+    Failed(WebSocketApiError),
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq)]
+struct JsonRpcRequest {
+    jsonrpc: String,
+    method: String,
+    id: String,
+    params: Vec<String>,
+}
+
+impl JsonRpcRequest {
+    pub fn try_to_bytes(&self) -> Result<Vec<u8>> {
+        let request_json = serde_json::to_string(&self).map_err(WebSocketApiError::EncodeJson)?;
+        let bytes = request_json.into_bytes();
+        Ok(bytes)
+    }
+}
+
+#[derive(PartialEq, Eq, Clone, Hash, Debug)]
+pub enum LnmWebSocketChannel {
+    FuturesBtcUsdIndex,
+    FuturesBtcUsdLastPrice,
+}
+
+impl LnmWebSocketChannel {
+    fn as_str(&self) -> &'static str {
+        match self {
+            LnmWebSocketChannel::FuturesBtcUsdIndex => "futures:btc_usd:index",
+            LnmWebSocketChannel::FuturesBtcUsdLastPrice => "futures:btc_usd:last-price",
+        }
+    }
+}
+
+impl TryFrom<&str> for LnmWebSocketChannel {
+    type Error = WebSocketApiError;
+
+    fn try_from(value: &str) -> Result<Self> {
+        match value {
+            "futures:btc_usd:index" => Ok(LnmWebSocketChannel::FuturesBtcUsdIndex),
+            "futures:btc_usd:last-price" => Ok(LnmWebSocketChannel::FuturesBtcUsdLastPrice),
+            _ => Err(WebSocketApiError::UnknownChannel(value.to_string())),
+        }
+    }
+}
+
+impl fmt::Display for LnmWebSocketChannel {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum LnmJsonRpcReqMethod {
+    Subscribe,
+    Unsubscribe,
+}
+
+impl LnmJsonRpcReqMethod {
+    fn as_str(&self) -> &'static str {
+        match self {
+            LnmJsonRpcReqMethod::Subscribe => "v1/public/subscribe",
+            LnmJsonRpcReqMethod::Unsubscribe => "v1/public/unsubscribe",
+        }
+    }
+}
+
+impl fmt::Display for LnmJsonRpcReqMethod {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LnmJsonRpcRequest {
+    method: LnmJsonRpcReqMethod,
+    id: String,
+    channels: Vec<LnmWebSocketChannel>,
+}
+
+impl LnmJsonRpcRequest {
+    pub fn new(method: LnmJsonRpcReqMethod, channels: Vec<LnmWebSocketChannel>) -> Self {
+        let mut random_bytes = [0u8; 16];
+        rand::rng().fill(&mut random_bytes);
+        let id = hex::encode(random_bytes);
+
+        Self {
+            method,
+            id,
+            channels,
+        }
+    }
+
+    pub fn id(&self) -> &String {
+        &self.id
+    }
+
+    pub fn channels(&self) -> &Vec<LnmWebSocketChannel> {
+        &self.channels
+    }
+
+    pub fn check_confirmation(&self, id: &String, channels: &[LnmWebSocketChannel]) -> bool {
+        if self.id() != id {
+            return false;
+        }
+
+        let set_a: HashSet<&LnmWebSocketChannel> = self.channels().iter().collect();
+        let set_b: HashSet<&LnmWebSocketChannel> = channels.iter().collect();
+        set_a == set_b
+    }
+
+    pub fn try_into_bytes(self) -> Result<Vec<u8>> {
+        JsonRpcRequest::from(self).try_to_bytes()
+    }
+}
+
+impl From<LnmJsonRpcRequest> for JsonRpcRequest {
+    fn from(request: LnmJsonRpcRequest) -> Self {
+        let channels = request
+            .channels
+            .into_iter()
+            .map(|channel| channel.to_string())
+            .collect();
+
+        JsonRpcRequest {
+            jsonrpc: "2.0".to_string(),
+            method: request.method.as_str().to_string(),
+            id: request.id,
+            params: channels,
+        }
+    }
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq)]
+pub struct JsonRpcResponse {
+    jsonrpc: String,
+    id: Option<String>,
+    method: Option<String>,
+    result: Option<Value>,
+    error: Option<Value>,
+    params: Option<Value>,
+}
+
+#[derive(Debug, Deserialize, Clone, Copy)]
+#[allow(clippy::enum_variant_names)]
+enum LastTickDirection {
+    MinusTick,
+    ZeroMinusTick,
+    PlusTick,
+    ZeroPlusTick,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct PriceTickLNM {
+    time: DateTime<Utc>,
+    last_price: f64,
+    last_tick_direction: LastTickDirection,
+}
+
+impl PriceTickLNM {
+    pub fn time(&self) -> DateTime<Utc> {
+        self.time
+    }
+
+    pub fn last_price(&self) -> f64 {
+        self.last_price
+    }
+
+    pub fn last_tick_direction(&self) -> LastTickDirection {
+        self.last_tick_direction
+    }
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct PriceIndexLNM {
+    index: f64,
+    time: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone)]
+pub enum SubscriptionData {
+    PriceTick(PriceTickLNM),
+    PriceIndex(PriceIndexLNM),
+}
+
+#[derive(Clone, Debug)]
+pub enum LnmJsonRpcResponse {
+    Confirmation {
+        id: String,
+        channels: Vec<LnmWebSocketChannel>,
+    },
+    Subscription(SubscriptionData),
+}
+
+impl TryFrom<JsonRpcResponse> for LnmJsonRpcResponse {
+    type Error = WebSocketApiError;
+
+    fn try_from(response: JsonRpcResponse) -> Result<Self> {
+        if let Some(id) = &response.id {
+            let try_parse_confirmation_data = || -> Option<(String, Vec<LnmWebSocketChannel>)> {
+                let result = response.result.as_ref()?;
+
+                let result_array = result.as_array()?;
+
+                let channels: Vec<LnmWebSocketChannel> = result_array
+                    .iter()
+                    .filter_map(|channel| LnmWebSocketChannel::try_from(channel.as_str()?).ok())
+                    .collect();
+
+                if channels.len() != result_array.len() {
+                    return None;
+                }
+
+                Some((id.clone(), channels))
+            };
+
+            if let Some((id, channels)) = try_parse_confirmation_data() {
+                return Ok(Self::Confirmation { id, channels });
+            }
+
+            return Err(WebSocketApiError::UnexpectedJsonRpcResponse(response));
+        }
+
+        if response.method.as_deref() == Some("subscription") {
+            let try_parse_subscription_data = || -> Option<SubscriptionData> {
+                let params = response.params.as_ref()?;
+
+                let params_obj = params.as_object()?;
+
+                let channel: LnmWebSocketChannel = params_obj
+                    .get("channel")
+                    .and_then(|v| v.as_str())?
+                    .try_into()
+                    .ok()?;
+
+                let data = params_obj.get("data")?.clone();
+
+                let data = match channel {
+                    LnmWebSocketChannel::FuturesBtcUsdLastPrice => {
+                        let price_tick: PriceTickLNM = serde_json::from_value(data).ok()?;
+                        SubscriptionData::PriceTick(price_tick)
+                    }
+                    LnmWebSocketChannel::FuturesBtcUsdIndex => {
+                        let price_index: PriceIndexLNM = serde_json::from_value(data).ok()?;
+                        SubscriptionData::PriceIndex(price_index)
+                    }
+                };
+
+                Some(data)
+            };
+
+            if let Some(data) = try_parse_subscription_data() {
+                return Ok(Self::Subscription(data));
+            }
+
+            return Err(WebSocketApiError::UnexpectedJsonRpcResponse(response));
+        }
+
+        Err(WebSocketApiError::UnexpectedJsonRpcResponse(response))
+    }
+}
+
+impl<'de> Deserialize<'de> for LnmJsonRpcResponse {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let json_rpc_response = JsonRpcResponse::deserialize(deserializer)?;
+
+        LnmJsonRpcResponse::try_from(json_rpc_response)
+            .map_err(|e| de::Error::custom(format!("Conversion error: {}", e)))
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum WebSocketApiRes {
+    PriceTick(PriceTickLNM),
+    PriceIndex(PriceIndexLNM),
+    ConnectionUpdate(Arc<ConnectionState>),
+}
+
+impl From<Arc<ConnectionState>> for WebSocketApiRes {
+    fn from(value: Arc<ConnectionState>) -> Self {
+        Self::ConnectionUpdate(value)
+    }
+}
+
+impl From<SubscriptionData> for WebSocketApiRes {
+    fn from(data: SubscriptionData) -> Self {
+        match data {
+            SubscriptionData::PriceTick(price_tick) => WebSocketApiRes::PriceTick(price_tick),
+            SubscriptionData::PriceIndex(price_index) => WebSocketApiRes::PriceIndex(price_index),
+        }
+    }
+}
