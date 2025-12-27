@@ -205,6 +205,13 @@ cargo test -- --include-ignored --test-threads=1
 + [LN Markets API v3 Documentation](https://api.lnmarkets.com/v3/) (recommended)
 + [LN Markets API v2 Documentation](https://docs.lnmarkets.com/api/) (REST API v2 is deprecated)
 
+## Development History
+
+This crate was originally developed as part of the [`quantoxide`](https://github.com/flemosr/quantoxide)
+repository and extracted into a standalone repository on 2025-12-26 at `quantoxide` commit
+[`0d78ee08`](https://github.com/flemosr/quantoxide/commit/0d78ee08). The full development history
+was preserved.
+
 ## License
 
 This project is licensed under the
