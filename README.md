@@ -4,7 +4,8 @@ A Rust SDK for interacting with [LN Markets](https://lnmarkets.com/). Supports R
 REST API v2, and WebSocket API.
 
 > **Note:** This is an unofficial SDK. API v3 support is functional but not yet feature-complete. 
-> For implementation status, see the [API v3 implementation docs](https://github.com/flemosr/lnm-sdk/blob/main/docs/api-v3-implementation.md).
+> For implementation status, see the
+> [API v3 implementation docs](https://github.com/flemosr/lnm-sdk/blob/main/docs/api-v3-implementation.md).
 
 [![Crates.io Badge](https://img.shields.io/crates/v/lnm-sdk)](https://crates.io/crates/lnm-sdk)
 [![Documentation Badge](https://docs.rs/lnm-sdk/badge.svg)](https://docs.rs/lnm-sdk/latest/lnm_sdk/)
@@ -207,8 +208,9 @@ cargo test -- --include-ignored --test-threads=1
 
 ## Development History
 
-This crate was originally developed as part of the [`quantoxide`](https://github.com/flemosr/quantoxide)
-repository and extracted into a standalone repository on 2025-12-26 at `quantoxide` commit
+This crate was originally developed as part of the
+[`quantoxide`](https://github.com/flemosr/quantoxide) repository before being extracted into a
+standalone repository on 2025-12-26 at `quantoxide` commit
 [`0d78ee08`](https://github.com/flemosr/quantoxide/commit/0d78ee08). The full development history
 was preserved.
 
