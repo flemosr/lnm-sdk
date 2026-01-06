@@ -8,6 +8,7 @@ use crate::shared::models::price::Price;
 /// Time range for OHLC (Open-High-Low-Close) candles.
 ///
 /// Specifies the duration of each candlestick when querying historical price data.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OhlcRange {
     OneMinute,
     ThreeMinutes,
