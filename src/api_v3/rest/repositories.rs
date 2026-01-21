@@ -16,6 +16,7 @@ use crate::shared::{
 
 use super::models::{
     account::Account,
+    client_id::ClientId,
     cross_leverage::CrossLeverage,
     funding::{CrossFunding, FundingSettlement, IsolatedFunding},
     ohlc_candle::{OhlcCandle, OhlcRange},
@@ -347,7 +348,7 @@ pub trait FuturesIsolatedRepository: crate::sealed::Sealed + Send + Sync {
         execution: TradeExecution,
         stoploss: Option<Price>,
         takeprofit: Option<Price>,
-        client_id: Option<String>,
+        client_id: Option<ClientId>,
     ) -> Result<Trade>;
 
     /// Get the funding fees paid for all the isolated trades, or for a specific trade.
