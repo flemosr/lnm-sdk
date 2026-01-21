@@ -12,7 +12,10 @@ use crate::shared::{
 };
 
 use super::super::{
-    super::{models::ticker::Ticker, repositories::FuturesDataRepository},
+    super::{
+        models::{client_id::ClientId, ticker::Ticker},
+        repositories::FuturesDataRepository,
+    },
     futures_data::LnmFuturesDataRepository,
 };
 
@@ -59,7 +62,7 @@ async fn test_create_short_trade_quantity_limit(
     let execution = out_of_mkt_price.into();
     let stoploss = None;
     let takeprofit = None;
-    let client_id = None;
+    let client_id = ClientId::try_from("test-id").ok();
 
     let created_trade = repo
         .new_trade(
@@ -69,7 +72,7 @@ async fn test_create_short_trade_quantity_limit(
             execution,
             stoploss,
             takeprofit,
-            client_id,
+            client_id.clone(),
         )
         .await
         .expect("must create trade");
@@ -93,6 +96,7 @@ async fn test_create_short_trade_quantity_limit(
     assert!(created_trade.filled_at().is_none());
     assert!(created_trade.closed_at().is_none());
     assert!(created_trade.exit_price().is_none());
+    assert_eq!(created_trade.client_id(), client_id.as_ref());
 
     created_trade
 }

@@ -19,6 +19,7 @@ use super::{
     super::{
         error::RestApiV3Error,
         models::{
+            client_id::ClientId,
             funding::IsolatedFunding,
             page::Page,
             trade::{FuturesIsolatedTradeRequestBody, Trade},
@@ -223,7 +224,7 @@ impl FuturesIsolatedRepository for LnmFuturesIsolatedRepository {
         execution: TradeExecution,
         stoploss: Option<Price>,
         takeprofit: Option<Price>,
-        client_id: Option<String>,
+        client_id: Option<ClientId>,
     ) -> Result<Trade> {
         let body = FuturesIsolatedTradeRequestBody::new(
             leverage, stoploss, takeprofit, side, client_id, size, execution,
