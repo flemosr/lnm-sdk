@@ -5,7 +5,7 @@ use serde_json::Value;
 use uuid::Uuid;
 
 /// User role within the LN Markets platform.
-#[derive(Debug, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum UserRole {
     User,
@@ -45,7 +45,7 @@ impl fmt::Display for UserRole {
 /// # Ok(())
 /// # }
 /// ```
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct User {
     uid: Uuid,
     role: UserRole,

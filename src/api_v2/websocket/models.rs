@@ -153,7 +153,7 @@ pub struct JsonRpcResponse {
     params: Option<Value>,
 }
 
-#[derive(Debug, Deserialize, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
 #[allow(clippy::enum_variant_names)]
 pub enum LastTickDirection {
     MinusTick,

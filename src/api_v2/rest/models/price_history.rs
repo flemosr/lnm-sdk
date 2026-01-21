@@ -29,7 +29,7 @@ use crate::shared::models::price::Price;
 /// # Ok(())
 /// # }
 /// ```
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct PriceEntry {
     #[serde(with = "ts_milliseconds")]
     time: DateTime<Utc>,
