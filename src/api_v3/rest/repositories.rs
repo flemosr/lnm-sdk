@@ -457,7 +457,7 @@ pub trait FuturesCrossRepository: crate::sealed::Sealed + Send + Sync {
         side: TradeSide,
         quantity: Quantity,
         execution: TradeExecution,
-        client_id: Option<String>,
+        client_id: Option<ClientId>,
     ) -> Result<CrossOrder>;
 
     /// Get all the cross orders that are still open.
