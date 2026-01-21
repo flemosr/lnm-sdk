@@ -55,7 +55,7 @@ async fn test_create_long_order_limit(
         .apply_discount(discount_percentage)
         .unwrap();
     let execution = out_of_mkt_price.into();
-    let client_id = None;
+    let client_id = ClientId::try_from("test-id").ok();
 
     let placed_order: CrossOrder = repo
         .place_order(side, quantity, execution, client_id.clone())
@@ -72,7 +72,7 @@ async fn test_create_long_order_limit(
     assert_eq!(placed_order.trading_fee(), 0);
     assert!(placed_order.filled_at().is_none());
     assert!(placed_order.canceled_at().is_none());
-    assert!(placed_order.client_id().is_none());
+    assert_eq!(placed_order.client_id(), client_id.as_ref());
 
     placed_order
 }

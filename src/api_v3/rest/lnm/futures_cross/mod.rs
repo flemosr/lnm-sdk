@@ -16,8 +16,8 @@ use crate::shared::{
 
 use super::{
     super::{
-        error::RestApiV3Error,
         models::{
+            client_id::ClientId,
             cross_leverage::CrossLeverage,
             funding::CrossFunding,
             page::Page,
@@ -70,10 +70,9 @@ impl FuturesCrossRepository for LnmFuturesCrossRepository {
         side: TradeSide,
         quantity: Quantity,
         execution: TradeExecution,
-        client_id: Option<String>,
+        client_id: Option<ClientId>,
     ) -> Result<CrossOrder> {
-        let body = FuturesCrossOrderBody::new(side, quantity, execution, client_id)
-            .map_err(RestApiV3Error::FuturesCrossTradeOrderValidation)?;
+        let body = FuturesCrossOrderBody::new(side, quantity, execution, client_id);
 
         self.base
             .make_request_with_body(Method::POST, RestPathV3::FuturesCrossOrder, body, true)
