@@ -17,7 +17,7 @@ use super::{
 pub mod util;
 
 /// The side of a trade position.
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Copy)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[serde(rename_all = "lowercase")]
 pub enum TradeSide {
     Buy,
@@ -150,7 +150,7 @@ impl fmt::Display for TradeSize {
 /// The execution type of a trade.
 ///
 /// Represents whether a trade is executed at market price or at a specific limit price.
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Copy)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[serde(rename_all = "lowercase")]
 pub enum TradeExecutionType {
     Market,
@@ -219,6 +219,7 @@ impl From<Price> for TradeExecution {
 }
 
 /// The lifecycle status of a trade.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TradeStatus {
     Open,
     Running,
