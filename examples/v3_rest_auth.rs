@@ -6,7 +6,7 @@ use dotenv::dotenv;
 use lnm_sdk::api_v3::{
     RestClient, RestClientConfig,
     models::{
-        CrossLeverage, Leverage, Margin, Percentage, PercentageCapped, Price, Quantity,
+        ClientId, CrossLeverage, Leverage, Margin, Percentage, PercentageCapped, Price, Quantity,
         TradeExecution, TradeSide, TradeSize,
     },
 };
@@ -78,7 +78,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             TradeExecution::Market,
             None, // stoploss
             None, // takeprofit
-            None, // client trade id
+            ClientId::try_from("test-client-id").ok(),
         )
         .await?;
     println!("Created new trade. Trade ID: {}", new_trade.id());
@@ -232,7 +232,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             TradeSide::Buy,
             Quantity::try_from(1)?, // 1 USD
             TradeExecution::Market,
-            None, // client order id
+            ClientId::try_from("test-client-id").ok(),
         )
         .await?;
     println!("Placed new cross order. Order ID: {}", new_order.id());
