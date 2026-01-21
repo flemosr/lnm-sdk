@@ -22,9 +22,7 @@ pub mod error {
 
     pub use super::rest::{
         error::RestApiV3Error,
-        models::error::{
-            FuturesCrossTradeOrderValidationError, FuturesIsolatedTradeRequestValidationError,
-        },
+        models::error::{ClientIdValidationError, FuturesIsolatedTradeRequestValidationError},
     };
 }
 
@@ -45,6 +43,7 @@ pub mod models {
 
     pub use super::rest::models::{
         account::Account,
+        client_id::ClientId,
         cross_leverage::CrossLeverage,
         funding::{CrossFunding, FundingSettlement, IsolatedFunding},
         ohlc_candle::{OhlcCandle, OhlcRange},
