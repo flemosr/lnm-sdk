@@ -39,3 +39,23 @@ pub(crate) mod price_option {
         }
     }
 }
+
+pub(crate) mod client_id_option {
+    use serde::{Deserialize, Deserializer};
+
+    use crate::api_v3::models::ClientId;
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<ClientId>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let opt: Option<String> = Option::deserialize(deserializer)?;
+        match opt {
+            Some(s) if s.is_empty() => Ok(None),
+            Some(s) => ClientId::try_from(s)
+                .map(Some)
+                .map_err(serde::de::Error::custom),
+            None => Ok(None),
+        }
+    }
+}
