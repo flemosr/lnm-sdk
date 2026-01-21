@@ -19,6 +19,7 @@ use super::{
 };
 
 #[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub(in crate::api_v3) struct FuturesIsolatedTradeRequestBody {
     leverage: Leverage,
     side: TradeSide,
@@ -151,6 +152,7 @@ pub struct Trade {
     canceled: bool,
     closed: bool,
     sum_funding_fees: i64,
+    #[serde(with = "serde_util::client_id_option")]
     client_id: Option<ClientId>,
 }
 
@@ -631,6 +633,7 @@ impl fmt::Display for Trade {
 }
 
 #[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub(in crate::api_v3) struct FuturesCrossOrderBody {
     side: TradeSide,
     quantity: Quantity,
@@ -711,6 +714,7 @@ pub struct CrossOrder {
     open: bool,
     filled: bool,
     canceled: bool,
+    #[serde(with = "serde_util::client_id_option")]
     client_id: Option<ClientId>,
 }
 
