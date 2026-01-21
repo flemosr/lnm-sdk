@@ -14,8 +14,8 @@ use crate::shared::models::{
 };
 
 use super::{
-    cross_leverage::CrossLeverage,
-    error::{FuturesCrossTradeOrderValidationError, FuturesIsolatedTradeRequestValidationError},
+    client_id::ClientId, cross_leverage::CrossLeverage,
+    error::FuturesIsolatedTradeRequestValidationError,
 };
 
 #[derive(Serialize, Debug)]
@@ -27,7 +27,7 @@ pub(in crate::api_v3) struct FuturesIsolatedTradeRequestBody {
     #[serde(skip_serializing_if = "Option::is_none")]
     takeprofit: Option<Price>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    client_id: Option<String>,
+    client_id: Option<ClientId>,
     #[serde(flatten)]
     size: TradeSize,
     #[serde(rename = "type")]
@@ -42,7 +42,7 @@ impl FuturesIsolatedTradeRequestBody {
         stoploss: Option<Price>,
         takeprofit: Option<Price>,
         side: TradeSide,
-        client_id: Option<String>,
+        client_id: Option<ClientId>,
         size: TradeSize,
         trade_execution: TradeExecution,
     ) -> Result<Self, FuturesIsolatedTradeRequestValidationError> {
@@ -69,13 +69,6 @@ impl FuturesIsolatedTradeRequestBody {
             TradeExecution::Market => (TradeExecutionType::Market, None),
             TradeExecution::Limit(price) => (TradeExecutionType::Limit, Some(price)),
         };
-
-        if client_id
-            .as_ref()
-            .is_some_and(|client_id| client_id.len() > 64)
-        {
-            return Err(FuturesIsolatedTradeRequestValidationError::ClientIdTooLong);
-        }
 
         Ok(FuturesIsolatedTradeRequestBody {
             leverage,
@@ -158,7 +151,7 @@ pub struct Trade {
     canceled: bool,
     closed: bool,
     sum_funding_fees: i64,
-    client_id: Option<String>,
+    client_id: Option<ClientId>,
 }
 
 impl Trade {
@@ -585,7 +578,7 @@ impl Trade {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn client_id(&self) -> Option<&String> {
+    pub fn client_id(&self) -> Option<&ClientId> {
         self.client_id.as_ref()
     }
 
@@ -646,7 +639,7 @@ pub(in crate::api_v3) struct FuturesCrossOrderBody {
     #[serde(skip_serializing_if = "Option::is_none")]
     price: Option<Price>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    client_id: Option<String>,
+    client_id: Option<ClientId>,
 }
 
 impl FuturesCrossOrderBody {
@@ -654,27 +647,20 @@ impl FuturesCrossOrderBody {
         side: TradeSide,
         quantity: Quantity,
         execution: TradeExecution,
-        client_id: Option<String>,
-    ) -> Result<Self, FuturesCrossTradeOrderValidationError> {
+        client_id: Option<ClientId>,
+    ) -> Self {
         let (trade_type, price) = match execution {
             TradeExecution::Market => (TradeExecutionType::Market, None),
             TradeExecution::Limit(price) => (TradeExecutionType::Limit, Some(price)),
         };
 
-        if client_id
-            .as_ref()
-            .is_some_and(|client_id| client_id.len() > 64)
-        {
-            return Err(FuturesCrossTradeOrderValidationError::ClientIdTooLong);
-        }
-
-        Ok(FuturesCrossOrderBody {
+        Self {
             side,
             quantity,
             trade_type,
             price,
             client_id,
-        })
+        }
     }
 }
 
@@ -725,7 +711,7 @@ pub struct CrossOrder {
     open: bool,
     filled: bool,
     canceled: bool,
-    client_id: Option<String>,
+    client_id: Option<ClientId>,
 }
 
 impl CrossOrder {
@@ -933,7 +919,7 @@ impl CrossOrder {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn client_id(&self) -> Option<&String> {
+    pub fn client_id(&self) -> Option<&ClientId> {
         self.client_id.as_ref()
     }
 

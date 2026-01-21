@@ -53,13 +53,4 @@ pub enum FuturesIsolatedTradeRequestValidationError {
 
     #[error("Take profit must be higher than the entry price")]
     TakeProfitLowerThanPrice,
-
-    #[error("Client Id is too long")]
-    ClientIdTooLong,
-}
-
-#[derive(Debug, Error)]
-pub enum FuturesCrossTradeOrderValidationError {
-    #[error("Client Id is too long")]
-    ClientIdTooLong,
 }
