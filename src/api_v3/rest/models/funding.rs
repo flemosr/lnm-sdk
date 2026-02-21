@@ -4,8 +4,6 @@ use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::shared::models::price::Price;
-
 /// Information about a given funding fee that was paid or received, corresponding to a cross
 /// margin position.
 ///
@@ -173,7 +171,7 @@ impl fmt::Display for IsolatedFunding {
 pub struct FundingSettlement {
     id: Uuid,
     time: DateTime<Utc>,
-    fixing_price: Price,
+    fixing_price: f64,
     funding_rate: f64,
 }
 
@@ -189,7 +187,7 @@ impl FundingSettlement {
     }
 
     /// The fixing price used for the funding settlement.
-    pub fn fixing_price(&self) -> Price {
+    pub fn fixing_price(&self) -> f64 {
         self.fixing_price
     }
 
