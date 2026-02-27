@@ -147,6 +147,10 @@ impl<S: SignatureGenerator> LnmRestBase<S> {
     where
         T: DeserializeOwned,
     {
+        if let Some(rl) = &self.rate_limiter {
+            rl.acquire(authenticated).await;
+        }
+
         let headers = if authenticated {
             let creds = self
                 .credentials
@@ -158,9 +162,7 @@ impl<S: SignatureGenerator> LnmRestBase<S> {
             HeaderMap::new()
         };
 
-        let response = self
-            .send_request(method, url, body, headers, authenticated)
-            .await?;
+        let response = self.send_request(method, url, body, headers).await?;
 
         if !response.status().is_success() {
             let status = response.status();
@@ -189,12 +191,7 @@ impl<S: SignatureGenerator> LnmRestBase<S> {
         url: Url,
         body: Option<String>,
         mut headers: HeaderMap,
-        authenticated: bool,
     ) -> Result<reqwest::Response> {
-        if let Some(rl) = &self.rate_limiter {
-            rl.acquire(authenticated).await;
-        }
-
         let req = match method {
             Method::POST | Method::PUT => {
                 if body.is_some() {
@@ -272,8 +269,12 @@ impl<S: SignatureGenerator> LnmRestBase<S> {
     pub async fn make_get_request_plain_text(&self, path: impl RestPath) -> Result<String> {
         let url = self.build_url(path)?;
 
+        if let Some(rl) = &self.rate_limiter {
+            rl.acquire(false).await;
+        }
+
         let response = self
-            .send_request(Method::GET, url, None, HeaderMap::new(), false)
+            .send_request(Method::GET, url, None, HeaderMap::new())
             .await?;
 
         if !response.status().is_success() {
