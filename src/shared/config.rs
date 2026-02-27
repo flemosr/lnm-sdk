@@ -1,39 +1,5 @@
 use std::time::Duration;
 
-/// Configuration for REST API clients.
-#[derive(Clone, Debug)]
-pub struct RestClientConfig {
-    timeout: Duration,
-}
-
-impl RestClientConfig {
-    /// Creates a new REST client configuration with the specified timeout.
-    pub fn new(timeout: Duration) -> Self {
-        Self { timeout }
-    }
-
-    /// Returns the request timeout duration.
-    pub fn timeout(&self) -> Duration {
-        self.timeout
-    }
-
-    /// Sets the request timeout duration.
-    ///
-    /// Default: `20` seconds
-    pub fn with_timeout(mut self, timeout: Duration) -> Self {
-        self.timeout = timeout;
-        self
-    }
-}
-
-impl Default for RestClientConfig {
-    fn default() -> Self {
-        Self {
-            timeout: Duration::from_secs(20),
-        }
-    }
-}
-
 /// Configuration for WebSocket clients.
 #[derive(Clone, Debug)]
 pub struct WebSocketClientConfig {
