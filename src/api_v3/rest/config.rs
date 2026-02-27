@@ -1,6 +1,8 @@
 use std::{num::NonZero, time::Duration};
 
 /// Configuration for the v3 REST API client.
+///
+/// Rate limit defaults were set in line with the [API v3 docs](https://api.lnmarkets.com/v3/#description/rate-limit).
 #[derive(Clone, Debug)]
 pub struct RestClientConfig {
     timeout: Duration,
