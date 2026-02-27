@@ -2,8 +2,7 @@ use std::{env, time::Instant};
 
 use dotenv::dotenv;
 
-use crate::shared::config::RestClientConfig;
-
+use super::super::super::config::RestClientConfig;
 use super::*;
 
 fn init_repository_from_env() -> LnmOracleRepository {
@@ -12,8 +11,8 @@ fn init_repository_from_env() -> LnmOracleRepository {
     let domain =
         env::var("LNM_API_DOMAIN").expect("LNM_API_DOMAIN environment variable must be set");
 
-    let base =
-        LnmRestBase::new(RestClientConfig::default(), domain).expect("Can create `LnmApiBase`");
+    let base = LnmRestBase::new(RestClientConfig::default().timeout(), domain, None)
+        .expect("Can create `LnmApiBase`");
 
     LnmOracleRepository::new(base)
 }

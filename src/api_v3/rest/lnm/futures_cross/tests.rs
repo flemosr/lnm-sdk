@@ -2,13 +2,13 @@ use std::{env, time::Instant};
 
 use dotenv::dotenv;
 
-use crate::shared::{
-    config::RestClientConfig,
-    models::{price::PercentageCapped, quantity::Quantity, trade::TradeExecutionType},
+use crate::shared::models::{
+    price::PercentageCapped, quantity::Quantity, trade::TradeExecutionType,
 };
 
 use super::super::{
     super::{
+        config::RestClientConfig,
         models::{cross_leverage::CrossLeverage, ticker::Ticker, trade::CrossOrder},
         repositories::FuturesDataRepository,
     },
@@ -29,11 +29,12 @@ fn init_repositories_from_env() -> (LnmFuturesCrossRepository, LnmFuturesDataRep
         .expect("LNM_API_V3_PASSPHRASE environment variable must be set");
 
     let base = LnmRestBase::with_credentials(
-        RestClientConfig::default(),
+        RestClientConfig::default().timeout(),
         domain,
         key,
         passphrase,
         SignatureGeneratorV3::new(secret),
+        None,
     )
     .expect("Can create `LnmApiBase`");
 
