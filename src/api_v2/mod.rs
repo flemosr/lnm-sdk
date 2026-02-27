@@ -1,4 +1,4 @@
-pub use crate::shared::config::{RestClientConfig, WebSocketClientConfig};
+pub use crate::shared::config::WebSocketClientConfig;
 
 pub(crate) mod rest;
 mod websocket;
@@ -6,6 +6,7 @@ mod websocket;
 #[allow(deprecated)]
 pub use rest::{
     RestClient,
+    config::RestClientConfig,
     repositories::{FuturesRepository, UserRepository},
 };
 pub use websocket::{
