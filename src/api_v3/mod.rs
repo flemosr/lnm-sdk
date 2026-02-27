@@ -1,9 +1,8 @@
-pub use crate::shared::config::RestClientConfig;
-
 pub(crate) mod rest;
 
 pub use rest::{
     RestClient,
+    config::RestClientConfig,
     repositories::{
         AccountRepository, FuturesCrossRepository, FuturesDataRepository,
         FuturesIsolatedRepository, OracleRepository, UtilitiesRepository,
