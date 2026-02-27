@@ -1,6 +1,8 @@
 use std::{num::NonZero, time::Duration};
 
 /// Configuration for the v2 REST API client.
+///
+/// Rate limit defaults were set in line with the [API v2 docs](https://docs.lnmarkets.com/api/#limits).
 #[derive(Clone, Debug)]
 pub struct RestClientConfig {
     timeout: Duration,
@@ -75,10 +77,7 @@ impl RestClientConfig {
     /// Only enforced when [`rate_limiter_active`](Self::rate_limiter_active) is `true`.
     ///
     /// Default: `60` (1 request per second)
-    pub fn with_rate_limit_auth_requests_per_minute(
-        mut self,
-        rate: NonZero<u32>,
-    ) -> Self {
+    pub fn with_rate_limit_auth_requests_per_minute(mut self, rate: NonZero<u32>) -> Self {
         self.rate_limit_auth_requests_per_minute = rate.get();
         self
     }
