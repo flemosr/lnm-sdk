@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use crate::shared::{
-    config::RestClientConfig,
-    rest::{error::Result, lnm::base::LnmRestBase},
+use crate::shared::rest::{
+    error::Result,
+    lnm::{base::LnmRestBase, rate_limit::RateLimiter},
 };
 
 pub(super) mod config;
@@ -11,6 +11,7 @@ mod lnm;
 pub(super) mod models;
 pub(super) mod repositories;
 
+use config::RestClientConfig;
 use lnm::{
     futures::LnmFuturesRepository, signature::SignatureGeneratorV2, user::LnmUserRepository,
 };
@@ -74,7 +75,14 @@ impl RestClient {
     /// # }
     /// ```
     pub fn new(config: impl Into<RestClientConfig>, domain: impl ToString) -> Result<Arc<Self>> {
-        let base = LnmRestBase::new(config.into(), domain.to_string())?;
+        let config = config.into();
+        let rate_limiter = config.rate_limiter_active().then(|| {
+            RateLimiter::new(
+                config.rate_limit_auth_interval(),
+                config.rate_limit_unauth_interval(),
+            )
+        });
+        let base = LnmRestBase::new(config.timeout(), domain.to_string(), rate_limiter)?;
 
         Ok(Self::new_inner(base))
     }
@@ -108,12 +116,20 @@ impl RestClient {
         secret: impl ToString,
         passphrase: impl ToString,
     ) -> Result<Arc<Self>> {
+        let config = config.into();
+        let rate_limiter = config.rate_limiter_active().then(|| {
+            RateLimiter::new(
+                config.rate_limit_auth_interval(),
+                config.rate_limit_unauth_interval(),
+            )
+        });
         let base = LnmRestBase::with_credentials(
-            config.into(),
+            config.timeout(),
             domain.to_string(),
             key.to_string(),
             passphrase.to_string(),
             SignatureGeneratorV2::new(secret.to_string()),
+            rate_limiter,
         )?;
 
         Ok(Self::new_inner(base))
