@@ -5,6 +5,7 @@ use crate::shared::{
     rest::{error::Result, lnm::base::LnmRestBase},
 };
 
+pub(super) mod config;
 pub(crate) mod error;
 mod lnm;
 pub(super) mod models;
