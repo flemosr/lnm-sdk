@@ -34,14 +34,16 @@ impl UserRepository for LnmUserRepository {
 
 #[cfg(test)]
 mod tests {
-    use std::env;
+    use std::{env, sync::Arc, time::Instant};
 
     use dotenv::dotenv;
 
-    use super::*;
-    use super::{super::super::RestClientConfig, LnmRestBase};
+    use crate::shared::rest::lnm::rate_limit::RateLimiter;
 
-    fn init_repository_from_env() -> LnmUserRepository {
+    use super::super::super::config::RestClientConfig;
+    use super::*;
+
+    fn init_repository_from_env(rate_limiter: Option<RateLimiter>) -> LnmUserRepository {
         dotenv().ok();
 
         let domain =
@@ -53,11 +55,12 @@ mod tests {
             .expect("LNM_API_V2_PASSPHRASE environment variable must be set");
 
         let base = LnmRestBase::with_credentials(
-            RestClientConfig::default(),
+            RestClientConfig::default().timeout(),
             domain,
             key,
             passphrase,
             SignatureGeneratorV2::new(secret),
+            rate_limiter,
         )
         .expect("must create `LnmApiBase`");
 
@@ -71,8 +74,64 @@ mod tests {
     #[tokio::test]
     #[ignore]
     async fn test_api() {
-        let repo = init_repository_from_env();
+        let repo = init_repository_from_env(None);
 
         let _ = test_get_user(&repo).await;
+    }
+
+    // Fires 130 concurrent `get_user` requests through a rate-limited client.
+    // As of Feb 2026, LNM doesn't return a 429 for up to 120 req/min.
+    //
+    // The rate limiter paces authenticated requests at 60 req/min (in line with doc limit) so all
+    // complete without 429's.
+    #[tokio::test]
+    #[ignore]
+    async fn test_v2_rate_limiter_prevents_auth_429() {
+        let config = RestClientConfig::default();
+        let rate_limiter = RateLimiter::new(
+            config.rate_limit_auth_interval(),
+            config.rate_limit_unauth_interval(),
+        );
+        let repo = Arc::new(init_repository_from_env(Some(rate_limiter)));
+
+        let total_requests = 130;
+        let mut handles = Vec::with_capacity(total_requests);
+
+        let start = Instant::now();
+
+        for i in 0..total_requests {
+            let repo = repo.clone();
+            handles.push(tokio::spawn(async move {
+                let result = repo.get_user().await;
+                (i, result)
+            }));
+        }
+
+        let mut successes = 0;
+        let mut failures = Vec::new();
+
+        for handle in handles {
+            let (i, result) = handle.await.expect("task must not panic");
+            match result {
+                Ok(_) => successes += 1,
+                Err(e) => failures.push((i, e)),
+            }
+        }
+
+        let elapsed = start.elapsed();
+
+        println!("\n{total_requests} concurrent requests completed in {elapsed:?}");
+        println!("  successes: {successes}");
+        println!("  failures:  {}", failures.len());
+
+        for (i, err) in &failures {
+            println!("  request #{i} failed: {err}");
+        }
+
+        assert!(
+            failures.is_empty(),
+            "rate limiter should prevent all 429 errors, but {}/{total_requests} requests failed",
+            failures.len(),
+        );
     }
 }
