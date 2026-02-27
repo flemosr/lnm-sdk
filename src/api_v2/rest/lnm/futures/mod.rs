@@ -211,7 +211,7 @@ impl FuturesRepository for LnmFuturesRepository {
 
     async fn ticker(&self) -> Result<Ticker> {
         self.base
-            .make_request_without_params(Method::GET, RestPathV2::FuturesTicker, true)
+            .make_request_without_params(Method::GET, RestPathV2::FuturesTicker, false)
             .await
     }
 
