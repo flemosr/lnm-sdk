@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use chrono::{DateTime, Utc};
 use reqwest::{
@@ -7,9 +7,9 @@ use reqwest::{
 };
 use serde::{Serialize, de::DeserializeOwned};
 
-use super::super::{
-    super::config::RestClientConfig,
-    error::{RestApiError, Result},
+use {
+    super::super::error::{RestApiError, Result},
+    super::rate_limit::RateLimiter,
 };
 
 pub(crate) trait SignatureGenerator: Send + Sync {
@@ -82,12 +82,17 @@ pub(crate) struct LnmRestBase<S: SignatureGenerator> {
     domain: String,
     credentials: Option<LnmRestCredentials<S>>,
     client: Client,
+    rate_limiter: Option<RateLimiter>,
 }
 
 impl<S: SignatureGenerator> LnmRestBase<S> {
-    pub fn new(config: RestClientConfig, domain: String) -> Result<Arc<Self>> {
+    pub fn new(
+        timeout: Duration,
+        domain: String,
+        rate_limiter: Option<RateLimiter>,
+    ) -> Result<Arc<Self>> {
         let client = Client::builder()
-            .timeout(config.timeout())
+            .timeout(timeout)
             .build()
             .map_err(RestApiError::HttpClient)?;
 
@@ -95,18 +100,20 @@ impl<S: SignatureGenerator> LnmRestBase<S> {
             domain,
             credentials: None,
             client,
+            rate_limiter,
         }))
     }
 
     pub fn with_credentials(
-        config: RestClientConfig,
+        timeout: Duration,
         domain: String,
         key: String,
         passphrase: String,
         signature_generator: S,
+        rate_limiter: Option<RateLimiter>,
     ) -> Result<Arc<Self>> {
         let client = Client::builder()
-            .timeout(config.timeout())
+            .timeout(timeout)
             .build()
             .map_err(RestApiError::HttpClient)?;
 
@@ -116,6 +123,7 @@ impl<S: SignatureGenerator> LnmRestBase<S> {
             domain,
             credentials: Some(creds),
             client,
+            rate_limiter,
         }))
     }
 
@@ -139,7 +147,7 @@ impl<S: SignatureGenerator> LnmRestBase<S> {
     where
         T: DeserializeOwned,
     {
-        let mut headers = if authenticated {
+        let headers = if authenticated {
             let creds = self
                 .credentials
                 .as_ref()
@@ -150,26 +158,9 @@ impl<S: SignatureGenerator> LnmRestBase<S> {
             HeaderMap::new()
         };
 
-        let req = match method {
-            Method::POST | Method::PUT => {
-                if body.is_some() {
-                    headers.insert(
-                        HeaderName::from_static("content-type"),
-                        HeaderValue::from_static("application/json"),
-                    );
-                }
-
-                let mut req = self.client.request(method, url).headers(headers);
-                if let Some(body) = body {
-                    req = req.body(body);
-                }
-                req
-            }
-            Method::GET | Method::DELETE => self.client.request(method, url).headers(headers),
-            m => return Err(RestApiError::UnsupportedMethod(m)),
-        };
-
-        let response = req.send().await.map_err(RestApiError::SendFailed)?;
+        let response = self
+            .send_request(method, url, body, headers, authenticated)
+            .await?;
 
         if !response.status().is_success() {
             let status = response.status();
@@ -190,6 +181,40 @@ impl<S: SignatureGenerator> LnmRestBase<S> {
             .map_err(|e| RestApiError::ResponseJsonDeserializeFailed { raw_response, e })?;
 
         Ok(response_data)
+    }
+
+    async fn send_request(
+        &self,
+        method: Method,
+        url: Url,
+        body: Option<String>,
+        mut headers: HeaderMap,
+        authenticated: bool,
+    ) -> Result<reqwest::Response> {
+        if let Some(rl) = &self.rate_limiter {
+            rl.acquire(authenticated).await;
+        }
+
+        let req = match method {
+            Method::POST | Method::PUT => {
+                if body.is_some() {
+                    headers.insert(
+                        HeaderName::from_static("content-type"),
+                        HeaderValue::from_static("application/json"),
+                    );
+                }
+
+                let mut req = self.client.request(method, url).headers(headers);
+                if let Some(body) = body {
+                    req = req.body(body);
+                }
+                req
+            }
+            Method::GET | Method::DELETE => self.client.request(method, url).headers(headers),
+            m => return Err(RestApiError::UnsupportedMethod(m)),
+        };
+
+        req.send().await.map_err(RestApiError::SendFailed)
     }
 
     pub async fn make_request_with_body<T, B>(
@@ -247,9 +272,9 @@ impl<S: SignatureGenerator> LnmRestBase<S> {
     pub async fn make_get_request_plain_text(&self, path: impl RestPath) -> Result<String> {
         let url = self.build_url(path)?;
 
-        let req = self.client.request(Method::GET, url);
-
-        let response = req.send().await.map_err(RestApiError::SendFailed)?;
+        let response = self
+            .send_request(Method::GET, url, None, HeaderMap::new(), false)
+            .await?;
 
         if !response.status().is_success() {
             let status = response.status();
