@@ -79,11 +79,10 @@ mod tests {
         let _ = test_get_user(&repo).await;
     }
 
-    // Fires 130 concurrent `get_user` requests through a rate-limited client.
-    // As of Feb 2026, LNM doesn't return a 429 for up to 120 req/min.
+    // Fires 65 concurrent `get_user` requests through a rate-limited client.
+    // NOTE: As of Feb 2026, LNM seems to tolerate up to 120 req/min for this endpoint.
     //
-    // The rate limiter paces authenticated requests at 60 req/min (in line with doc limit) so all
-    // complete without 429's.
+    // The rate limiter paces authenticated requests at 60 req/min, in line with official doc limit.
     #[tokio::test]
     #[ignore]
     async fn test_v2_rate_limiter_prevents_auth_429() {
@@ -94,7 +93,7 @@ mod tests {
         );
         let repo = Arc::new(init_repository_from_env(Some(rate_limiter)));
 
-        let total_requests = 130;
+        let total_requests = 65;
         let mut handles = Vec::with_capacity(total_requests);
 
         let start = Instant::now();

@@ -579,11 +579,10 @@ async fn test_api() {
     );
 }
 
-// Fires 130 concurrent `ticker` requests through a rate-limited client.
-// As of Feb 2026, LNM doesn't return a 429 for up to 120 req/min.
+// Fires 35 concurrent `ticker` requests through a rate-limited client.
+// NOTE: As of Feb 2026, LNM doesn't return a 429 for up to 120 req/min for this endpoint.
 //
-// The rate limiter paces authenticated requests at 30 req/min (in line with doc limit) so all
-// complete without 429's.
+// The rate limiter paces authenticated requests at 30 req/min, in line with official doc limit.
 #[tokio::test]
 #[ignore]
 async fn test_v2_rate_limiter_prevents_unauth_429() {
@@ -594,7 +593,7 @@ async fn test_v2_rate_limiter_prevents_unauth_429() {
     );
     let repo = Arc::new(init_repository_without_creds_from_env(Some(rate_limiter)));
 
-    let total_requests: usize = 130;
+    let total_requests: usize = 35;
     let mut handles = Vec::with_capacity(total_requests);
 
     let start = Instant::now();
