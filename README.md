@@ -44,6 +44,10 @@ use lnm_sdk::api_v2::{
 };
 ```
 
+Each `RestClient` includes an internal FIFO rate limiter that automatically paces requests to stay
+within the API's rate limits, with separate queues for authenticated and public endpoints. This
+behavior is enabled by default and can be configured or disabled via `RestClientConfig`.
+
 ## Examples
 
 Complete runnable examples are available in the
