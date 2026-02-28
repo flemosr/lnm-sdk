@@ -76,12 +76,9 @@ impl RestClient {
     /// ```
     pub fn new(config: impl Into<RestClientConfig>, domain: impl ToString) -> Result<Arc<Self>> {
         let config = config.into();
-        let rate_limiter = config.rate_limiter_active().then(|| {
-            RateLimiter::new(
-                config.rate_limit_auth_interval(),
-                config.rate_limit_unauth_interval(),
-            )
-        });
+        let rate_limiter = config
+            .rate_limiter_active()
+            .then(|| RateLimiter::from(&config));
         let base = LnmRestBase::new(config.timeout(), domain.to_string(), rate_limiter)?;
 
         Ok(Self::new_inner(base))
@@ -117,12 +114,9 @@ impl RestClient {
         passphrase: impl ToString,
     ) -> Result<Arc<Self>> {
         let config = config.into();
-        let rate_limiter = config.rate_limiter_active().then(|| {
-            RateLimiter::new(
-                config.rate_limit_auth_interval(),
-                config.rate_limit_unauth_interval(),
-            )
-        });
+        let rate_limiter = config
+            .rate_limiter_active()
+            .then(|| RateLimiter::from(&config));
         let base = LnmRestBase::with_credentials(
             config.timeout(),
             domain.to_string(),
