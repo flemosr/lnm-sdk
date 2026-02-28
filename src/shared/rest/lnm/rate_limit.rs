@@ -33,7 +33,7 @@ pub(crate) struct RateLimiter {
 }
 
 impl RateLimiter {
-    pub fn new(auth_interval: Duration, unauth_interval: Duration) -> Self {
+    fn new(auth_interval: Duration, unauth_interval: Duration) -> Self {
         Self {
             last_auth_request: Mutex::new(Instant::now() - auth_interval),
             last_unauth_request: Mutex::new(Instant::now() - unauth_interval),
