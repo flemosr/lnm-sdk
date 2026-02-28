@@ -2,6 +2,24 @@ use std::time::Duration;
 
 use tokio::{sync::Mutex, time::Instant};
 
+/// Provides the interval durations needed to construct a [`RateLimiter`].
+pub(crate) trait RateLimiterConfig {
+    /// Returns the interval between authenticated requests.
+    fn rate_limit_auth_interval(&self) -> Duration;
+
+    /// Returns the interval between unauthenticated requests.
+    fn rate_limit_unauth_interval(&self) -> Duration;
+}
+
+impl<T: RateLimiterConfig> From<&T> for RateLimiter {
+    fn from(config: &T) -> Self {
+        Self::new(
+            config.rate_limit_auth_interval(),
+            config.rate_limit_unauth_interval(),
+        )
+    }
+}
+
 /// A simple fixed-interval rate limiter with separate auth/unauth buckets.
 ///
 /// Each call to [`acquire`](Self::acquire) holds the internal mutex while sleeping, so concurrent
