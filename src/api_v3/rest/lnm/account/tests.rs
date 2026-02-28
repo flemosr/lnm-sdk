@@ -52,9 +52,9 @@ async fn test_api() {
     let _ = time_test!("test_get_account", repo.get_account().await);
 }
 
-/// Fires 60 concurrent `get_account` requests through a rate-limited client.
-///
-/// The rate limiter paces authenticated requests at 5 req/s so all complete without 429's.
+// Fires 30 concurrent `get_account` requests through a rate-limited client.
+//
+// The rate limiter paces authenticated requests at 5 req/s so all complete without 429's.
 #[tokio::test]
 #[ignore]
 async fn test_v3_rate_limiter_prevents_auth_429() {

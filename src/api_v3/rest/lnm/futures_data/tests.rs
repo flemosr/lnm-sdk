@@ -92,9 +92,9 @@ async fn test_api() {
     time_test!("test_get_last_candle", test_get_last_candle(&repo).await);
 }
 
-/// Fires 15 concurrent `get_ticker` requests through a rate-limited client.
-///
-/// The rate limiter paces unauthenticated requests at 1 req/s so all complete without any 429's.
+// Fires 15 concurrent `get_ticker` requests through a rate-limited client.
+//
+// The rate limiter paces unauthenticated requests at 1 req/s so all complete without any 429's.
 #[tokio::test]
 #[ignore]
 async fn test_v3_rate_limiter_prevents_unauth_429() {
