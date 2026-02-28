@@ -587,10 +587,7 @@ async fn test_api() {
 #[ignore]
 async fn test_v2_rate_limiter_prevents_unauth_429() {
     let config = RestClientConfig::default();
-    let rate_limiter = RateLimiter::new(
-        config.rate_limit_auth_interval(),
-        config.rate_limit_unauth_interval(),
-    );
+    let rate_limiter = RateLimiter::from(&config);
     let repo = Arc::new(init_repository_without_creds_from_env(Some(rate_limiter)));
 
     let total_requests: usize = 35;
