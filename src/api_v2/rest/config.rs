@@ -1,5 +1,7 @@
 use std::{num::NonZero, time::Duration};
 
+use crate::shared::rest::lnm::rate_limit::RateLimiterConfig;
+
 /// Configuration for the v2 REST API client.
 ///
 /// Rate limit defaults were set in line with the [API v2 docs](https://docs.lnmarkets.com/api/#limits).
@@ -46,16 +48,6 @@ impl RestClientConfig {
         self.rate_limit_unauth_requests_per_minute
     }
 
-    /// Returns the interval between authenticated requests.
-    pub(crate) fn rate_limit_auth_interval(&self) -> Duration {
-        Duration::from_secs(60) / self.rate_limit_auth_requests_per_minute
-    }
-
-    /// Returns the interval between unauthenticated requests.
-    pub(crate) fn rate_limit_unauth_interval(&self) -> Duration {
-        Duration::from_secs(60) / self.rate_limit_unauth_requests_per_minute
-    }
-
     /// Sets the request timeout duration.
     ///
     /// Default: `20` seconds
@@ -90,6 +82,16 @@ impl RestClientConfig {
     pub fn with_rate_limit_unauth_requests_per_minute(mut self, rate: NonZero<u32>) -> Self {
         self.rate_limit_unauth_requests_per_minute = rate.get();
         self
+    }
+}
+
+impl RateLimiterConfig for RestClientConfig {
+    fn rate_limit_auth_interval(&self) -> Duration {
+        Duration::from_secs(60) / self.rate_limit_auth_requests_per_minute
+    }
+
+    fn rate_limit_unauth_interval(&self) -> Duration {
+        Duration::from_secs(60) / self.rate_limit_unauth_requests_per_minute
     }
 }
 
