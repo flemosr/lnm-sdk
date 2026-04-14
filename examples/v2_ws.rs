@@ -1,5 +1,7 @@
 //! Example demonstrating how to use the API v2 WebSocket client.
 
+#![allow(deprecated)]
+
 use std::env;
 
 use dotenv::dotenv;

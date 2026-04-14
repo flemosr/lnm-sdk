@@ -23,12 +23,17 @@ pub type WebSocketConnection = Arc<dyn WebSocketRepository>;
 /// when needed.
 ///
 /// [LNM's v2 API]: https://docs.lnmarkets.com/api/#overview
+#[deprecated(
+    since = "0.4.1",
+    note = "LN Markets disabled the v2 WebSocket API on Mar 31 2026. Retained for reference only."
+)]
 pub struct WebSocketClient {
     config: WebSocketClientConfig,
     domain: String,
     conn: Mutex<Option<WebSocketConnection>>,
 }
 
+#[allow(deprecated)]
 impl WebSocketClient {
     /// Creates a new WebSocket client.
     ///

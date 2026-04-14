@@ -9,6 +9,7 @@ pub use rest::{
     config::RestClientConfig,
     repositories::{FuturesRepository, UserRepository},
 };
+#[allow(deprecated)]
 pub use websocket::{
     WebSocketClient, WebSocketConnection,
     models::{WebSocketChannel, WebSocketUpdate},
