@@ -1,11 +1,13 @@
 # LN Markets SDK
 
-A Rust SDK for interacting with [LN Markets](https://lnmarkets.com/). Supports REST API v3,
-REST API v2, and WebSocket API.
+A Rust SDK for interacting with [LN Markets](https://lnmarkets.com/).
 
 > **Note:** This is an unofficial SDK. API v3 support is functional but not yet feature-complete. 
 > For implementation status, see the
 > [API v3 implementation docs](https://github.com/flemosr/lnm-sdk/blob/main/docs/api-v3-implementation.md).
+>
+> LN Markets disabled API v2 on Mar 31 2026. An implementation (REST + WebSocket) is currently
+> retained in the `api_v2` module for reference only.
 
 [![Crates.io Badge](https://img.shields.io/crates/v/lnm-sdk)](https://crates.io/crates/lnm-sdk)
 [![Documentation Badge](https://docs.rs/lnm-sdk/badge.svg)](https://docs.rs/lnm-sdk/latest/lnm_sdk/)
@@ -34,14 +36,7 @@ This SDK provides strong type-safety with validated types for all parameters use
 operations. All necessary models can be imported via the `models` mod of the API version in question.
 
 ```rust,ignore
-// When working with API v3
 use lnm_sdk::api_v3::{RestClient, RestClientConfig, models::*, error::*};
-
-// When working with API v2
-use lnm_sdk::api_v2::{
-    RestClient, RestClientConfig, WebSocketChannel, WebSocketClient, WebSocketClientConfig,
-    WebSocketUpdate, error::*, models::*,
-};
 ```
 
 Each `RestClient` includes an internal FIFO rate limiter that automatically paces requests to stay
@@ -140,59 +135,6 @@ let _close_order = rest.futures_cross.close_position().await?;
 For more complete authenticated REST API examples, see the
 [`v3_rest_auth` example](https://github.com/flemosr/lnm-sdk/blob/main/examples/v3_rest_auth.rs).
 
-### WebSocket API
-
-The SDK implements the **WebSocket API** for real-time market data streaming using
-[`fastwebsockets`](https://github.com/denoland/fastwebsockets).
-
-**Key Features:**
-- **Real-time Data Streaming**: Persistent WebSocket connection with broadcast channels for
-  concurrent consumers
-- **Connection Reliability**: 
-  - Automatic heartbeat monitoring (5-second intervals)
-  - Ping/Pong frame handling
-  - Graceful disconnection with configurable timeout
-  - TLS/SSL encryption via [`tokio-rustls`](https://github.com/rustls/tokio-rustls)
-- **Subscription Management**:
-  - Prevents conflicting operations on the same channel
-  - State tracking for subscribe/unsubscribe requests with server confirmation
-
-```rust,ignore
-use lnm_sdk::api_v2::{WebSocketChannel, WebSocketClient, WebSocketClientConfig, WebSocketUpdate};
-
-// ...
-
-let domain = env::var("LNM_API_DOMAIN").expect("LNM_API_DOMAIN must be set");
-
-let client = WebSocketClient::new(WebSocketClientConfig::default(), domain);
-
-let ws = client.connect().await?;
-let mut ws_rx = ws.receiver().await?;
-
-ws.subscribe(vec![
-    WebSocketChannel::FuturesBtcUsdIndex,
-    WebSocketChannel::FuturesBtcUsdLastPrice,
-])
-.await?;
-
-while let Ok(ws_update) = ws_rx.recv().await {
-    match ws_update {
-        WebSocketUpdate::ConnectionStatus(status) => {
-            println!("{status}");
-        }
-        WebSocketUpdate::PriceTick(price_tick) => {
-            println!("{price_tick}");
-        }
-        WebSocketUpdate::PriceIndex(price_index) => {
-            println!("{price_index}");
-        }
-    }
-}
-```
-
-For a more complete WebSocket API example, see the
-[`v2_ws` example](https://github.com/flemosr/lnm-sdk/blob/main/examples/v2_ws.rs).
-
 ## Testing
 
 Some tests require environment variables and are ignored by default. Moreover, said tests must be
@@ -207,8 +149,7 @@ cargo test -- --include-ignored --test-threads=1
 
 ## API Reference
 
-+ [LN Markets API v3 Documentation](https://api.lnmarkets.com/v3/) (recommended)
-+ [LN Markets API v2 Documentation](https://docs.lnmarkets.com/api/) (REST API v2 is deprecated)
++ [LN Markets API v3 Documentation](https://api.lnmarkets.com/v3/)
 
 ## Development History
 
