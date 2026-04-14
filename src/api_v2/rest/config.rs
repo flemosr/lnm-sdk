@@ -18,9 +18,7 @@ impl RestClientConfig {
     pub fn new(timeout: Duration) -> Self {
         Self {
             timeout,
-            rate_limiter_active: true,
-            rate_limit_auth_requests_per_minute: 60,
-            rate_limit_unauth_requests_per_minute: 30,
+            ..Default::default()
         }
     }
 
@@ -69,8 +67,8 @@ impl RestClientConfig {
     /// Only enforced when [`rate_limiter_active`](Self::rate_limiter_active) is `true`.
     ///
     /// Default: `60` (1 request per second)
-    pub fn with_rate_limit_auth_requests_per_minute(mut self, rate: NonZero<u32>) -> Self {
-        self.rate_limit_auth_requests_per_minute = rate.get();
+    pub fn with_rate_limit_auth_requests_per_minute(mut self, rpm: NonZero<u32>) -> Self {
+        self.rate_limit_auth_requests_per_minute = rpm.get();
         self
     }
 
@@ -79,8 +77,8 @@ impl RestClientConfig {
     /// Only enforced when [`rate_limiter_active`](Self::rate_limiter_active) is `true`.
     ///
     /// Default: `30`
-    pub fn with_rate_limit_unauth_requests_per_minute(mut self, rate: NonZero<u32>) -> Self {
-        self.rate_limit_unauth_requests_per_minute = rate.get();
+    pub fn with_rate_limit_unauth_requests_per_minute(mut self, rpm: NonZero<u32>) -> Self {
+        self.rate_limit_unauth_requests_per_minute = rpm.get();
         self
     }
 }

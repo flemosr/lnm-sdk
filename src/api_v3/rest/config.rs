@@ -69,8 +69,8 @@ impl RestClientConfig {
     /// Only enforced when [`rate_limiter_active`](Self::rate_limiter_active) is `true`.
     ///
     /// Default: `5`
-    pub fn with_rate_limit_auth_requests_per_second(mut self, rate: NonZero<u32>) -> Self {
-        self.rate_limit_auth_requests_per_second = rate.get();
+    pub fn with_rate_limit_auth_requests_per_second(mut self, rps: NonZero<u32>) -> Self {
+        self.rate_limit_auth_requests_per_second = rps.get();
         self
     }
 
@@ -79,8 +79,8 @@ impl RestClientConfig {
     /// Only enforced when [`rate_limiter_active`](Self::rate_limiter_active) is `true`.
     ///
     /// Default: `1`
-    pub fn with_rate_limit_unauth_requests_per_second(mut self, rate: NonZero<u32>) -> Self {
-        self.rate_limit_unauth_requests_per_second = rate.get();
+    pub fn with_rate_limit_unauth_requests_per_second(mut self, rps: NonZero<u32>) -> Self {
+        self.rate_limit_unauth_requests_per_second = rps.get();
         self
     }
 }
