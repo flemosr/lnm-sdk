@@ -24,7 +24,7 @@ use repositories::{FuturesRepository, UserRepository};
 /// [LNM's v2 API]: https://docs.lnmarkets.com/api/#overview
 #[deprecated(
     since = "0.1.0",
-    note = "Use `lnm_sdk::api_v3::RestClient` instead. The v2 REST API is deprecated."
+    note = "LN Markets disabled the v2 REST API on Mar 31 2026. Retained for reference only. Use `lnm_sdk::api_v3::RestClient` instead."
 )]
 pub struct RestClient {
     /// Will be `true` if LNM credentials were provided, and `false` otherwise.
