@@ -10,9 +10,9 @@ Direct source code links for quick reference:
 |----------|------------|
 | **API v3 - Public Endpoints** | [v3_rest_public.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/v3_rest_public.rs) |
 | **API v3 - Authenticated Endpoints** | [v3_rest_auth.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/v3_rest_auth.rs) |
-| **API v2 - Public Endpoints** | [v2_rest_public.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/v2_rest_public.rs) |
-| **API v2 - Authenticated Endpoints** | [v2_rest_auth.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/v2_rest_auth.rs) |
-| **WebSocket API** | [v2_ws.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/v2_ws.rs) |
+| **API v2 - Public Endpoints** (reference only, non-functional) | [v2_rest_public.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/v2_rest_public.rs) |
+| **API v2 - Authenticated Endpoints** (reference only, non-functional) | [v2_rest_auth.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/v2_rest_auth.rs) |
+| **API v2 - WebSocket** (reference only, non-functional) | [v2_ws.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/v2_ws.rs) |
 
 ## Prerequisites
 
@@ -56,11 +56,12 @@ cross-margin futures positions, including placing orders, managing margin, and c
 cargo run --example v3_rest_auth
 ```
 
-## API v2 
+## API v2 (non-functional, reference only)
 
-The following examples demonstrate the API v2 interface.
+LN Markets disabled API v2 on Mar 31 2026. The following examples will fail at runtime against the
+live service. They are currently retained for reference only.
 
-### v2_rest_public (deprecated)
+### v2_rest_public
 
 Demonstrates how to use the API v2 REST public client to fetch market data like futures ticker and
 price history.
@@ -70,7 +71,7 @@ price history.
 cargo run --example v2_rest_public
 ```
 
-### v2_rest_auth (deprecated)
+### v2_rest_auth
 
 Demonstrates how to use the API v2 REST authenticated client to manage trades, including creating,
 updating, and closing positions.
