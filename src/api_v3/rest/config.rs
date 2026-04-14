@@ -14,13 +14,34 @@ pub struct RestClientConfig {
 }
 
 impl RestClientConfig {
-    /// Creates a new v3 REST client configuration with the specified timeout.
+    /// Creates a new v3 REST client configuration with the specified timeout and the rate limiter
+    /// disabled.
+    ///
+    /// To build a configuration with the rate limiter enabled, use
+    /// [`with_rate_limiter`](Self::with_rate_limiter) instead.
     pub fn new(timeout: Duration) -> Self {
         Self {
             timeout,
+            rate_limiter_active: false,
+            ..Default::default()
+        }
+    }
+
+    /// Creates a new v3 REST client configuration with the specified timeout and the rate limiter
+    /// enabled at the given authenticated and unauthenticated requests-per-second limits.
+    ///
+    /// See the [API v3 rate limit docs](https://api.lnmarkets.com/v3/#description/rate-limit) for
+    /// the server-enforced values these should track.
+    pub fn with_rate_limiter(
+        timeout: Duration,
+        rate_limit_auth_rps: NonZero<u32>,
+        rate_limit_unauth_rps: NonZero<u32>,
+    ) -> Self {
+        Self {
+            timeout,
             rate_limiter_active: true,
-            rate_limit_auth_requests_per_second: 5,
-            rate_limit_unauth_requests_per_second: 1,
+            rate_limit_auth_requests_per_second: rate_limit_auth_rps.get(),
+            rate_limit_unauth_requests_per_second: rate_limit_unauth_rps.get(),
         }
     }
 
