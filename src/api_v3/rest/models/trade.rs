@@ -999,7 +999,7 @@ impl fmt::Display for CrossOrder {
 pub struct CrossPosition {
     id: Uuid,
     margin: u64,
-    quantity: u64,
+    quantity: i64,
     leverage: CrossLeverage,
     entry_price: Option<Price>,
     running_margin: u64,
@@ -1045,7 +1045,10 @@ impl CrossPosition {
         self.margin
     }
 
-    /// Returns the quantity (notional value in USD) of the position.
+    /// Returns the signed quantity (notional value in USD) of the position.
+    ///
+    /// A positive value indicates a long position, a negative value indicates a short position,
+    /// and `0` indicates no open position.
     ///
     /// # Examples
     ///
@@ -1057,7 +1060,7 @@ impl CrossPosition {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn quantity(&self) -> u64 {
+    pub fn quantity(&self) -> i64 {
         self.quantity
     }
 
