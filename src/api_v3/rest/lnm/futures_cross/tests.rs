@@ -139,7 +139,7 @@ async fn test_create_long_order_market(repo: &LnmFuturesCrossRepository) -> Cros
 
 async fn test_create_short_order_market(repo: &LnmFuturesCrossRepository) -> CrossOrder {
     let side = TradeSide::Sell;
-    let quantity = Quantity::try_from(1).unwrap();
+    let quantity = Quantity::try_from(3).unwrap();
     let execution = TradeExecution::Market;
     let client_id = None;
 
@@ -187,27 +187,27 @@ async fn test_cancel_all_orders(
     }
 }
 
-async fn test_get_position(repo: &LnmFuturesCrossRepository) -> CrossPosition {
+async fn test_get_position(repo: &LnmFuturesCrossRepository, exp_quantity: i64) -> CrossPosition {
     let cross_position: CrossPosition = repo.get_position().await.expect("must get position");
 
-    assert_eq!(cross_position.quantity(), 0);
+    assert_eq!(cross_position.quantity(), exp_quantity);
 
     cross_position
 }
 
-async fn test_close_position(repo: &LnmFuturesCrossRepository) {
-    let short_order_market: CrossOrder = repo.close_position().await.expect("must close position");
+async fn test_close_position(repo: &LnmFuturesCrossRepository, exp_side: TradeSide) {
+    let closing_order: CrossOrder = repo.close_position().await.expect("must close position");
 
-    assert_eq!(short_order_market.trade_type(), TradeExecutionType::Market);
-    assert_eq!(short_order_market.side(), TradeSide::Sell);
-    assert_eq!(short_order_market.quantity(), Quantity::MIN);
-    assert!(short_order_market.trading_fee() > 0);
-    assert!(!short_order_market.open());
-    assert!(short_order_market.filled());
-    assert!(short_order_market.filled_at().is_some());
-    assert!(!short_order_market.canceled());
-    assert!(short_order_market.canceled_at().is_none());
-    assert!(short_order_market.client_id().is_none());
+    assert_eq!(closing_order.trade_type(), TradeExecutionType::Market);
+    assert_eq!(closing_order.side(), exp_side);
+    assert_eq!(closing_order.quantity(), Quantity::MIN);
+    assert!(closing_order.trading_fee() > 0);
+    assert!(!closing_order.open());
+    assert!(closing_order.filled());
+    assert!(closing_order.filled_at().is_some());
+    assert!(!closing_order.canceled());
+    assert!(closing_order.canceled_at().is_none());
+    assert!(closing_order.client_id().is_none());
 }
 
 async fn test_set_leverage(repo: &LnmFuturesCrossRepository, leverage: CrossLeverage) {
@@ -337,7 +337,7 @@ async fn test_api() {
         repo.get_position().await.expect("must get position")
     );
 
-    if cross_position.quantity() > 0 {
+    if cross_position.quantity() != 0 {
         time_test!(
             "close_position (cleanup)",
             repo.close_position().await.expect("must close position")
@@ -361,7 +361,7 @@ async fn test_api() {
 
     // Start tests
 
-    time_test!("test_get_position", test_get_position(&repo).await);
+    time_test!("test_get_position", test_get_position(&repo, 0).await);
 
     let ticker: Ticker = repo_data.get_ticker().await.expect("must get ticker");
 
@@ -396,6 +396,11 @@ async fn test_api() {
     );
 
     time_test!(
+        "test_get_position (long)",
+        test_get_position(&repo, 2).await
+    );
+
+    time_test!(
         "test_set_leverage",
         test_set_leverage(&repo, CrossLeverage::try_from(2).unwrap()).await
     );
@@ -406,11 +411,19 @@ async fn test_api() {
     );
 
     time_test!(
+        "test_get_position (short)",
+        test_get_position(&repo, -1).await
+    );
+
+    time_test!(
         "test_get_filled_orders",
         test_get_filled_orders(&repo, vec![&long_order_market, &short_order_market]).await
     );
 
-    time_test!("test_close_position", test_close_position(&repo).await);
+    time_test!(
+        "test_close_position",
+        test_close_position(&repo, TradeSide::Buy).await
+    );
 
     let cross_position: CrossPosition = time_test!(
         "get_position",
