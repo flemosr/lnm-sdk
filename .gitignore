@@ -1,7 +1,7 @@
 .env
 .DS_Store
-Cargo.lock
+.workcell
 
-**/.claude/sessions/
+Cargo.lock
 target/
 tmp/
