@@ -1007,7 +1007,7 @@ pub struct CrossPosition {
     maintenance_margin: u64,
     liquidation: Option<Price>,
     trading_fees: u64,
-    funding_fees: u64,
+    funding_fees: i64,
     total_pl: i64,
     delta_pl: i64,
 }
@@ -1193,7 +1193,7 @@ impl CrossPosition {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn funding_fees(&self) -> u64 {
+    pub fn funding_fees(&self) -> i64 {
         self.funding_fees
     }
 
