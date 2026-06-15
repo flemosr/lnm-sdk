@@ -155,7 +155,7 @@ impl Margin {
     /// assert_eq!(remaining.as_u64(), 5_000);
     /// ```
     pub fn try_sub(self, other: Self) -> Result<Self, MarginValidationError> {
-        let difference = self.0.checked_sub(other.0).unwrap_or(0);
+        let difference = self.0.saturating_sub(other.0);
 
         Self::try_from(difference)
     }

@@ -157,7 +157,7 @@ impl CrossQuantity {
     /// assert_eq!(total.as_u64(), 1_500);
     /// ```
     pub fn try_add(self, other: Self) -> Result<Self, CrossQuantityValidationError> {
-        let sum = self.0.checked_add(other.0).unwrap_or(u64::MAX);
+        let sum = self.0.saturating_add(other.0);
 
         Self::try_from(sum)
     }
@@ -176,7 +176,7 @@ impl CrossQuantity {
     /// assert_eq!(remaining.as_u64(), 500);
     /// ```
     pub fn try_sub(self, other: Self) -> Result<Self, CrossQuantityValidationError> {
-        let difference = self.0.checked_sub(other.0).unwrap_or(0);
+        let difference = self.0.saturating_sub(other.0);
 
         Self::try_from(difference)
     }
