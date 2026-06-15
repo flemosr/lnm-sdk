@@ -3,7 +3,7 @@ use std::{env, time::Instant};
 use dotenv::dotenv;
 
 use crate::shared::models::{
-    price::PercentageCapped, quantity::Quantity, trade::TradeExecutionType,
+    price::PercentageCapped, quantity::OrderQuantity, trade::TradeExecutionType,
 };
 
 use super::super::{
@@ -53,7 +53,7 @@ async fn test_create_long_order_limit(
     ticker: &Ticker,
 ) -> CrossOrder {
     let side = TradeSide::Buy;
-    let quantity = Quantity::try_from(1).unwrap();
+    let quantity = OrderQuantity::try_from(1).unwrap();
     let discount_percentage = PercentageCapped::try_from(30).unwrap();
     let out_of_mkt_price = ticker
         .last_price()
@@ -87,7 +87,7 @@ async fn test_create_short_order_limit(
     ticker: &Ticker,
 ) -> CrossOrder {
     let side = TradeSide::Sell;
-    let quantity = Quantity::try_from(1).unwrap();
+    let quantity = OrderQuantity::try_from(1).unwrap();
     let discount_percentage = PercentageCapped::try_from(30).unwrap();
     let out_of_mkt_price = ticker
         .last_price()
@@ -118,7 +118,7 @@ async fn test_create_short_order_limit(
 
 async fn test_create_long_order_market(repo: &LnmFuturesCrossRepository) -> CrossOrder {
     let side = TradeSide::Buy;
-    let quantity = Quantity::try_from(2).unwrap();
+    let quantity = OrderQuantity::try_from(2).unwrap();
     let execution = TradeExecution::Market;
     let client_id = None;
 
@@ -143,7 +143,7 @@ async fn test_create_long_order_market(repo: &LnmFuturesCrossRepository) -> Cros
 
 async fn test_create_short_order_market(repo: &LnmFuturesCrossRepository) -> CrossOrder {
     let side = TradeSide::Sell;
-    let quantity = Quantity::try_from(3).unwrap();
+    let quantity = OrderQuantity::try_from(3).unwrap();
     let execution = TradeExecution::Market;
     let client_id = None;
 
@@ -226,7 +226,7 @@ async fn test_close_position(repo: &LnmFuturesCrossRepository, exp_side: TradeSi
 
     assert_eq!(closing_order.trade_type(), TradeExecutionType::Market);
     assert_eq!(closing_order.side(), exp_side);
-    assert_eq!(closing_order.quantity(), Quantity::MIN);
+    assert_eq!(closing_order.quantity(), OrderQuantity::MIN);
     assert!(closing_order.trading_fee() > 0);
     assert!(!closing_order.open());
     assert!(closing_order.filled());

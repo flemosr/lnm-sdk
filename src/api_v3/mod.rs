@@ -36,12 +36,15 @@ pub mod models {
         leverage::Leverage,
         margin::Margin,
         price::{Percentage, PercentageCapped, Price},
-        quantity::Quantity,
+        quantity::OrderQuantity,
         trade::{
             TradeExecution, TradeExecutionType, TradeQuantity, TradeSide, TradeSize, TradeStatus,
             util as trade_util,
         },
     };
+
+    #[allow(deprecated)]
+    pub use crate::shared::models::quantity::Quantity;
 
     pub use super::rest::models::{
         account::Account,

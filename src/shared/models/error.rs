@@ -4,21 +4,24 @@ use super::{
     leverage::Leverage,
     margin::Margin,
     price::{Percentage, PercentageCapped, Price},
-    quantity::Quantity,
+    quantity::OrderQuantity,
 };
 
 #[derive(Debug, Error)]
 pub enum QuantityValidationError {
-    #[error("Quantity must be at least {}. Value: {value}", Quantity::MIN)]
+    #[error(
+        "OrderQuantity must be at least {}. Value: {value}",
+        OrderQuantity::MIN
+    )]
     TooLow { value: u64 },
 
     #[error(
-        "Quantity must be less than or equal to {}. Value: {value}",
-        Quantity::MAX
+        "OrderQuantity must be less than or equal to {}. Value: {value}",
+        OrderQuantity::MAX
     )]
     TooHigh { value: u64 },
 
-    #[error("Quantity must be an integer. Value: {value}")]
+    #[error("OrderQuantity must be an integer. Value: {value}")]
     NotAnInteger { value: f64 },
 }
 

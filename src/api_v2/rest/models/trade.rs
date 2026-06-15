@@ -11,7 +11,7 @@ use crate::shared::models::{
     leverage::Leverage,
     margin::Margin,
     price::Price,
-    quantity::Quantity,
+    quantity::OrderQuantity,
     serde_util,
     trade::{TradeExecution, TradeExecutionType, TradeSide, TradeSize},
 };
@@ -49,8 +49,8 @@ impl FuturesTradeRequestBody {
     ) -> Result<Self, FuturesTradeRequestValidationError> {
         if let TradeExecution::Limit(price) = trade_execution {
             if let TradeSize::Margin(margin) = &size {
-                // Implied `Quantity` must be valid
-                let _ = Quantity::try_calculate(*margin, price, leverage)?;
+                // Implied `OrderQuantity` must be valid
+                let _ = OrderQuantity::try_calculate(*margin, price, leverage)?;
             }
 
             if let Some(stoploss) = stoploss
@@ -112,7 +112,7 @@ impl FuturesTradeRequestBody {
 /// println!("Trade ID: {}", trade.id());
 /// println!("User ID: {}", trade.uid());
 /// println!("Side: {}", trade.side());
-/// println!("Quantity: {} USD", trade.quantity());
+/// println!("OrderQuantity: {} USD", trade.quantity());
 /// println!("Margin: {} sats", trade.margin());
 /// println!("Leverage: {}x", trade.leverage());
 /// # Ok(())
@@ -129,7 +129,7 @@ pub struct Trade {
     opening_fee: u64,
     closing_fee: u64,
     maintenance_margin: i64,
-    quantity: Quantity,
+    quantity: OrderQuantity,
     margin: Margin,
     leverage: Leverage,
     price: Price,
@@ -284,7 +284,7 @@ impl Trade {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn quantity(&self) -> Quantity {
+    pub fn quantity(&self) -> OrderQuantity {
         self.quantity
     }
 

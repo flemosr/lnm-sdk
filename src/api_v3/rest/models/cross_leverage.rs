@@ -117,7 +117,7 @@ impl CrossLeverage {
     /// ```
     /// use lnm_sdk::api_v3::models::{CrossLeverage, CrossQuantity, Margin, Price};
     ///
-    /// let quantity = CrossQuantity::try_from(1_000).unwrap(); // Quantity in USD
+    /// let quantity = CrossQuantity::try_from(1_000).unwrap(); // OrderQuantity in USD
     /// let running_margin = Margin::try_from(20_000).unwrap(); // Running margin in sats
     /// let price = Price::try_from(100_000.0).unwrap(); // Price in USD/BTC
     ///

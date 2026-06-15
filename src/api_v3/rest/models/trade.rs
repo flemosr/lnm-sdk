@@ -9,7 +9,7 @@ use crate::shared::models::{
     leverage::Leverage,
     margin::Margin,
     price::Price,
-    quantity::Quantity,
+    quantity::OrderQuantity,
     serde_util,
     trade::{
         TradeExecution, TradeExecutionType, TradeSide, TradeSize, util::est_liquidation_from_margin,
@@ -54,8 +54,8 @@ impl FuturesIsolatedTradeRequestBody {
     ) -> Result<Self, FuturesIsolatedTradeRequestValidationError> {
         if let TradeExecution::Limit(price) = trade_execution {
             if let TradeSize::Margin(margin) = &size {
-                // Implied `Quantity` must be valid
-                let _ = Quantity::try_calculate(*margin, price, leverage)?;
+                // Implied `OrderQuantity` must be valid
+                let _ = OrderQuantity::try_calculate(*margin, price, leverage)?;
             }
 
             if let Some(stoploss) = stoploss
@@ -118,7 +118,7 @@ impl FuturesIsolatedTradeRequestBody {
 ///
 /// println!("Trade ID: {}", trade.id());
 /// println!("Side: {:?}", trade.side());
-/// println!("Quantity: {}", trade.quantity());
+/// println!("OrderQuantity: {}", trade.quantity());
 /// println!("Margin: {}", trade.margin());
 /// println!("Leverage: {}", trade.leverage());
 /// # Ok(())
@@ -134,7 +134,7 @@ pub struct Trade {
     opening_fee: u64,
     closing_fee: u64,
     maintenance_margin: i64,
-    quantity: Quantity,
+    quantity: OrderQuantity,
     margin: Margin,
     leverage: Leverage,
     price: Price,
@@ -272,7 +272,7 @@ impl Trade {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn quantity(&self) -> Quantity {
+    pub fn quantity(&self) -> OrderQuantity {
         self.quantity
     }
 
@@ -641,7 +641,7 @@ impl fmt::Display for Trade {
 #[serde(rename_all = "camelCase")]
 pub(in crate::api_v3) struct FuturesCrossOrderBody {
     side: TradeSide,
-    quantity: Quantity,
+    quantity: OrderQuantity,
     #[serde(rename = "type")]
     trade_type: TradeExecutionType,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -653,7 +653,7 @@ pub(in crate::api_v3) struct FuturesCrossOrderBody {
 impl FuturesCrossOrderBody {
     pub fn new(
         side: TradeSide,
-        quantity: Quantity,
+        quantity: OrderQuantity,
         execution: TradeExecution,
         client_id: Option<ClientId>,
     ) -> Self {
@@ -683,14 +683,14 @@ impl FuturesCrossOrderBody {
 /// ```no_run
 /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
 /// use lnm_sdk::api_v3::models::{
-///     CrossOrder, Quantity, TradeExecution, TradeSide,
+///     CrossOrder, OrderQuantity, TradeExecution, TradeSide,
 /// };
 ///
 /// let order: CrossOrder = rest
 ///     .futures_cross
 ///     .place_order(
 ///         TradeSide::Buy,
-///         Quantity::try_from(1000)?,
+///         OrderQuantity::try_from(1000)?,
 ///         TradeExecution::Market,
 ///         None,
 ///     )
@@ -698,7 +698,7 @@ impl FuturesCrossOrderBody {
 ///
 /// println!("Order ID: {}", order.id());
 /// println!("Side: {:?}", order.side());
-/// println!("Quantity: {}", order.quantity());
+/// println!("OrderQuantity: {}", order.quantity());
 /// println!("Status - Open: {}, Filled: {}", order.open(), order.filled());
 /// # Ok(())
 /// # }
@@ -710,7 +710,7 @@ pub struct CrossOrder {
     #[serde(rename = "type")]
     trade_type: TradeExecutionType,
     side: TradeSide,
-    quantity: Quantity,
+    quantity: OrderQuantity,
     price: Price,
     trading_fee: u64,
     created_at: DateTime<Utc>,
@@ -784,7 +784,7 @@ impl CrossOrder {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn quantity(&self) -> Quantity {
+    pub fn quantity(&self) -> OrderQuantity {
         self.quantity
     }
 
@@ -1142,7 +1142,7 @@ impl CrossExposure {
 ///     .await?;
 ///
 /// println!("Position ID: {}", position.id());
-/// println!("Quantity: {}", position.quantity());
+/// println!("OrderQuantity: {}", position.quantity());
 /// println!("Margin: {}", position.margin());
 /// println!("Leverage: {}", position.leverage());
 /// if let Some(entry_price) = position.entry_price() {
@@ -1243,7 +1243,7 @@ impl CrossPosition {
     ///     }
     ///     CrossExposure::Running(exposure) => {
     ///         println!("Side: {:?}", exposure.side());
-    ///         println!("Quantity: {}", exposure.quantity());
+    ///         println!("OrderQuantity: {}", exposure.quantity());
     ///         println!("Entry price: {}", exposure.entry_price());
     ///         println!("Liquidation: {}", exposure.liquidation());
     ///         println!("Running margin: {}", exposure.running_margin());

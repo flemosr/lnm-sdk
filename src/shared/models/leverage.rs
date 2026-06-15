@@ -3,8 +3,8 @@ use std::{cmp::Ordering, convert::TryFrom, fmt};
 use serde::{Deserialize, Serialize, de};
 
 use super::{
-    SATS_PER_BTC, error::LeverageValidationError, margin::Margin, price::Price, quantity::Quantity,
-    serde_util,
+    SATS_PER_BTC, error::LeverageValidationError, margin::Margin, price::Price,
+    quantity::OrderQuantity, serde_util,
 };
 
 /// A validated leverage value for trading positions.
@@ -98,16 +98,16 @@ impl Leverage {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::{Leverage, Quantity, Margin, Price};
+    /// use lnm_sdk::api_v3::models::{Leverage, OrderQuantity, Margin, Price};
     ///
-    /// let quantity = Quantity::try_from(1_000).unwrap(); // Quantity in USD
+    /// let quantity = OrderQuantity::try_from(1_000).unwrap(); // OrderQuantity in USD
     /// let margin = Margin::try_from(20_000).unwrap(); // Margin in sats
     /// let price = Price::try_from(100_000.0).unwrap(); // Price in USD/BTC
     ///
     /// let leverage = Leverage::try_calculate(quantity, margin, price).unwrap();
     /// ```
     pub fn try_calculate(
-        quantity: Quantity,
+        quantity: OrderQuantity,
         margin: Margin,
         price: Price,
     ) -> Result<Self, LeverageValidationError> {

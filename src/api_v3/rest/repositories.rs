@@ -8,7 +8,7 @@ use crate::shared::{
     models::{
         leverage::Leverage,
         price::Price,
-        quantity::Quantity,
+        quantity::OrderQuantity,
         trade::{TradeExecution, TradeSide, TradeSize},
     },
     rest::error::Result,
@@ -306,7 +306,7 @@ pub trait FuturesIsolatedRepository: crate::sealed::Sealed + Send + Sync {
     /// ```no_run
     /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
     /// use lnm_sdk::api_v3::models::{
-    ///     Leverage, Price, Quantity, Trade, TradeExecution, TradeSide, TradeSize,
+    ///     Leverage, Price, OrderQuantity, Trade, TradeExecution, TradeSide, TradeSize,
     /// };
     ///
     /// // Create a long market order with 100 USD quantity and 2x leverage
@@ -314,7 +314,7 @@ pub trait FuturesIsolatedRepository: crate::sealed::Sealed + Send + Sync {
     ///     .futures_isolated
     ///     .new_trade(
     ///         TradeSide::Buy,
-    ///         TradeSize::Quantity(Quantity::try_from(100)?),
+    ///         TradeSize::Quantity(OrderQuantity::try_from(100)?),
     ///         Leverage::try_from(2)?,
     ///         TradeExecution::Market,
     ///         None,
@@ -328,7 +328,7 @@ pub trait FuturesIsolatedRepository: crate::sealed::Sealed + Send + Sync {
     ///     .futures_isolated
     ///     .new_trade(
     ///         TradeSide::Sell,
-    ///         TradeSize::Quantity(Quantity::try_from(50)?),
+    ///         TradeSize::Quantity(OrderQuantity::try_from(50)?),
     ///         Leverage::try_from(3)?,
     ///         TradeExecution::Limit(Price::try_from(105_000)?),
     ///         Some(Price::try_from(110_000)?),
@@ -426,14 +426,14 @@ pub trait FuturesCrossRepository: crate::sealed::Sealed + Send + Sync {
     ///
     /// ```no_run
     /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::{CrossOrder, Price, Quantity, TradeExecution, TradeSide};
+    /// use lnm_sdk::api_v3::models::{CrossOrder, Price, OrderQuantity, TradeExecution, TradeSide};
     ///
     /// // Place a market buy order for 50 USD
     /// let order: CrossOrder = rest
     ///     .futures_cross
     ///     .place_order(
     ///         TradeSide::Buy,
-    ///         Quantity::try_from(50)?,
+    ///         OrderQuantity::try_from(50)?,
     ///         TradeExecution::Market,
     ///         None,
     ///     )
@@ -444,7 +444,7 @@ pub trait FuturesCrossRepository: crate::sealed::Sealed + Send + Sync {
     ///     .futures_cross
     ///     .place_order(
     ///         TradeSide::Sell,
-    ///         Quantity::try_from(100)?,
+    ///         OrderQuantity::try_from(100)?,
     ///         TradeExecution::Limit(Price::try_from(105_000)?),
     ///         None,
     ///     )
@@ -455,7 +455,7 @@ pub trait FuturesCrossRepository: crate::sealed::Sealed + Send + Sync {
     async fn place_order(
         &self,
         side: TradeSide,
-        quantity: Quantity,
+        quantity: OrderQuantity,
         execution: TradeExecution,
         client_id: Option<ClientId>,
     ) -> Result<CrossOrder>;

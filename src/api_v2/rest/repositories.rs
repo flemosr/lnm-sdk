@@ -168,7 +168,7 @@ pub trait FuturesRepository: crate::sealed::Sealed + Send + Sync {
     /// # #[allow(deprecated)]
     /// # async fn example(rest: lnm_sdk::api_v2::RestClient) -> Result<(), Box<dyn std::error::Error>> {
     /// use lnm_sdk::api_v2::models::{
-    ///     Leverage, Margin, Price, Quantity, Trade, TradeExecution, TradeSide, TradeSize,
+    ///     Leverage, Margin, Price, OrderQuantity, Trade, TradeExecution, TradeSide, TradeSize,
     /// };
     ///
     /// // Create long market order with 10,000 sats of margin and no leverage,
@@ -193,7 +193,7 @@ pub trait FuturesRepository: crate::sealed::Sealed + Send + Sync {
     ///     .futures
     ///     .create_new_trade(
     ///         TradeSide::Buy,
-    ///         TradeSize::from(Quantity::try_from(10)?),
+    ///         TradeSize::from(OrderQuantity::try_from(10)?),
     ///         Leverage::try_from(2)?,
     ///         TradeExecution::Limit(Price::try_from(120_000)?),
     ///         Some(Price::try_from(110_000)?),
@@ -209,7 +209,7 @@ pub trait FuturesRepository: crate::sealed::Sealed + Send + Sync {
     ///     .futures
     ///     .create_new_trade(
     ///         TradeSide::Sell,
-    ///         TradeSize::from(Quantity::try_from(10)?),
+    ///         TradeSize::from(OrderQuantity::try_from(10)?),
     ///         Leverage::try_from(3)?,
     ///         TradeExecution::Limit(Price::try_from(130_000)?),
     ///         Some(Price::try_from(140_000)?),
@@ -273,14 +273,14 @@ pub trait FuturesRepository: crate::sealed::Sealed + Send + Sync {
     /// # #[allow(deprecated)]
     /// # async fn example(rest: lnm_sdk::api_v2::RestClient) -> Result<(), Box<dyn std::error::Error>> {
     /// use lnm_sdk::api_v2::models::{
-    ///     Leverage, Price, Quantity, Trade, TradeExecution, TradeSide, TradeSize,
+    ///     Leverage, Price, OrderQuantity, Trade, TradeExecution, TradeSide, TradeSize,
     /// };
     ///
     /// let open_trade: Trade = rest
     ///     .futures
     ///     .create_new_trade(
     ///         TradeSide::Buy,
-    ///         TradeSize::from(Quantity::try_from(10)?),
+    ///         TradeSize::from(OrderQuantity::try_from(10)?),
     ///         Leverage::try_from(1)?,
     ///         TradeExecution::Limit(Price::try_from(10_000)?),
     ///         None,
@@ -395,14 +395,14 @@ pub trait FuturesRepository: crate::sealed::Sealed + Send + Sync {
     /// # #[allow(deprecated)]
     /// # async fn example(rest: lnm_sdk::api_v2::RestClient) -> Result<(), Box<dyn std::error::Error>> {
     /// use lnm_sdk::api_v2::models::{
-    ///     Leverage, Price, Quantity, Trade, TradeExecution, TradeSide, TradeSize,
+    ///     Leverage, Price, OrderQuantity, Trade, TradeExecution, TradeSide, TradeSize,
     /// };
     ///
     /// let open_trade: Trade = rest
     ///     .futures
     ///     .create_new_trade(
     ///         TradeSide::Buy,
-    ///         TradeSize::from(Quantity::try_from(10)?),
+    ///         TradeSize::from(OrderQuantity::try_from(10)?),
     ///         Leverage::try_from(1)?,
     ///         TradeExecution::Limit(Price::try_from(10_000)?),
     ///         None,
@@ -434,14 +434,14 @@ pub trait FuturesRepository: crate::sealed::Sealed + Send + Sync {
     /// # #[allow(deprecated)]
     /// # async fn example(rest: lnm_sdk::api_v2::RestClient) -> Result<(), Box<dyn std::error::Error>> {
     /// use lnm_sdk::api_v2::models::{
-    ///     Leverage, Price, Quantity, Trade, TradeExecution, TradeSide, TradeSize,
+    ///     Leverage, Price, OrderQuantity, Trade, TradeExecution, TradeSide, TradeSize,
     /// };
     ///
     /// let open_trade: Trade = rest
     ///     .futures
     ///     .create_new_trade(
     ///         TradeSide::Buy,
-    ///         TradeSize::from(Quantity::try_from(10)?),
+    ///         TradeSize::from(OrderQuantity::try_from(10)?),
     ///         Leverage::try_from(1)?,
     ///         TradeExecution::Limit(Price::try_from(10_000)?),
     ///         None,

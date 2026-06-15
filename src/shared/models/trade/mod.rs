@@ -7,7 +7,7 @@ use super::{
     leverage::Leverage,
     margin::Margin,
     price::Price,
-    quantity::Quantity,
+    quantity::OrderQuantity,
 };
 
 /// Utility functions for trade calculations and validations.
@@ -41,17 +41,17 @@ impl fmt::Display for TradeSide {
 
 /// The size specification for a trade position.
 ///
-/// Trade size can be specified either as a [`Quantity`] (notional value in USD) or as [`Margin`]
+/// Trade size can be specified either as a [`OrderQuantity`] (notional value in USD) or as [`Margin`]
 /// (collateral in satoshis). The API will calculate the corresponding value based on the provided
 /// price and leverage.
 ///
 /// # Examples
 ///
 /// ```
-/// use lnm_sdk::api_v3::models::{TradeSize, Quantity, Margin};
+/// use lnm_sdk::api_v3::models::{TradeSize, OrderQuantity, Margin};
 ///
 /// // Specify size by quantity (USD notional value)
-/// let size_by_quantity = TradeSize::from(Quantity::try_from(1_000).unwrap());
+/// let size_by_quantity = TradeSize::from(OrderQuantity::try_from(1_000).unwrap());
 ///
 /// // Specify size by margin (satoshis collateral)
 /// let size_by_margin = TradeSize::from(Margin::try_from(10_000).unwrap());
@@ -59,7 +59,7 @@ impl fmt::Display for TradeSide {
 #[derive(Serialize, Debug, Clone, PartialEq, Eq, Copy)]
 pub enum TradeSize {
     #[serde(rename = "quantity")]
-    Quantity(Quantity),
+    Quantity(OrderQuantity),
     #[serde(rename = "margin")]
     Margin(Margin),
 }
@@ -76,7 +76,7 @@ impl TradeSize {
     /// ```
     pub fn quantity<Q>(value: Q) -> std::result::Result<Self, QuantityValidationError>
     where
-        Q: TryInto<Quantity, Error = QuantityValidationError>,
+        Q: TryInto<OrderQuantity, Error = QuantityValidationError>,
     {
         Ok(Self::Quantity(value.try_into()?))
     }
@@ -106,9 +106,9 @@ impl TradeSize {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::{TradeSize, Quantity, Price, Leverage};
+    /// use lnm_sdk::api_v3::models::{TradeSize, OrderQuantity, Price, Leverage};
     ///
-    /// let size = TradeSize::from(Quantity::try_from(1_000).unwrap());
+    /// let size = TradeSize::from(OrderQuantity::try_from(1_000).unwrap());
     /// let price = Price::try_from(100_000.0).unwrap();
     /// let leverage = Leverage::try_from(10.0).unwrap();
     ///
@@ -118,10 +118,10 @@ impl TradeSize {
         &self,
         price: Price,
         leverage: Leverage,
-    ) -> Result<(Quantity, Margin), QuantityValidationError> {
+    ) -> Result<(OrderQuantity, Margin), QuantityValidationError> {
         match self {
             TradeSize::Margin(margin) => {
-                let quantity = Quantity::try_calculate(*margin, price, leverage)?;
+                let quantity = OrderQuantity::try_calculate(*margin, price, leverage)?;
                 Ok((quantity, *margin))
             }
             TradeSize::Quantity(quantity) => {
@@ -132,8 +132,8 @@ impl TradeSize {
     }
 }
 
-impl From<Quantity> for TradeSize {
-    fn from(quantity: Quantity) -> Self {
+impl From<OrderQuantity> for TradeSize {
+    fn from(quantity: OrderQuantity) -> Self {
         TradeSize::Quantity(quantity)
     }
 }

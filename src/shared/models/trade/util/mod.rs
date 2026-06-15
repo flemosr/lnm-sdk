@@ -6,7 +6,7 @@ use super::super::{
     leverage::Leverage,
     margin::Margin,
     price::{PercentageCapped, Price},
-    quantity::Quantity,
+    quantity::OrderQuantity,
     trade::{TradeQuantity, TradeSide, TradeSize},
 };
 
@@ -22,8 +22,8 @@ pub fn est_liquidation_from_leverage(
     leverage: Leverage,
 ) -> Price {
     // The `Margin::try_calculate` shouldn't be used here since 'ceil' is
-    // used there to achive a `Margin` that would result in the same `Quantity`
-    // input via `Quantity::try_calculate`. Said rounding would reduce the
+    // used there to achive a `Margin` that would result in the same `OrderQuantity`
+    // input via `OrderQuantity::try_calculate`. Said rounding would reduce the
     // corresponding liquidation contraint
     // Here, `floor` is used in order to *understate* the margin, resulting in
     // a more conservative liquidation price. As of May 4 2025, this approach
@@ -84,7 +84,7 @@ pub fn evaluate_open_trade_params(
     stoploss: Option<Price>,
     takeprofit: Option<Price>,
     fee_perc: PercentageCapped,
-) -> Result<(Quantity, Margin, Price, u64, u64), TradeValidationError> {
+) -> Result<(OrderQuantity, Margin, Price, u64, u64), TradeValidationError> {
     let (quantity, margin) = size
         .to_quantity_and_margin(entry_price, leverage)
         .map_err(TradeValidationError::TradeParamsInvalidQuantity)?;
@@ -286,7 +286,7 @@ pub fn evaluate_new_stoploss(
 /// additional collateral to a position.
 pub fn evaluate_added_margin(
     side: TradeSide,
-    quantity: Quantity,
+    quantity: OrderQuantity,
     price: Price,
     current_margin: Margin,
     amount: NonZeroU64,
@@ -310,7 +310,7 @@ pub fn evaluate_added_margin(
 /// Updates or clears the stop-loss if it becomes invalid after the cash-in.
 pub fn evaluate_cash_in(
     side: TradeSide,
-    quantity: Quantity,
+    quantity: OrderQuantity,
     margin: Margin,
     price: Price,
     stoploss: Option<Price>,

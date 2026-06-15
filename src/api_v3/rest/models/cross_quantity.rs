@@ -3,7 +3,7 @@ use std::{convert::TryFrom, fmt, num::NonZeroU64};
 use serde::{Deserialize, Serialize, de};
 
 use crate::shared::models::{
-    SATS_PER_BTC, margin::Margin, price::Price, quantity::Quantity, trade::TradeQuantity,
+    SATS_PER_BTC, margin::Margin, price::Price, quantity::OrderQuantity, trade::TradeQuantity,
 };
 
 use super::{cross_leverage::CrossLeverage, error::CrossQuantityValidationError};
@@ -215,9 +215,9 @@ impl TradeQuantity for CrossQuantity {
     }
 }
 
-impl From<Quantity> for CrossQuantity {
-    fn from(value: Quantity) -> Self {
-        // Quantity::MAX is less than CrossQuantity::HARD_MAX.
+impl From<OrderQuantity> for CrossQuantity {
+    fn from(value: OrderQuantity) -> Self {
+        // OrderQuantity::MAX is less than CrossQuantity::HARD_MAX.
         Self::try_from(value.as_u64()).expect("must be valid")
     }
 }

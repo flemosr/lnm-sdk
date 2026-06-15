@@ -7,7 +7,7 @@ use super::{
     error::{MarginValidationError, TradeValidationError},
     leverage::Leverage,
     price::Price,
-    quantity::Quantity,
+    quantity::OrderQuantity,
     trade::{TradeQuantity, TradeSide},
 };
 
@@ -169,15 +169,15 @@ impl Margin {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::{Margin, Quantity, Price, Leverage};
+    /// use lnm_sdk::api_v3::models::{Margin, OrderQuantity, Price, Leverage};
     ///
-    /// let quantity = Quantity::try_from(1_000).unwrap();
+    /// let quantity = OrderQuantity::try_from(1_000).unwrap();
     /// let price = Price::try_from(100_000.0).unwrap();
     /// let leverage = Leverage::try_from(10.0).unwrap();
     ///
     /// let margin = Margin::calculate(quantity, price, leverage);
     /// ```
-    pub fn calculate(quantity: Quantity, price: Price, leverage: Leverage) -> Self {
+    pub fn calculate(quantity: OrderQuantity, price: Price, leverage: Leverage) -> Self {
         let margin = quantity.as_f64() * (SATS_PER_BTC / (price.as_f64() * leverage.as_f64()));
 
         Self::try_from(margin.ceil() as u64).expect("must result in valid `Margin`")
@@ -194,9 +194,9 @@ impl Margin {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::{Margin, Quantity, Price, TradeSide};
+    /// use lnm_sdk::api_v3::models::{Margin, OrderQuantity, Price, TradeSide};
     ///
-    /// let quantity = Quantity::try_from(1_000).unwrap();
+    /// let quantity = OrderQuantity::try_from(1_000).unwrap();
     /// let entry_price = Price::try_from(100_000.0).unwrap();
     /// let liquidation_price = Price::try_from(95_000.0).unwrap();
     ///
@@ -479,7 +479,7 @@ mod tests {
 
     #[test]
     fn test_calculate_margin() {
-        let quantity = Quantity::try_from(5).unwrap();
+        let quantity = OrderQuantity::try_from(5).unwrap();
         let price = Price::try_from(95000).unwrap();
         let leverage = Leverage::try_from(1.0).unwrap();
 
@@ -499,11 +499,11 @@ mod tests {
         assert_eq!(margin.as_u64(), 53);
 
         // Edge case: Min margin
-        let margin = Margin::calculate(Quantity::MIN, Price::MAX, Leverage::MAX);
+        let margin = Margin::calculate(OrderQuantity::MIN, Price::MAX, Leverage::MAX);
         assert_eq!(margin, Margin::MIN);
 
         // Edge case: Max reachable margin
-        let margin = Margin::calculate(Quantity::MAX, Price::MIN, Leverage::MIN);
+        let margin = Margin::calculate(OrderQuantity::MAX, Price::MIN, Leverage::MIN);
         assert_eq!(margin.as_u64(), 50_000_000_000_000);
     }
 
@@ -512,7 +512,7 @@ mod tests {
         // Test case 1: Buy side with low leverage
 
         let side = TradeSide::Buy;
-        let quantity = Quantity::try_from(1_000).unwrap();
+        let quantity = OrderQuantity::try_from(1_000).unwrap();
         let entry_price = Price::try_from(100_000).unwrap();
         let leverage = Leverage::MIN;
 

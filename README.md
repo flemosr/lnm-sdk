@@ -77,7 +77,7 @@ For more complete public API examples, see the
 ```rust,ignore
 use lnm_sdk::api_v3::{
     RestClient, RestClientConfig,
-    models::{Leverage, Quantity, TradeExecution, TradeSide, TradeSize},
+    models::{Leverage, OrderQuantity, TradeExecution, TradeSide, TradeSize},
 };
 
 // ...
@@ -103,7 +103,7 @@ let trade = rest
     .futures_isolated
     .new_trade(
         TradeSide::Buy,
-        TradeSize::from(Quantity::try_from(1)?), // 1 USD
+        TradeSize::from(OrderQuantity::try_from(1)?), // 1 USD
         Leverage::try_from(30)?,                 // 30x leverage
         TradeExecution::Market,
         None, // stoploss
@@ -123,7 +123,7 @@ let _new_order = rest
     .futures_cross
     .place_order(
         TradeSide::Buy,
-        Quantity::try_from(1)?, // 1 USD
+        OrderQuantity::try_from(1)?, // 1 USD
         TradeExecution::Market,
         None, // client order id
     )

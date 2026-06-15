@@ -7,7 +7,7 @@ fn test_estimate_liquidation_price() {
     // Test case 1: Buy side with min leverage
 
     let side = TradeSide::Buy;
-    let quantity = Quantity::try_from(1_000).unwrap();
+    let quantity = OrderQuantity::try_from(1_000).unwrap();
     let entry_price = Price::try_from(110_000).unwrap();
     let leverage = Leverage::MIN;
 
@@ -19,7 +19,7 @@ fn test_estimate_liquidation_price() {
     // Test case 2: Buy side with max leverage
 
     let side = TradeSide::Buy;
-    let quantity = Quantity::try_from(1_000).unwrap();
+    let quantity = OrderQuantity::try_from(1_000).unwrap();
     let entry_price = Price::try_from(110_000).unwrap();
     let leverage = Leverage::MAX;
 
@@ -31,7 +31,7 @@ fn test_estimate_liquidation_price() {
     // Test case 3: Sell side with min leverage
 
     let side = TradeSide::Sell;
-    let quantity = Quantity::try_from(1_000).unwrap();
+    let quantity = OrderQuantity::try_from(1_000).unwrap();
     let entry_price = Price::try_from(110_000).unwrap();
     let leverage = Leverage::MIN;
 
@@ -43,7 +43,7 @@ fn test_estimate_liquidation_price() {
     // Test case 4: Sell side with max leverage
 
     let side = TradeSide::Sell;
-    let quantity = Quantity::try_from(1_000).unwrap();
+    let quantity = OrderQuantity::try_from(1_000).unwrap();
     let entry_price = Price::try_from(110_000).unwrap();
     let leverage = Leverage::MAX;
 
@@ -56,7 +56,7 @@ fn test_estimate_liquidation_price() {
 #[test]
 fn test_estimate_liquidation_price_accepts_trade_quantities() {
     let side = TradeSide::Buy;
-    let quantity = Quantity::try_from(1_000).unwrap();
+    let quantity = OrderQuantity::try_from(1_000).unwrap();
     let cross_quantity = CrossQuantity::try_from(1_000).unwrap();
     let entry_price = Price::try_from(110_000).unwrap();
     let leverage = Leverage::MAX;
@@ -104,7 +104,7 @@ fn get_lnm_fee() -> PercentageCapped {
 #[test]
 fn test_long_stoploss_validation() {
     let side = TradeSide::Buy;
-    let size = Quantity::try_from(10).unwrap().into();
+    let size = OrderQuantity::try_from(10).unwrap().into();
     let leverage = Leverage::try_from(10.0).unwrap();
     let entry_price = Price::try_from(90_000.0).unwrap();
     let takeprofit = None;
@@ -175,7 +175,7 @@ fn test_long_stoploss_validation() {
 #[test]
 fn test_long_takeprofit_validation() {
     let side = TradeSide::Buy;
-    let size = Quantity::try_from(10).unwrap().into();
+    let size = OrderQuantity::try_from(10).unwrap().into();
     let leverage = Leverage::try_from(10.0).unwrap();
     let entry_price = Price::try_from(90_000.0).unwrap();
     let stoploss = None;
@@ -230,7 +230,7 @@ fn test_long_takeprofit_validation() {
 #[test]
 fn test_short_stoploss_validation() {
     let side = TradeSide::Sell;
-    let size = Quantity::try_from(10).unwrap().into();
+    let size = OrderQuantity::try_from(10).unwrap().into();
     let leverage = Leverage::try_from(10.0).unwrap();
     let entry_price = Price::try_from(90_000.0).unwrap();
     let takeprofit = None;
@@ -285,7 +285,7 @@ fn test_short_stoploss_validation() {
 #[test]
 fn test_short_takeprofit_validation() {
     let side = TradeSide::Sell;
-    let size = Quantity::try_from(10).unwrap().into();
+    let size = OrderQuantity::try_from(10).unwrap().into();
     let leverage = Leverage::try_from(10.0).unwrap();
     let entry_price = Price::try_from(90_000.0).unwrap();
     let stoploss = None;
@@ -340,7 +340,7 @@ fn test_short_takeprofit_validation() {
 #[test]
 fn test_pl_long_profit() {
     let side = TradeSide::Buy;
-    let quantity = Quantity::try_from(10).unwrap();
+    let quantity = OrderQuantity::try_from(10).unwrap();
     let start_price = Price::try_from(50_000.0).unwrap();
     let end_price = Price::try_from(55_000.0).unwrap();
 
@@ -359,7 +359,7 @@ fn test_pl_long_profit() {
 #[test]
 fn test_pl_long_loss() {
     let side = TradeSide::Buy;
-    let quantity = Quantity::try_from(10).unwrap();
+    let quantity = OrderQuantity::try_from(10).unwrap();
     let start_price = Price::try_from(50_000.0).unwrap();
     let end_price = Price::try_from(46_000.0).unwrap();
 
@@ -378,7 +378,7 @@ fn test_pl_long_loss() {
 #[test]
 fn test_pl_short_profit() {
     let side = TradeSide::Sell;
-    let quantity = Quantity::try_from(10).unwrap();
+    let quantity = OrderQuantity::try_from(10).unwrap();
     let start_price = Price::try_from(50_000.0).unwrap();
     let end_price = Price::try_from(45_000.0).unwrap();
 
@@ -397,7 +397,7 @@ fn test_pl_short_profit() {
 #[test]
 fn test_pl_short_loss() {
     let side = TradeSide::Sell;
-    let quantity = Quantity::try_from(10).unwrap();
+    let quantity = OrderQuantity::try_from(10).unwrap();
     let start_price = Price::try_from(50_000.0).unwrap();
     let end_price = Price::try_from(55_000.0).unwrap();
 
@@ -416,7 +416,7 @@ fn test_pl_short_loss() {
 #[test]
 fn test_pl_no_price_movement() {
     let side = TradeSide::Buy;
-    let quantity = Quantity::try_from(10).unwrap();
+    let quantity = OrderQuantity::try_from(10).unwrap();
     let start_price = Price::try_from(50_000.0).unwrap();
     let end_price = start_price; // No price movement
 
@@ -435,7 +435,7 @@ fn test_pl_no_price_movement() {
 #[test]
 fn test_pl_edge_case_small_prices() {
     let side = TradeSide::Buy;
-    let quantity = Quantity::try_from(1).unwrap();
+    let quantity = OrderQuantity::try_from(1).unwrap();
     let start_price = Price::try_from(1.0).unwrap();
     let end_price = Price::try_from(1.5).unwrap();
 
@@ -454,7 +454,7 @@ fn test_pl_edge_case_small_prices() {
 #[test]
 fn test_pl_edge_case_big_prices() {
     let side = TradeSide::Buy;
-    let quantity = Quantity::MAX;
+    let quantity = OrderQuantity::MAX;
     let start_price = Price::try_from(95_000_000).unwrap();
     let end_price = Price::try_from(100_000_000.).unwrap();
 
@@ -473,7 +473,7 @@ fn test_pl_edge_case_big_prices() {
 #[test]
 fn test_pl_edge_case_min_quantity() {
     let side = TradeSide::Buy;
-    let quantity = Quantity::try_from(1).unwrap();
+    let quantity = OrderQuantity::try_from(1).unwrap();
     let start_price = Price::try_from(50_000.0).unwrap();
     let end_price = Price::try_from(55_000.0).unwrap();
 
@@ -492,7 +492,7 @@ fn test_pl_edge_case_min_quantity() {
 #[test]
 fn test_pl_edge_case_max_quantity() {
     let side = TradeSide::Buy;
-    let quantity = Quantity::try_from(500_000).unwrap();
+    let quantity = OrderQuantity::try_from(500_000).unwrap();
     let start_price = Price::try_from(50_000.0).unwrap();
     let end_price = Price::try_from(50_500.0).unwrap();
 
@@ -511,7 +511,7 @@ fn test_pl_edge_case_max_quantity() {
 #[test]
 fn test_added_margin_long_position() {
     let side = TradeSide::Buy;
-    let quantity = Quantity::try_from(1_000).unwrap();
+    let quantity = OrderQuantity::try_from(1_000).unwrap();
     let price = Price::try_from(50_000.0).unwrap();
     let original_leverage = Leverage::try_from(50.).unwrap();
     let original_margin = Margin::calculate(quantity, price, original_leverage);
@@ -531,7 +531,7 @@ fn test_added_margin_long_position() {
 #[test]
 fn test_added_margin_short_position() {
     let side = TradeSide::Sell;
-    let quantity = Quantity::try_from(1_000).unwrap();
+    let quantity = OrderQuantity::try_from(1_000).unwrap();
     let price = Price::try_from(50_000.0).unwrap();
     let original_leverage = Leverage::try_from(50.).unwrap();
     let original_margin = Margin::calculate(quantity, price, original_leverage);
@@ -551,7 +551,7 @@ fn test_added_margin_short_position() {
 #[test]
 fn test_cash_in_from_long_profit() {
     let side = TradeSide::Buy;
-    let quantity = Quantity::try_from(1_000).unwrap();
+    let quantity = OrderQuantity::try_from(1_000).unwrap();
     let original_price = Price::try_from(100_000.0).unwrap();
     let original_leverage = Leverage::try_from(10.).unwrap();
     let original_margin = Margin::calculate(quantity, original_price, original_leverage);
@@ -678,7 +678,7 @@ fn test_cash_in_from_long_profit() {
 #[test]
 fn test_cash_in_from_long_loss() {
     let side = TradeSide::Buy;
-    let quantity = Quantity::try_from(1_000).unwrap();
+    let quantity = OrderQuantity::try_from(1_000).unwrap();
     let original_price = Price::try_from(100_000.0).unwrap();
     let original_leverage = Leverage::try_from(10.).unwrap();
     let original_margin = Margin::calculate(quantity, original_price, original_leverage);
@@ -731,7 +731,7 @@ fn test_cash_in_from_long_loss() {
 #[test]
 fn test_cash_in_from_short_profit() {
     let side = TradeSide::Sell;
-    let quantity = Quantity::try_from(1_000).unwrap();
+    let quantity = OrderQuantity::try_from(1_000).unwrap();
     let original_price = Price::try_from(100_000.0).unwrap();
     let original_leverage = Leverage::try_from(10.).unwrap();
     let original_margin = Margin::calculate(quantity, original_price, original_leverage);
@@ -858,7 +858,7 @@ fn test_cash_in_from_short_profit() {
 #[test]
 fn test_cash_in_from_short_loss() {
     let side = TradeSide::Sell;
-    let quantity = Quantity::try_from(1_000).unwrap();
+    let quantity = OrderQuantity::try_from(1_000).unwrap();
     let original_price = Price::try_from(100_000.0).unwrap();
     let original_leverage = Leverage::try_from(10.).unwrap();
     let original_margin = Margin::calculate(quantity, original_price, original_leverage);
@@ -911,7 +911,7 @@ fn test_cash_in_from_short_loss() {
 #[test]
 fn test_collateral_delta_estimation_long_profit_leverage_up() {
     let side = TradeSide::Buy;
-    let quantity = Quantity::try_from(1_000).unwrap();
+    let quantity = OrderQuantity::try_from(1_000).unwrap();
     let original_price = Price::try_from(100_000.0).unwrap();
     let original_leverage = Leverage::try_from(10.0).unwrap();
     let original_margin = Margin::calculate(quantity, original_price, original_leverage);
@@ -1001,7 +1001,7 @@ fn test_collateral_delta_estimation_long_profit_leverage_up() {
 #[test]
 fn test_collateral_delta_estimation_long_profit_leverage_down() {
     let side = TradeSide::Buy;
-    let quantity = Quantity::try_from(1_000).unwrap();
+    let quantity = OrderQuantity::try_from(1_000).unwrap();
     let original_price = Price::try_from(100_000.0).unwrap();
     let original_leverage = Leverage::try_from(10.0).unwrap();
     let original_margin = Margin::calculate(quantity, original_price, original_leverage);
@@ -1053,7 +1053,7 @@ fn test_collateral_delta_estimation_long_profit_leverage_down() {
 #[test]
 fn test_collateral_delta_estimation_short_profit_leverage_up() {
     let side = TradeSide::Sell;
-    let quantity = Quantity::try_from(1_000).unwrap();
+    let quantity = OrderQuantity::try_from(1_000).unwrap();
     let original_price = Price::try_from(100_000.0).unwrap();
     let original_leverage = Leverage::try_from(10.0).unwrap();
     let original_margin = Margin::calculate(quantity, original_price, original_leverage);
@@ -1143,7 +1143,7 @@ fn test_collateral_delta_estimation_short_profit_leverage_up() {
 #[test]
 fn test_collateral_delta_estimation_short_profit_leverage_down() {
     let side = TradeSide::Sell;
-    let quantity = Quantity::try_from(1_000).unwrap();
+    let quantity = OrderQuantity::try_from(1_000).unwrap();
     let original_price = Price::try_from(100_000.0).unwrap();
     let original_leverage = Leverage::try_from(10.0).unwrap();
     let original_margin = Margin::calculate(quantity, original_price, original_leverage);

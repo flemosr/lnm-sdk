@@ -13,63 +13,67 @@ use super::{
 
 /// A validated quantity value denominated in USD.
 ///
-/// Quantity represents the notional value of a trading position in USD.
+/// OrderQuantity represents the notional value of a trading position in USD.
 /// This type ensures that quantity values are within acceptable bounds and can be safely used when
 /// trading futures.
 ///
-/// Quantity values must be:
+/// OrderQuantity values must be:
 /// + Integer values (whole USD amounts)
-/// + Greater than or equal to [`Quantity::MIN`] (1 USD)
-/// + Less than or equal to [`Quantity::MAX`] (500,000 USD)
+/// + Greater than or equal to [`OrderQuantity::MIN`] (1 USD)
+/// + Less than or equal to [`OrderQuantity::MAX`] (500,000 USD)
 ///
 /// # Examples
 ///
 /// ```
-/// use lnm_sdk::api_v3::models::Quantity;
+/// use lnm_sdk::api_v3::models::OrderQuantity;
 ///
 /// // Create a quantity value from USD amount
-/// let quantity = Quantity::try_from(1_000).unwrap();
+/// let quantity = OrderQuantity::try_from(1_000).unwrap();
 /// assert_eq!(quantity.as_u64(), 1_000);
 ///
 /// // Values outside the valid range will fail
-/// assert!(Quantity::try_from(0).is_err());
-/// assert!(Quantity::try_from(600_000).is_err());
+/// assert!(OrderQuantity::try_from(0).is_err());
+/// assert!(OrderQuantity::try_from(600_000).is_err());
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Quantity(u64);
+pub struct OrderQuantity(u64);
 
-impl Quantity {
+/// Deprecated compatibility alias for [`OrderQuantity`].
+#[deprecated(note = "use OrderQuantity")]
+pub type Quantity = OrderQuantity;
+
+impl OrderQuantity {
     /// The minimum allowed quantity value (1 USD).
     pub const MIN: Self = Self(1);
 
     /// The maximum allowed quantity value (500,000 USD).
     pub const MAX: Self = Self(500_000);
 
-    /// Creates a `Quantity` by rounding and bounding the given value to the valid range.
+    /// Creates a `OrderQuantity` by rounding and bounding the given value to the valid range.
     ///
     /// This method rounds the input to the nearest integer and bounds it to the range
-    /// ([Quantity::MIN], [Quantity::MAX]).
-    /// It should be used to ensure a valid `Quantity` without error handling.
+    /// ([OrderQuantity::MIN], [OrderQuantity::MAX]).
+    /// It should be used to ensure a valid `OrderQuantity` without error handling.
     ///
     /// **Note:** In order to check whether a value is a valid quantity and receive an error for
-    /// invalid values, use [`Quantity::try_from`].
+    /// invalid values, use [`OrderQuantity::try_from`].
     ///
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Quantity;
+    /// use lnm_sdk::api_v3::models::OrderQuantity;
     ///
     /// // Values within range are rounded
-    /// let q = Quantity::bounded(1_234.7);
+    /// let q = OrderQuantity::bounded(1_234.7);
     /// assert_eq!(q.as_u64(), 1_235);
     ///
     /// // Values below minimum are bounded to MIN
-    /// let q = Quantity::bounded(-1);
-    /// assert_eq!(q, Quantity::MIN);
+    /// let q = OrderQuantity::bounded(-1);
+    /// assert_eq!(q, OrderQuantity::MIN);
     ///
     /// // Values above maximum are bounded to MAX
-    /// let q = Quantity::bounded(600_000);
-    /// assert_eq!(q, Quantity::MAX);
+    /// let q = OrderQuantity::bounded(600_000);
+    /// assert_eq!(q, OrderQuantity::MAX);
     /// ```
     pub fn bounded<T>(value: T) -> Self
     where
@@ -87,9 +91,9 @@ impl Quantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Quantity;
+    /// use lnm_sdk::api_v3::models::OrderQuantity;
     ///
-    /// let quantity = Quantity::try_from(1_000).unwrap();
+    /// let quantity = OrderQuantity::try_from(1_000).unwrap();
     /// assert_eq!(quantity.as_u64(), 1_000);
     /// ```
     pub fn as_u64(&self) -> u64 {
@@ -101,9 +105,9 @@ impl Quantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Quantity;
+    /// use lnm_sdk::api_v3::models::OrderQuantity;
     ///
-    /// let quantity = Quantity::try_from(1_000).unwrap();
+    /// let quantity = OrderQuantity::try_from(1_000).unwrap();
     /// assert_eq!(quantity.as_f64(), 1_000.0);
     /// ```
     pub fn as_f64(&self) -> f64 {
@@ -115,10 +119,10 @@ impl Quantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Quantity;
+    /// use lnm_sdk::api_v3::models::OrderQuantity;
     ///
-    /// let base = Quantity::try_from(1_000).unwrap();
-    /// let added = Quantity::try_from(500).unwrap();
+    /// let base = OrderQuantity::try_from(1_000).unwrap();
+    /// let added = OrderQuantity::try_from(500).unwrap();
     ///
     /// let total = base.try_add(added).unwrap();
     /// assert_eq!(total.as_u64(), 1_500);
@@ -134,10 +138,10 @@ impl Quantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Quantity;
+    /// use lnm_sdk::api_v3::models::OrderQuantity;
     ///
-    /// let base = Quantity::try_from(1_000).unwrap();
-    /// let removed = Quantity::try_from(500).unwrap();
+    /// let base = OrderQuantity::try_from(1_000).unwrap();
+    /// let removed = OrderQuantity::try_from(500).unwrap();
     ///
     /// let remaining = base.try_sub(removed).unwrap();
     /// assert_eq!(remaining.as_u64(), 500);
@@ -157,13 +161,13 @@ impl Quantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::{Quantity, Margin, Price, Leverage};
+    /// use lnm_sdk::api_v3::models::{OrderQuantity, Margin, Price, Leverage};
     ///
     /// let margin = Margin::try_from(10_000).unwrap(); // Margin in sats
     /// let price = Price::try_from(100_000.0).unwrap(); // Price in USD/BTC
     /// let leverage = Leverage::try_from(10.0).unwrap();
     ///
-    /// let quantity = Quantity::try_calculate(margin, price, leverage).unwrap();
+    /// let quantity = OrderQuantity::try_calculate(margin, price, leverage).unwrap();
     ///
     /// assert_eq!(quantity.as_u64(), 100); // 100 [USD]
     /// ```
@@ -185,13 +189,13 @@ impl Quantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::{Quantity, Price, PercentageCapped};
+    /// use lnm_sdk::api_v3::models::{OrderQuantity, Price, PercentageCapped};
     ///
     /// let balance = 10_000_000; // In sats
     /// let market_price = Price::try_from(100_000.0).unwrap(); // Price in USD/BTC
     /// let balance_perc = PercentageCapped::try_from(10.0).unwrap(); // 10%
     ///
-    /// let quantity = Quantity::try_from_balance_perc(
+    /// let quantity = OrderQuantity::try_from_balance_perc(
     ///     balance,
     ///     market_price,
     ///     balance_perc
@@ -207,29 +211,29 @@ impl Quantity {
         let balance_usd = balance as f64 * market_price.as_f64() / SATS_PER_BTC;
         let quantity_target = balance_usd * balance_perc.as_f64() / 100.;
 
-        Quantity::try_from(quantity_target.floor())
+        OrderQuantity::try_from(quantity_target.floor())
     }
 }
 
-impl TradeQuantity for Quantity {
+impl TradeQuantity for OrderQuantity {
     fn as_f64(&self) -> f64 {
         self.as_f64()
     }
 }
 
-impl From<Quantity> for u64 {
-    fn from(value: Quantity) -> Self {
+impl From<OrderQuantity> for u64 {
+    fn from(value: OrderQuantity) -> Self {
         value.0
     }
 }
 
-impl From<Quantity> for f64 {
-    fn from(value: Quantity) -> Self {
+impl From<OrderQuantity> for f64 {
+    fn from(value: OrderQuantity) -> Self {
         value.0 as f64
     }
 }
 
-impl TryFrom<u8> for Quantity {
+impl TryFrom<u8> for OrderQuantity {
     type Error = QuantityValidationError;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
@@ -237,7 +241,7 @@ impl TryFrom<u8> for Quantity {
     }
 }
 
-impl TryFrom<u16> for Quantity {
+impl TryFrom<u16> for OrderQuantity {
     type Error = QuantityValidationError;
 
     fn try_from(value: u16) -> Result<Self, Self::Error> {
@@ -245,7 +249,7 @@ impl TryFrom<u16> for Quantity {
     }
 }
 
-impl TryFrom<u32> for Quantity {
+impl TryFrom<u32> for OrderQuantity {
     type Error = QuantityValidationError;
 
     fn try_from(value: u32) -> Result<Self, Self::Error> {
@@ -253,7 +257,7 @@ impl TryFrom<u32> for Quantity {
     }
 }
 
-impl TryFrom<u64> for Quantity {
+impl TryFrom<u64> for OrderQuantity {
     type Error = QuantityValidationError;
 
     fn try_from(value: u64) -> Result<Self, Self::Error> {
@@ -265,11 +269,11 @@ impl TryFrom<u64> for Quantity {
             return Err(QuantityValidationError::TooHigh { value });
         }
 
-        Ok(Quantity(value))
+        Ok(OrderQuantity(value))
     }
 }
 
-impl TryFrom<i8> for Quantity {
+impl TryFrom<i8> for OrderQuantity {
     type Error = QuantityValidationError;
 
     fn try_from(value: i8) -> Result<Self, Self::Error> {
@@ -277,7 +281,7 @@ impl TryFrom<i8> for Quantity {
     }
 }
 
-impl TryFrom<i16> for Quantity {
+impl TryFrom<i16> for OrderQuantity {
     type Error = QuantityValidationError;
 
     fn try_from(value: i16) -> Result<Self, Self::Error> {
@@ -285,7 +289,7 @@ impl TryFrom<i16> for Quantity {
     }
 }
 
-impl TryFrom<i32> for Quantity {
+impl TryFrom<i32> for OrderQuantity {
     type Error = QuantityValidationError;
 
     fn try_from(quantity: i32) -> Result<Self, Self::Error> {
@@ -293,7 +297,7 @@ impl TryFrom<i32> for Quantity {
     }
 }
 
-impl TryFrom<i64> for Quantity {
+impl TryFrom<i64> for OrderQuantity {
     type Error = QuantityValidationError;
 
     fn try_from(value: i64) -> Result<Self, Self::Error> {
@@ -301,7 +305,7 @@ impl TryFrom<i64> for Quantity {
     }
 }
 
-impl TryFrom<usize> for Quantity {
+impl TryFrom<usize> for OrderQuantity {
     type Error = QuantityValidationError;
 
     fn try_from(value: usize) -> Result<Self, Self::Error> {
@@ -309,7 +313,7 @@ impl TryFrom<usize> for Quantity {
     }
 }
 
-impl TryFrom<isize> for Quantity {
+impl TryFrom<isize> for OrderQuantity {
     type Error = QuantityValidationError;
 
     fn try_from(value: isize) -> Result<Self, Self::Error> {
@@ -317,7 +321,7 @@ impl TryFrom<isize> for Quantity {
     }
 }
 
-impl TryFrom<f32> for Quantity {
+impl TryFrom<f32> for OrderQuantity {
     type Error = QuantityValidationError;
 
     fn try_from(value: f32) -> Result<Self, Self::Error> {
@@ -325,7 +329,7 @@ impl TryFrom<f32> for Quantity {
     }
 }
 
-impl TryFrom<f64> for Quantity {
+impl TryFrom<f64> for OrderQuantity {
     type Error = QuantityValidationError;
 
     fn try_from(value: f64) -> Result<Self, Self::Error> {
@@ -337,13 +341,13 @@ impl TryFrom<f64> for Quantity {
     }
 }
 
-impl fmt::Display for Quantity {
+impl fmt::Display for OrderQuantity {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.0.fmt(f)
     }
 }
 
-impl Serialize for Quantity {
+impl Serialize for OrderQuantity {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -352,13 +356,13 @@ impl Serialize for Quantity {
     }
 }
 
-impl<'de> Deserialize<'de> for Quantity {
+impl<'de> Deserialize<'de> for OrderQuantity {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
         let quantity_u64 = u64::deserialize(deserializer)?;
-        Quantity::try_from(quantity_u64).map_err(|e| de::Error::custom(e.to_string()))
+        OrderQuantity::try_from(quantity_u64).map_err(|e| de::Error::custom(e.to_string()))
     }
 }
 
@@ -368,45 +372,51 @@ mod tests {
 
     #[test]
     fn test_try_add_quantity() {
-        let base = Quantity::try_from(1_000).unwrap();
-        let added = Quantity::try_from(500).unwrap();
+        let base = OrderQuantity::try_from(1_000).unwrap();
+        let added = OrderQuantity::try_from(500).unwrap();
 
         let total = base.try_add(added).unwrap();
 
-        assert_eq!(total, Quantity::try_from(1_500).unwrap());
+        assert_eq!(total, OrderQuantity::try_from(1_500).unwrap());
     }
 
     #[test]
     fn test_try_add_quantity_fails_above_max() {
-        let error = Quantity::MAX.try_add(Quantity::MIN).err().unwrap();
+        let error = OrderQuantity::MAX
+            .try_add(OrderQuantity::MIN)
+            .err()
+            .unwrap();
 
         assert!(matches!(
             error,
-            QuantityValidationError::TooHigh { value } if value == Quantity::MAX.as_u64() + Quantity::MIN.as_u64()
+            QuantityValidationError::TooHigh { value } if value == OrderQuantity::MAX.as_u64() + OrderQuantity::MIN.as_u64()
         ));
     }
 
     #[test]
     fn test_try_sub_quantity() {
-        let base = Quantity::try_from(1_000).unwrap();
-        let removed = Quantity::try_from(500).unwrap();
+        let base = OrderQuantity::try_from(1_000).unwrap();
+        let removed = OrderQuantity::try_from(500).unwrap();
 
         let remaining = base.try_sub(removed).unwrap();
 
-        assert_eq!(remaining, Quantity::try_from(500).unwrap());
+        assert_eq!(remaining, OrderQuantity::try_from(500).unwrap());
     }
 
     #[test]
     fn test_try_sub_quantity_fails_below_min() {
-        let error = Quantity::MIN.try_sub(Quantity::MIN).err().unwrap();
+        let error = OrderQuantity::MIN
+            .try_sub(OrderQuantity::MIN)
+            .err()
+            .unwrap();
 
         assert!(matches!(
             error,
             QuantityValidationError::TooLow { value } if value == 0
         ));
 
-        let error = Quantity::MIN
-            .try_sub(Quantity::try_from(2).unwrap())
+        let error = OrderQuantity::MIN
+            .try_sub(OrderQuantity::try_from(2).unwrap())
             .err()
             .unwrap();
 
@@ -422,35 +432,35 @@ mod tests {
         let price = Price::try_from(100_000).unwrap();
         let leverage = Leverage::try_from(1.0).unwrap();
 
-        let quantity = Quantity::try_calculate(margin, price, leverage).unwrap();
-        assert_eq!(quantity, Quantity::MIN);
+        let quantity = OrderQuantity::try_calculate(margin, price, leverage).unwrap();
+        assert_eq!(quantity, OrderQuantity::MIN);
 
         let margin = Margin::try_from(700).unwrap();
         let price = Price::try_from(100_000).unwrap();
         let leverage = Leverage::try_from(2.0).unwrap();
 
-        let quantity = Quantity::try_calculate(margin, price, leverage).unwrap();
-        assert_eq!(quantity, Quantity::MIN);
+        let quantity = OrderQuantity::try_calculate(margin, price, leverage).unwrap();
+        assert_eq!(quantity, OrderQuantity::MIN);
 
         let margin = Margin::try_from(10).unwrap();
         let price = Price::try_from(100_000).unwrap();
         let leverage = Leverage::try_from(100.0).unwrap();
 
-        let quantity = Quantity::try_calculate(margin, price, leverage).unwrap();
-        assert_eq!(quantity, Quantity::MIN);
+        let quantity = OrderQuantity::try_calculate(margin, price, leverage).unwrap();
+        assert_eq!(quantity, OrderQuantity::MIN);
 
         let margin = Margin::try_from(5_000_000).unwrap();
         let price = Price::try_from(100_000).unwrap();
         let leverage = Leverage::try_from(100.0).unwrap();
 
-        let quantity = Quantity::try_calculate(margin, price, leverage).unwrap();
-        assert_eq!(quantity, Quantity::MAX);
+        let quantity = OrderQuantity::try_calculate(margin, price, leverage).unwrap();
+        assert_eq!(quantity, OrderQuantity::MAX);
 
         let margin = Margin::try_from(9).unwrap();
         let price = Price::try_from(100_000).unwrap();
         let leverage = Leverage::try_from(100.0).unwrap();
 
-        let quantity_validation_error = Quantity::try_calculate(margin, price, leverage)
+        let quantity_validation_error = OrderQuantity::try_calculate(margin, price, leverage)
             .err()
             .unwrap();
         assert!(matches!(
@@ -462,7 +472,7 @@ mod tests {
         let price = Price::try_from(100_000).unwrap();
         let leverage = Leverage::try_from(100.0).unwrap();
 
-        let quantity_validation_error = Quantity::try_calculate(margin, price, leverage)
+        let quantity_validation_error = OrderQuantity::try_calculate(margin, price, leverage)
             .err()
             .unwrap();
         assert!(matches!(

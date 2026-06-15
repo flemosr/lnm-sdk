@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 use crate::shared::{
     models::{
-        quantity::Quantity,
+        quantity::OrderQuantity,
         trade::{TradeExecution, TradeSide},
     },
     rest::{error::Result, lnm::base::LnmRestBase},
@@ -68,7 +68,7 @@ impl FuturesCrossRepository for LnmFuturesCrossRepository {
     async fn place_order(
         &self,
         side: TradeSide,
-        quantity: Quantity,
+        quantity: OrderQuantity,
         execution: TradeExecution,
         client_id: Option<ClientId>,
     ) -> Result<CrossOrder> {

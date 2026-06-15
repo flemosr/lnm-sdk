@@ -6,7 +6,7 @@ use crate::shared::{
     models::{
         margin::Margin,
         price::{Percentage, PercentageCapped},
-        quantity::Quantity,
+        quantity::OrderQuantity,
     },
     rest::lnm::rate_limit::RateLimiter,
 };
@@ -65,7 +65,7 @@ async fn test_create_short_trade_quantity_limit(
     ticker: &Ticker,
 ) -> Trade {
     let side = TradeSide::Sell;
-    let quantity = Quantity::try_from(1).unwrap();
+    let quantity = OrderQuantity::try_from(1).unwrap();
     let leverage = Leverage::try_from(1).unwrap();
     let discount_percentage = PercentageCapped::try_from(30).unwrap();
     let out_of_mkt_price = ticker
@@ -116,7 +116,7 @@ async fn test_create_long_trade_quantity_market(
     ticker: &Ticker,
 ) -> Trade {
     let side = TradeSide::Buy;
-    let quantity = Quantity::try_from(1).unwrap();
+    let quantity = OrderQuantity::try_from(1).unwrap();
     let leverage = Leverage::try_from(2).unwrap();
     let est_price = ticker.ask_price();
     let range_percentage = PercentageCapped::try_from(10).unwrap();
@@ -166,7 +166,7 @@ async fn test_create_long_trade_margin_limit(
     let leverage = Leverage::try_from(1).unwrap();
     let discount = PercentageCapped::try_from(30).unwrap();
     let out_of_mkt_price = ticker.ask_price().apply_discount(discount).unwrap();
-    let implied_qtd = Quantity::try_from(1).unwrap();
+    let implied_qtd = OrderQuantity::try_from(1).unwrap();
     let margin = Margin::calculate(implied_qtd, out_of_mkt_price, leverage);
     let discount = PercentageCapped::try_from(5).unwrap();
     let stoploss = Some(out_of_mkt_price.apply_discount(discount).unwrap());
@@ -217,7 +217,7 @@ async fn test_create_short_trade_margin_market(
 
     let side = TradeSide::Sell;
     let leverage = Leverage::try_from(1).unwrap();
-    let implied_qtd = Quantity::try_from(1).unwrap();
+    let implied_qtd = OrderQuantity::try_from(1).unwrap();
     let margin = Margin::calculate(implied_qtd, est_min_price, leverage);
     let est_price = ticker.ask_price();
     let range = PercentageCapped::try_from(10).unwrap();
