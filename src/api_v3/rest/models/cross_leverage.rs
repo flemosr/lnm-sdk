@@ -2,11 +2,9 @@ use std::{convert::TryFrom, fmt};
 
 use serde::{Deserialize, Serialize, de};
 
-use crate::shared::models::{
-    SATS_PER_BTC, leverage::Leverage, margin::Margin, price::Price, quantity::Quantity,
-};
+use crate::shared::models::{SATS_PER_BTC, leverage::Leverage, margin::Margin, price::Price};
 
-use super::error::CrossLeverageValidationError;
+use super::{cross_quantity::CrossQuantity, error::CrossLeverageValidationError};
 
 /// A validated leverage value for futures cross positions.
 ///
@@ -94,29 +92,30 @@ impl CrossLeverage {
         self.0
     }
 
-    /// Calculates the rounded leverage from quantity (USD), margin (sats), and price (BTC/USD).
+    /// Calculates the rounded leverage from quantity (USD), running margin (sats), and price (BTC/USD).
     ///
     /// The leverage is calculated using the formula:
     ///
-    /// leverage = (quantity * SATS_PER_BTC) / (margin * price)
+    /// leverage = (quantity * SATS_PER_BTC) / (running_margin * price)
     ///
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::{CrossLeverage, Quantity, Margin, Price};
+    /// use lnm_sdk::api_v3::models::{CrossLeverage, CrossQuantity, Margin, Price};
     ///
-    /// let quantity = Quantity::try_from(1_000).unwrap(); // Quantity in USD
-    /// let margin = Margin::try_from(20_000).unwrap(); // Margin in sats
+    /// let quantity = CrossQuantity::try_from(1_000).unwrap(); // Quantity in USD
+    /// let running_margin = Margin::try_from(20_000).unwrap(); // Running margin in sats
     /// let price = Price::try_from(100_000.0).unwrap(); // Price in USD/BTC
     ///
-    /// let leverage = CrossLeverage::try_calculate_rounded(quantity, margin, price).unwrap();
+    /// let leverage = CrossLeverage::try_calculate_rounded(quantity, running_margin, price).unwrap();
     /// ```
     pub fn try_calculate_rounded(
-        quantity: Quantity,
-        margin: Margin,
+        quantity: CrossQuantity,
+        running_margin: Margin,
         price: Price,
     ) -> Result<Self, CrossLeverageValidationError> {
-        let leverage_value = quantity.as_f64() * SATS_PER_BTC / (margin.as_f64() * price.as_f64());
+        let leverage_value =
+            quantity.as_f64() * SATS_PER_BTC / (running_margin.as_f64() * price.as_f64());
 
         Self::try_from(leverage_value.round())
     }
@@ -130,7 +129,7 @@ impl From<CrossLeverage> for u64 {
 
 impl From<CrossLeverage> for Leverage {
     fn from(value: CrossLeverage) -> Leverage {
-        Leverage::try_from(value.0 as f64).expect("Must be a valid `Leverage`")
+        Leverage::try_from(value.0 as f64).expect("Must be a valid `CrossLeverage`")
     }
 }
 
