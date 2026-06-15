@@ -78,7 +78,7 @@ impl CrossLeverage {
         Self(clamped)
     }
 
-    /// Returns the leverage value as its underlying `u64` representation.
+    /// Returns the cross leverage value as its underlying `u64` representation.
     ///
     /// # Examples
     ///
@@ -90,6 +90,20 @@ impl CrossLeverage {
     /// ```
     pub fn as_u64(&self) -> u64 {
         self.0
+    }
+
+    /// Returns the cross leverage value as a `f64`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lnm_sdk::api_v3::models::CrossLeverage;
+    ///
+    /// let leverage = CrossLeverage::try_from(10).unwrap();
+    /// assert_eq!(leverage.as_f64(), 10.0);
+    /// ```
+    pub fn as_f64(&self) -> f64 {
+        self.0 as f64
     }
 
     /// Calculates the rounded leverage from quantity (USD), running margin (sats), and price (BTC/USD).
@@ -127,9 +141,15 @@ impl From<CrossLeverage> for u64 {
     }
 }
 
+impl From<CrossLeverage> for f64 {
+    fn from(value: CrossLeverage) -> f64 {
+        value.as_f64()
+    }
+}
+
 impl From<CrossLeverage> for Leverage {
     fn from(value: CrossLeverage) -> Leverage {
-        Leverage::try_from(value.0 as f64).expect("Must be a valid `CrossLeverage`")
+        Leverage::try_from(value.as_f64()).expect("Must be a valid `Leverage`")
     }
 }
 
