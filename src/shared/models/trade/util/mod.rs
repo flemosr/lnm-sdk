@@ -15,7 +15,7 @@ use super::super::{
 /// Calculates the price at which a position would be liquidated based on the trade parameters.
 /// Uses a conservative calculation with floored margin to understate the margin, resulting in a
 /// more conservative liquidation price that matches values from the LNM platform.
-pub fn estimate_liquidation_price(
+pub fn est_liquidation_from_leverage(
     side: TradeSide,
     quantity: impl TradeQuantity,
     entry_price: Price,
@@ -89,7 +89,7 @@ pub fn evaluate_open_trade_params(
         .to_quantity_and_margin(entry_price, leverage)
         .map_err(TradeValidationError::TradeParamsInvalidQuantity)?;
 
-    let liquidation = estimate_liquidation_price(side, quantity, entry_price, leverage);
+    let liquidation = est_liquidation_from_leverage(side, quantity, entry_price, leverage);
 
     match side {
         TradeSide::Buy => {
@@ -296,7 +296,7 @@ pub fn evaluate_added_margin(
     let new_leverage = Leverage::try_calculate(quantity, new_margin, price)
         .map_err(TradeValidationError::AddedMarginInvalidLeverage)?;
 
-    let new_liquidation = estimate_liquidation_price(side, quantity, price, new_leverage);
+    let new_liquidation = est_liquidation_from_leverage(side, quantity, price, new_leverage);
 
     Ok((new_margin, new_leverage, new_liquidation))
 }
@@ -343,7 +343,7 @@ pub fn evaluate_cash_in(
 
     let new_leverage = Leverage::try_calculate(quantity, new_margin, new_price)
         .map_err(TradeValidationError::CashInInvalidLeverage)?;
-    let new_liquidation = estimate_liquidation_price(side, quantity, new_price, new_leverage);
+    let new_liquidation = est_liquidation_from_leverage(side, quantity, new_price, new_leverage);
 
     let new_stoploss = stoploss.and_then(|sl| {
         let valid = match side {

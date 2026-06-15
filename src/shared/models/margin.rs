@@ -423,7 +423,7 @@ mod tests {
         let leverage = Leverage::MIN;
 
         let liquidation_price =
-            trade_util::estimate_liquidation_price(side, quantity, entry_price, leverage);
+            trade_util::est_liquidation_from_leverage(side, quantity, entry_price, leverage);
         let margin =
             Margin::est_from_liquidation_price(side, quantity, entry_price, liquidation_price)
                 .expect("should calculate valid margin");
@@ -440,7 +440,7 @@ mod tests {
 
         let leverage = Leverage::MAX;
         let liquidation_price =
-            trade_util::estimate_liquidation_price(side, quantity, entry_price, leverage);
+            trade_util::est_liquidation_from_leverage(side, quantity, entry_price, leverage);
         let margin =
             Margin::est_from_liquidation_price(side, quantity, entry_price, liquidation_price)
                 .expect("should calculate valid margin");
@@ -458,7 +458,7 @@ mod tests {
         let side = TradeSide::Sell;
         let leverage = Leverage::MIN;
         let liquidation_price =
-            trade_util::estimate_liquidation_price(side, quantity, entry_price, leverage);
+            trade_util::est_liquidation_from_leverage(side, quantity, entry_price, leverage);
         let margin =
             Margin::est_from_liquidation_price(side, quantity, entry_price, liquidation_price)
                 .expect("should calculate valid margin");

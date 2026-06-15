@@ -11,7 +11,7 @@ fn test_estimate_liquidation_price() {
     let entry_price = Price::try_from(110_000).unwrap();
     let leverage = Leverage::MIN;
 
-    let liquidation_price = estimate_liquidation_price(side, quantity, entry_price, leverage);
+    let liquidation_price = est_liquidation_from_leverage(side, quantity, entry_price, leverage);
     let expected_liquidation_price = Price::try_from(55_000).unwrap();
 
     assert_eq!(liquidation_price, expected_liquidation_price);
@@ -23,7 +23,7 @@ fn test_estimate_liquidation_price() {
     let entry_price = Price::try_from(110_000).unwrap();
     let leverage = Leverage::MAX;
 
-    let liquidation_price = estimate_liquidation_price(side, quantity, entry_price, leverage);
+    let liquidation_price = est_liquidation_from_leverage(side, quantity, entry_price, leverage);
     let expected_liquidation_price = Price::try_from(108_911).unwrap();
 
     assert_eq!(liquidation_price, expected_liquidation_price);
@@ -35,7 +35,7 @@ fn test_estimate_liquidation_price() {
     let entry_price = Price::try_from(110_000).unwrap();
     let leverage = Leverage::MIN;
 
-    let liquidation_price = estimate_liquidation_price(side, quantity, entry_price, leverage);
+    let liquidation_price = est_liquidation_from_leverage(side, quantity, entry_price, leverage);
     let expected_liquidation_price = Price::MAX;
 
     assert_eq!(liquidation_price, expected_liquidation_price);
@@ -47,7 +47,7 @@ fn test_estimate_liquidation_price() {
     let entry_price = Price::try_from(110_000).unwrap();
     let leverage = Leverage::MAX;
 
-    let liquidation_price = estimate_liquidation_price(side, quantity, entry_price, leverage);
+    let liquidation_price = est_liquidation_from_leverage(side, quantity, entry_price, leverage);
     let expected_liquidation_price = Price::try_from(111_111).unwrap();
 
     assert_eq!(liquidation_price, expected_liquidation_price);
@@ -61,8 +61,8 @@ fn test_estimate_liquidation_price_accepts_trade_quantities() {
     let entry_price = Price::try_from(110_000).unwrap();
     let leverage = Leverage::MAX;
 
-    let _ = estimate_liquidation_price(side, quantity, entry_price, leverage);
-    let _ = estimate_liquidation_price(side, cross_quantity, entry_price, leverage);
+    let _ = est_liquidation_from_leverage(side, quantity, entry_price, leverage);
+    let _ = est_liquidation_from_leverage(side, cross_quantity, entry_price, leverage);
 }
 
 #[test]
@@ -523,7 +523,8 @@ fn test_added_margin_long_position() {
     assert_eq!(new_margin, original_margin + additional_margin.into());
     assert!(new_leverage < original_leverage);
 
-    let original_liquidation = estimate_liquidation_price(side, quantity, price, original_leverage);
+    let original_liquidation =
+        est_liquidation_from_leverage(side, quantity, price, original_leverage);
     assert!(new_liquidation < original_liquidation);
 }
 
@@ -542,7 +543,8 @@ fn test_added_margin_short_position() {
     assert_eq!(new_margin, original_margin + additional_margin.into());
     assert!(new_leverage < original_leverage);
 
-    let original_liquidation = estimate_liquidation_price(side, quantity, price, original_leverage);
+    let original_liquidation =
+        est_liquidation_from_leverage(side, quantity, price, original_leverage);
     assert!(new_liquidation > original_liquidation);
 }
 
@@ -555,7 +557,7 @@ fn test_cash_in_from_long_profit() {
     let original_margin = Margin::calculate(quantity, original_price, original_leverage);
 
     let original_liquidation =
-        estimate_liquidation_price(side, quantity, original_price, original_leverage);
+        est_liquidation_from_leverage(side, quantity, original_price, original_leverage);
     assert_eq!(original_liquidation.as_f64(), 90_909.0);
 
     let original_stoploss = Price::try_from(95_000.0).unwrap();
@@ -682,7 +684,7 @@ fn test_cash_in_from_long_loss() {
     let original_margin = Margin::calculate(quantity, original_price, original_leverage);
 
     let original_liquidation =
-        estimate_liquidation_price(side, quantity, original_price, original_leverage);
+        est_liquidation_from_leverage(side, quantity, original_price, original_leverage);
     assert_eq!(original_liquidation.as_f64(), 90_909.0);
 
     let original_stoploss = Price::try_from(95_000.0).unwrap();
@@ -735,7 +737,7 @@ fn test_cash_in_from_short_profit() {
     let original_margin = Margin::calculate(quantity, original_price, original_leverage);
 
     let original_liquidation =
-        estimate_liquidation_price(side, quantity, original_price, original_leverage);
+        est_liquidation_from_leverage(side, quantity, original_price, original_leverage);
     assert_eq!(original_liquidation.as_f64(), 111_111.0);
 
     let original_stoploss = Price::try_from(105_000.0).unwrap();
@@ -862,7 +864,7 @@ fn test_cash_in_from_short_loss() {
     let original_margin = Margin::calculate(quantity, original_price, original_leverage);
 
     let original_liquidation =
-        estimate_liquidation_price(side, quantity, original_price, original_leverage);
+        est_liquidation_from_leverage(side, quantity, original_price, original_leverage);
     assert_eq!(original_liquidation.as_f64(), 111_111.0);
 
     let original_stoploss = Price::try_from(105_000.0).unwrap();
@@ -920,7 +922,7 @@ fn test_collateral_delta_estimation_long_profit_leverage_up() {
     assert_eq!(original_pl, 90_909.);
 
     let original_liquidation =
-        estimate_liquidation_price(side, quantity, original_price, original_leverage);
+        est_liquidation_from_leverage(side, quantity, original_price, original_leverage);
     assert_eq!(original_liquidation.as_f64(), 90909.0);
 
     // Case 1: Cash-in less than PL
@@ -1011,7 +1013,7 @@ fn test_collateral_delta_estimation_long_profit_leverage_down() {
     assert_eq!(original_pl, 90_909.);
 
     let original_liquidation =
-        estimate_liquidation_price(side, quantity, original_price, original_leverage);
+        est_liquidation_from_leverage(side, quantity, original_price, original_leverage);
     assert_eq!(original_liquidation.as_f64(), 90909.0);
 
     let target_liquidation = Price::try_from(85_000.0).unwrap();
@@ -1062,7 +1064,7 @@ fn test_collateral_delta_estimation_short_profit_leverage_up() {
     assert_eq!(original_pl, 111_111.);
 
     let original_liquidation =
-        estimate_liquidation_price(side, quantity, original_price, original_leverage);
+        est_liquidation_from_leverage(side, quantity, original_price, original_leverage);
     assert_eq!(original_liquidation.as_f64(), 111_111.0);
 
     // Case 1: Cash-in less than PL
@@ -1153,7 +1155,7 @@ fn test_collateral_delta_estimation_short_profit_leverage_down() {
     assert_eq!(original_pl, 111_111.);
 
     let original_liquidation =
-        estimate_liquidation_price(side, quantity, original_price, original_leverage);
+        est_liquidation_from_leverage(side, quantity, original_price, original_leverage);
     assert_eq!(original_liquidation.as_f64(), 111_111.0);
 
     let target_liquidation = Price::try_from(121_000.0).unwrap();
