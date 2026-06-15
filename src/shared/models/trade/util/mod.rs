@@ -7,7 +7,7 @@ use super::super::{
     margin::Margin,
     price::{PercentageCapped, Price},
     quantity::Quantity,
-    trade::{TradeSide, TradeSize},
+    trade::{TradeQuantity, TradeSide, TradeSize},
 };
 
 /// Estimates the liquidation price for a trade position.
@@ -17,7 +17,7 @@ use super::super::{
 /// more conservative liquidation price that matches values from the LNM platform.
 pub fn estimate_liquidation_price(
     side: TradeSide,
-    quantity: Quantity,
+    quantity: impl TradeQuantity,
     entry_price: Price,
     leverage: Leverage,
 ) -> Price {
@@ -137,7 +137,7 @@ pub fn evaluate_open_trade_params(
 /// price.
 pub fn estimate_pl(
     side: TradeSide,
-    quantity: Quantity,
+    quantity: impl TradeQuantity,
     start_price: Price,
     end_price: Price,
 ) -> f64 {
@@ -158,7 +158,7 @@ pub fn estimate_pl(
 /// be to achieve that profit or loss.
 pub fn estimate_price_from_pl(
     side: TradeSide,
-    quantity: Quantity,
+    quantity: impl TradeQuantity,
     start_price: Price,
     pl: f64,
 ) -> Price {
@@ -238,7 +238,7 @@ pub fn evaluate_new_stoploss(
     Ok(())
 }
 
-/// Evaluates the impact of adding margin to an existing trade.
+/// Evaluates the impact of adding margin to an existing isolated trade.
 ///
 /// Calculates the new margin, leverage, and liquidation price that would result from adding
 /// additional collateral to a position.
@@ -259,7 +259,7 @@ pub fn evaluate_added_margin(
     Ok((new_margin, new_leverage, new_liquidation))
 }
 
-/// Evaluates the impact of cashing in profit and/or margin from a trade.
+/// Evaluates the impact of cashing in profit and/or margin from an isolated trade.
 ///
 /// Calculates how extracting a specified amount affects the trade's entry price, margin,
 /// leverage, and liquidation price. First extracts available profit, then margin if needed.
@@ -327,7 +327,7 @@ pub fn evaluate_cash_in(
 /// liquidation price to a target level, accounting for current profit/loss.
 pub fn evaluate_collateral_delta_for_liquidation(
     side: TradeSide,
-    quantity: Quantity,
+    quantity: impl TradeQuantity,
     margin: Margin,
     price: Price,
     liquidation: Price,
@@ -356,7 +356,7 @@ pub fn evaluate_collateral_delta_for_liquidation(
 /// specified price.
 pub fn evaluate_closing_fee(
     fee_perc: PercentageCapped,
-    quantity: Quantity,
+    quantity: impl TradeQuantity,
     close_price: Price,
 ) -> u64 {
     let fee_calc = SATS_PER_BTC * fee_perc.as_f64() / 100.;

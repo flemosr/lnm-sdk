@@ -8,7 +8,7 @@ use super::{
     leverage::Leverage,
     price::Price,
     quantity::Quantity,
-    trade::TradeSide,
+    trade::{TradeQuantity, TradeSide},
 };
 
 /// A validated margin value denominated in satoshis.
@@ -166,7 +166,7 @@ impl Margin {
     /// ```
     pub fn est_from_liquidation_price(
         side: TradeSide,
-        quantity: Quantity,
+        quantity: impl TradeQuantity,
         price: Price,
         liquidation: Price,
     ) -> Result<Self, TradeValidationError> {
