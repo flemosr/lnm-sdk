@@ -1,8 +1,8 @@
 use thiserror::Error;
 
-use crate::{api_v3::models::CrossLeverage, shared::models::error::QuantityValidationError};
+use crate::shared::models::error::QuantityValidationError;
 
-use super::client_id::ClientId;
+use super::{client_id::ClientId, cross_leverage::CrossLeverage, cross_quantity::CrossQuantity};
 
 #[derive(Debug, Error)]
 pub enum ClientIdValidationError {
@@ -34,6 +34,24 @@ pub enum CrossLeverageValidationError {
     TooHigh { value: u64 },
 
     #[error("CrossLeverage must be an integer. Value: {value}")]
+    NotAnInteger { value: f64 },
+}
+
+#[derive(Debug, Error)]
+pub enum CrossQuantityValidationError {
+    #[error(
+        "CrossQuantity must be at least {}. Value: {value}",
+        CrossQuantity::MIN
+    )]
+    TooLow { value: u64 },
+
+    #[error(
+        "CrossQuantity must be less than or equal to {}. Value: {value}",
+        CrossQuantity::HARD_MAX
+    )]
+    TooHigh { value: u64 },
+
+    #[error("CrossQuantity must be an integer. Value: {value}")]
     NotAnInteger { value: f64 },
 }
 

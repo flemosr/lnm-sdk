@@ -21,7 +21,10 @@ pub mod error {
 
     pub use super::rest::{
         error::RestApiV3Error,
-        models::error::{ClientIdValidationError, FuturesIsolatedTradeRequestValidationError},
+        models::error::{
+            ClientIdValidationError, CrossQuantityValidationError,
+            FuturesIsolatedTradeRequestValidationError,
+        },
     };
 }
 
@@ -44,6 +47,7 @@ pub mod models {
         account::Account,
         client_id::ClientId,
         cross_leverage::CrossLeverage,
+        cross_quantity::CrossQuantity,
         funding::{CrossFunding, FundingSettlement, IsolatedFunding},
         ohlc_candle::{OhlcCandle, OhlcRange},
         oracle::{Index, LastPrice},
