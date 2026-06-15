@@ -12,8 +12,7 @@ use crate::shared::models::{
     quantity::Quantity,
     serde_util,
     trade::{
-        TradeExecution, TradeExecutionType, TradeSide, TradeSize,
-        util::estimate_liquidation_price_from_margin,
+        TradeExecution, TradeExecutionType, TradeSide, TradeSize, util::est_liquidation_from_margin,
     },
 };
 
@@ -1022,7 +1021,7 @@ impl CrossExposureRunning {
         }
 
         let liquidation =
-            estimate_liquidation_price_from_margin(side, quantity, entry_price, liquidation_margin);
+            est_liquidation_from_margin(side, quantity, entry_price, liquidation_margin);
 
         Ok(Self {
             side,

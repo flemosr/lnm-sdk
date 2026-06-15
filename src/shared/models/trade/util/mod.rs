@@ -53,7 +53,7 @@ pub fn est_liquidation_from_leverage(
 /// collateral backing the position. Unlike [`estimate_liquidation_price`], this does not derive the
 /// margin from leverage, so it can be used for cross-margin positions where account collateral is
 /// shared across exposure.
-pub fn estimate_liquidation_price_from_margin(
+pub fn est_liquidation_from_margin(
     side: TradeSide,
     quantity: impl TradeQuantity,
     entry_price: Price,
