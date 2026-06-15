@@ -1,3 +1,5 @@
+use crate::api_v3::models::CrossQuantity;
+
 use super::*;
 
 #[test]
@@ -49,6 +51,18 @@ fn test_estimate_liquidation_price() {
     let expected_liquidation_price = Price::try_from(111_111).unwrap();
 
     assert_eq!(liquidation_price, expected_liquidation_price);
+}
+
+#[test]
+fn test_estimate_liquidation_price_accepts_trade_quantities() {
+    let side = TradeSide::Buy;
+    let quantity = Quantity::try_from(1_000).unwrap();
+    let cross_quantity = CrossQuantity::try_from(1_000).unwrap();
+    let entry_price = Price::try_from(110_000).unwrap();
+    let leverage = Leverage::MAX;
+
+    let _ = estimate_liquidation_price(side, quantity, entry_price, leverage);
+    let _ = estimate_liquidation_price(side, cross_quantity, entry_price, leverage);
 }
 
 fn get_lnm_fee() -> PercentageCapped {
