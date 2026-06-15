@@ -140,6 +140,44 @@ impl CrossQuantity {
         self.0 as f64
     }
 
+    /// Adds two cross quantity values and validates the result.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lnm_sdk::api_v3::models::CrossQuantity;
+    ///
+    /// let base = CrossQuantity::try_from(1_000).unwrap();
+    /// let added = CrossQuantity::try_from(500).unwrap();
+    ///
+    /// let total = base.try_add(added).unwrap();
+    /// assert_eq!(total.as_u64(), 1_500);
+    /// ```
+    pub fn try_add(self, other: Self) -> Result<Self, CrossQuantityValidationError> {
+        let sum = self.0.checked_add(other.0).unwrap_or(u64::MAX);
+
+        Self::try_from(sum)
+    }
+
+    /// Subtracts a cross quantity value from another and validates the result.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lnm_sdk::api_v3::models::CrossQuantity;
+    ///
+    /// let base = CrossQuantity::try_from(1_000).unwrap();
+    /// let removed = CrossQuantity::try_from(500).unwrap();
+    ///
+    /// let remaining = base.try_sub(removed).unwrap();
+    /// assert_eq!(remaining.as_u64(), 500);
+    /// ```
+    pub fn try_sub(self, other: Self) -> Result<Self, CrossQuantityValidationError> {
+        let difference = self.0.checked_sub(other.0).unwrap_or(0);
+
+        Self::try_from(difference)
+    }
+
     /// Calculates cross quantity (USD) from running margin (sats), price (BTC/USD), and leverage.
     ///
     /// The quantity is calculated using the formula:
@@ -338,6 +376,62 @@ impl<'de> Deserialize<'de> for CrossQuantity {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_try_add_cross_quantity() {
+        let base = CrossQuantity::try_from(1_000).unwrap();
+        let added = CrossQuantity::try_from(500).unwrap();
+
+        let total = base.try_add(added).unwrap();
+
+        assert_eq!(total, CrossQuantity::try_from(1_500).unwrap());
+    }
+
+    #[test]
+    fn test_try_add_cross_quantity_fails_above_hard_max() {
+        let error = CrossQuantity::HARD_MAX
+            .try_add(CrossQuantity::MIN)
+            .err()
+            .unwrap();
+
+        assert!(matches!(
+            error,
+            CrossQuantityValidationError::TooHigh { value } if value == CrossQuantity::HARD_MAX.as_u64() + CrossQuantity::MIN.as_u64()
+        ));
+    }
+
+    #[test]
+    fn test_try_sub_cross_quantity() {
+        let base = CrossQuantity::try_from(1_000).unwrap();
+        let removed = CrossQuantity::try_from(500).unwrap();
+
+        let remaining = base.try_sub(removed).unwrap();
+
+        assert_eq!(remaining, CrossQuantity::try_from(500).unwrap());
+    }
+
+    #[test]
+    fn test_try_sub_cross_quantity_fails_below_min() {
+        let error = CrossQuantity::MIN
+            .try_sub(CrossQuantity::MIN)
+            .err()
+            .unwrap();
+
+        assert!(matches!(
+            error,
+            CrossQuantityValidationError::TooLow { value } if value == 0
+        ));
+
+        let error = CrossQuantity::MIN
+            .try_sub(CrossQuantity::try_from(2).unwrap())
+            .err()
+            .unwrap();
+
+        assert!(matches!(
+            error,
+            CrossQuantityValidationError::TooLow { value } if value == 0
+        ));
+    }
 
     #[test]
     fn test_max_cross_quantity() {
