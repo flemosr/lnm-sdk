@@ -8,8 +8,8 @@ use dotenv::dotenv;
 use lnm_sdk::api_v2::{
     RestClient, RestClientConfig,
     models::{
-        Leverage, Margin, Percentage, PercentageCapped, Price, Quantity, TradeExecution, TradeSide,
-        TradeSize,
+        Leverage, Margin, OrderQuantity, Percentage, PercentageCapped, Price, TradeExecution,
+        TradeSide, TradeSize,
     },
 };
 
@@ -55,8 +55,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .futures
         .create_new_trade(
             TradeSide::Buy,
-            TradeSize::from(Quantity::try_from(1)?), // 1 USD
-            Leverage::try_from(30)?,                 // 30x leverage
+            TradeSize::from(OrderQuantity::try_from(1)?), // 1 USD
+            Leverage::try_from(30)?,                      // 30x leverage
             TradeExecution::Market,
             None, // stoploss
             None, // takeprofit

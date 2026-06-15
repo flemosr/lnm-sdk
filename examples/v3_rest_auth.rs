@@ -6,8 +6,8 @@ use dotenv::dotenv;
 use lnm_sdk::api_v3::{
     RestClient, RestClientConfig,
     models::{
-        ClientId, CrossLeverage, Leverage, Margin, Percentage, PercentageCapped, Price, Quantity,
-        TradeExecution, TradeSide, TradeSize,
+        ClientId, CrossLeverage, Leverage, Margin, OrderQuantity, Percentage, PercentageCapped,
+        Price, TradeExecution, TradeSide, TradeSize,
     },
 };
 
@@ -73,8 +73,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .futures_isolated
         .new_trade(
             TradeSide::Buy,
-            TradeSize::from(Quantity::try_from(1)?), // 1 USD
-            Leverage::try_from(30)?,                 // 30x leverage
+            TradeSize::from(OrderQuantity::try_from(1)?), // 1 USD
+            Leverage::try_from(30)?,                      // 30x leverage
             TradeExecution::Market,
             None, // stoploss
             None, // takeprofit
@@ -230,7 +230,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .futures_cross
         .place_order(
             TradeSide::Buy,
-            Quantity::try_from(1)?, // 1 USD
+            OrderQuantity::try_from(1)?, // 1 USD
             TradeExecution::Market,
             ClientId::try_from("test-client-id").ok(),
         )
@@ -246,7 +246,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .futures_cross
         .place_order(
             TradeSide::Sell,
-            Quantity::try_from(1)?, // 1 USD
+            OrderQuantity::try_from(1)?, // 1 USD
             TradeExecution::Limit(Price::try_from(80_000)?),
             None, // client order id
         )
