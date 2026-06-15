@@ -350,17 +350,29 @@ pub fn evaluate_collateral_delta_for_liquidation(
     Ok(colateral_diff)
 }
 
+/// Calculates the trading fee in satoshis for an order at a given price.
+pub fn evaluate_order_fee(
+    fee_perc: PercentageCapped,
+    quantity: impl TradeQuantity,
+    order_price: Price,
+) -> u64 {
+    let fee_calc = SATS_PER_BTC * fee_perc.as_f64() / 100.;
+    (fee_calc * quantity.as_f64() / order_price.as_f64()).floor() as u64
+}
+
 /// Calculates the closing fee for a trade at a given price.
 ///
 /// Computes the trading fee in satoshis that would be charged for closing a position at the
 /// specified price.
+///
+/// Deprecated: use [`evaluate_order_fee`] instead.
+#[deprecated(note = "use evaluate_order_fee instead")]
 pub fn evaluate_closing_fee(
     fee_perc: PercentageCapped,
     quantity: impl TradeQuantity,
     close_price: Price,
 ) -> u64 {
-    let fee_calc = SATS_PER_BTC * fee_perc.as_f64() / 100.;
-    (fee_calc * quantity.as_f64() / close_price.as_f64()).floor() as u64
+    evaluate_order_fee(fee_perc, quantity, close_price)
 }
 
 #[cfg(test)]
