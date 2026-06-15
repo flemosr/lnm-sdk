@@ -117,6 +117,49 @@ impl Margin {
         self.0 as f64
     }
 
+    /// Adds two margin values and validates the result.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lnm_sdk::api_v3::models::Margin;
+    ///
+    /// let base = Margin::try_from(10_000).unwrap();
+    /// let added = Margin::try_from(5_000).unwrap();
+    ///
+    /// let total = base.try_add(added).unwrap();
+    /// assert_eq!(total.as_u64(), 15_000);
+    /// ```
+    pub fn try_add(self, other: Self) -> Result<Self, MarginValidationError> {
+        let sum = self
+            .0
+            .checked_add(other.0)
+            .ok_or_else(|| MarginValidationError::TooHigh {
+                value: self.0 as u128 + other.0 as u128,
+            })?;
+
+        Ok(Self(sum))
+    }
+
+    /// Subtracts a margin value from another and validates the result.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lnm_sdk::api_v3::models::Margin;
+    ///
+    /// let base = Margin::try_from(10_000).unwrap();
+    /// let removed = Margin::try_from(5_000).unwrap();
+    ///
+    /// let remaining = base.try_sub(removed).unwrap();
+    /// assert_eq!(remaining.as_u64(), 5_000);
+    /// ```
+    pub fn try_sub(self, other: Self) -> Result<Self, MarginValidationError> {
+        let difference = self.0.checked_sub(other.0).unwrap_or(0);
+
+        Self::try_from(difference)
+    }
+
     /// Calculates margin from quantity (USD), price (BTC/USD), and leverage.
     ///
     /// The margin is calculated using the formula:
@@ -382,6 +425,57 @@ mod tests {
     use super::super::trade::util as trade_util;
 
     use super::*;
+
+    #[test]
+    fn test_try_add_margin() {
+        let base = Margin::try_from(10_000).unwrap();
+        let added = Margin::try_from(5_000).unwrap();
+
+        let total = base.try_add(added).unwrap();
+
+        assert_eq!(total, Margin::try_from(15_000).unwrap());
+    }
+
+    #[test]
+    fn test_try_add_margin_fails_on_overflow() {
+        let max_margin = Margin::try_from(u64::MAX).unwrap();
+        let error = max_margin.try_add(Margin::MIN).err().unwrap();
+
+        assert!(matches!(
+            error,
+            MarginValidationError::TooHigh { value } if value == u64::MAX as u128 + 1
+        ));
+    }
+
+    #[test]
+    fn test_try_sub_margin() {
+        let base = Margin::try_from(10_000).unwrap();
+        let removed = Margin::try_from(5_000).unwrap();
+
+        let remaining = base.try_sub(removed).unwrap();
+
+        assert_eq!(remaining, Margin::try_from(5_000).unwrap());
+    }
+
+    #[test]
+    fn test_try_sub_margin_fails_below_min() {
+        let error = Margin::MIN.try_sub(Margin::MIN).err().unwrap();
+
+        assert!(matches!(
+            error,
+            MarginValidationError::TooLow { value } if value == 0
+        ));
+
+        let error = Margin::MIN
+            .try_sub(Margin::try_from(2).unwrap())
+            .err()
+            .unwrap();
+
+        assert!(matches!(
+            error,
+            MarginValidationError::TooLow { value } if value == 0
+        ));
+    }
 
     #[test]
     fn test_calculate_margin() {

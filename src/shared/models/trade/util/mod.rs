@@ -291,7 +291,9 @@ pub fn evaluate_added_margin(
     current_margin: Margin,
     amount: NonZeroU64,
 ) -> Result<(Margin, Leverage, Price), TradeValidationError> {
-    let new_margin = current_margin + amount.into();
+    let new_margin = current_margin
+        .try_add(amount.into())
+        .map_err(TradeValidationError::AddedMarginInvalidMargin)?;
 
     let new_leverage = Leverage::try_calculate(quantity, new_margin, price)
         .map_err(TradeValidationError::AddedMarginInvalidLeverage)?;
@@ -337,7 +339,8 @@ pub fn evaluate_cash_in(
         // Only PL will be cashed-in. Margin shouldn't change
         margin
     } else {
-        Margin::try_from(margin.as_u64().saturating_sub(remaining_amount))
+        Margin::try_from(remaining_amount)
+            .and_then(|amount| margin.try_sub(amount))
             .map_err(TradeValidationError::CashInInvalidMargin)?
     };
 

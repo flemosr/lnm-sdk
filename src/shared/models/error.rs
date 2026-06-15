@@ -27,6 +27,9 @@ pub enum MarginValidationError {
     #[error("Margin must be at least {}. Value: {value}", Margin::MIN)]
     TooLow { value: u64 },
 
+    #[error("Margin must be less than or equal to {}. Value: {value}", u64::MAX)]
+    TooHigh { value: u128 },
+
     #[error("Margin must be a finite number")]
     NotFinite,
 
@@ -153,6 +156,9 @@ pub enum TradeValidationError {
 
     #[error("Added margin results in invalid leverage: {0}")]
     AddedMarginInvalidLeverage(LeverageValidationError),
+
+    #[error("Added margin results in invalid margin: {0}")]
+    AddedMarginInvalidMargin(MarginValidationError),
 
     #[error("Cash-in results in invalid margin: {0}")]
     CashInInvalidMargin(MarginValidationError),
