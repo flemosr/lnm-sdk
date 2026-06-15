@@ -9,7 +9,11 @@ use crate::shared::models::{
 use super::super::{
     super::{
         config::RestClientConfig,
-        models::{cross_leverage::CrossLeverage, ticker::Ticker, trade::CrossOrder},
+        models::{
+            cross_leverage::CrossLeverage,
+            ticker::Ticker,
+            trade::{CrossExposure, CrossOrder},
+        },
         repositories::FuturesDataRepository,
     },
     futures_data::LnmFuturesDataRepository,
@@ -187,10 +191,32 @@ async fn test_cancel_all_orders(
     }
 }
 
+fn assert_exposure_matches_position(position: &CrossPosition) {
+    match position.exposure().expect("must evaluate cross exposure") {
+        CrossExposure::Neutral => {
+            assert_eq!(position.quantity(), 0);
+            assert!(position.liquidation().is_none());
+        }
+        CrossExposure::Running(exposure) => {
+            assert_ne!(position.quantity(), 0);
+            assert_eq!(
+                exposure.running_margin().as_u64(),
+                position.running_margin()
+            );
+            assert_eq!(
+                exposure.maintenance_margin().as_u64(),
+                position.maintenance_margin()
+            );
+            assert_eq!(Some(exposure.liquidation()), position.liquidation());
+        }
+    }
+}
+
 async fn test_get_position(repo: &LnmFuturesCrossRepository, exp_quantity: i64) -> CrossPosition {
     let cross_position: CrossPosition = repo.get_position().await.expect("must get position");
 
     assert_eq!(cross_position.quantity(), exp_quantity);
+    assert_exposure_matches_position(&cross_position);
 
     cross_position
 }
@@ -217,6 +243,7 @@ async fn test_set_leverage(repo: &LnmFuturesCrossRepository, leverage: CrossLeve
         .expect("must set leverage");
 
     assert_eq!(cross_position.leverage(), leverage);
+    assert_exposure_matches_position(&cross_position);
 }
 
 async fn test_get_open_orders(repo: &LnmFuturesCrossRepository, exp_open_orders: Vec<&CrossOrder>) {
@@ -262,6 +289,7 @@ async fn test_deposit(
         updated_cross_position.margin(),
         cross_position.margin() + deposit_amount
     );
+    assert_exposure_matches_position(&updated_cross_position);
 
     updated_cross_position
 }
@@ -280,6 +308,7 @@ async fn test_withdrawal(
         updated_cross_position.margin(),
         cross_position.margin() - withdrawal_amount
     );
+    assert_exposure_matches_position(&updated_cross_position);
 
     updated_cross_position
 }
@@ -332,7 +361,7 @@ async fn test_api() {
         repo.cancel_all_orders().await.expect("must cancel orders")
     );
 
-    let cross_position: CrossPosition = time_test!(
+    let mut cross_position: CrossPosition = time_test!(
         "get_position (cleanup)",
         repo.get_position().await.expect("must get position")
     );
@@ -341,6 +370,10 @@ async fn test_api() {
         time_test!(
             "close_position (cleanup)",
             repo.close_position().await.expect("must close position")
+        );
+        cross_position = time_test!(
+            "get_position (after cleanup close)",
+            repo.get_position().await.expect("must get position")
         );
     }
 
@@ -429,6 +462,7 @@ async fn test_api() {
         "get_position",
         repo.get_position().await.expect("must get position")
     );
+    assert_exposure_matches_position(&cross_position);
 
     let deposit_amount = 100;
     let cross_position = time_test!(
