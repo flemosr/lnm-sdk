@@ -8,6 +8,7 @@ use super::{
     leverage::Leverage,
     margin::Margin,
     price::{PercentageCapped, Price},
+    trade::TradeQuantity,
 };
 
 /// A validated quantity value denominated in USD.
@@ -169,6 +170,12 @@ impl Quantity {
         let quantity_target = balance_usd * balance_perc.as_f64() / 100.;
 
         Quantity::try_from(quantity_target.floor())
+    }
+}
+
+impl TradeQuantity for Quantity {
+    fn as_f64(&self) -> f64 {
+        self.as_f64()
     }
 }
 

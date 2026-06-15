@@ -2,7 +2,9 @@ use std::{convert::TryFrom, fmt, num::NonZeroU64};
 
 use serde::{Deserialize, Serialize, de};
 
-use crate::shared::models::{SATS_PER_BTC, margin::Margin, price::Price, quantity::Quantity};
+use crate::shared::models::{
+    SATS_PER_BTC, margin::Margin, price::Price, quantity::Quantity, trade::TradeQuantity,
+};
 
 use super::{cross_leverage::CrossLeverage, error::CrossQuantityValidationError};
 
@@ -166,6 +168,12 @@ impl CrossQuantity {
             running_margin.as_f64() * leverage.as_u64() as f64 * price.as_f64() / SATS_PER_BTC;
 
         Self::try_from(qtd.floor() as u64)
+    }
+}
+
+impl TradeQuantity for CrossQuantity {
+    fn as_f64(&self) -> f64 {
+        self.as_f64()
     }
 }
 

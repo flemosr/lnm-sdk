@@ -49,7 +49,7 @@ pub mod models {
         price::{Percentage, PercentageCapped, Price},
         quantity::Quantity,
         trade::{
-            TradeExecution, TradeExecutionType, TradeSide, TradeSize, TradeStatus,
+            TradeExecution, TradeExecutionType, TradeQuantity, TradeSide, TradeSize, TradeStatus,
             util as trade_util,
         },
     };
