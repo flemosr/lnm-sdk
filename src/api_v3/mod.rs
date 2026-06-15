@@ -36,9 +36,9 @@ pub mod models {
         leverage::Leverage,
         margin::Margin,
         price::{Percentage, PercentageCapped, Price},
-        quantity::OrderQuantity,
+        quantity::{OrderQuantity, QuantityLike},
         trade::{
-            TradeExecution, TradeExecutionType, TradeQuantity, TradeSide, TradeSize, TradeStatus,
+            TradeExecution, TradeExecutionType, TradeSide, TradeSize, TradeStatus,
             util as trade_util,
         },
     };

@@ -3,7 +3,10 @@ use std::{convert::TryFrom, fmt, num::NonZeroU64};
 use serde::{Deserialize, Serialize, de};
 
 use crate::shared::models::{
-    SATS_PER_BTC, margin::Margin, price::Price, quantity::OrderQuantity, trade::TradeQuantity,
+    SATS_PER_BTC,
+    margin::Margin,
+    price::Price,
+    quantity::{OrderQuantity, QuantityLike},
 };
 
 use super::{cross_leverage::CrossLeverage, error::CrossQuantityValidationError};
@@ -209,7 +212,9 @@ impl CrossQuantity {
     }
 }
 
-impl TradeQuantity for CrossQuantity {
+impl crate::sealed::Sealed for CrossQuantity {}
+
+impl QuantityLike for CrossQuantity {
     fn as_f64(&self) -> f64 {
         self.as_f64()
     }

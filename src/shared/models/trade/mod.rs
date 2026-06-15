@@ -16,12 +16,6 @@ use super::{
 /// validation, and evaluating trade modifications like adding margin or cashing in.
 pub mod util;
 
-/// A validated quantity-like value used by trade calculations.
-pub trait TradeQuantity: Clone + Copy + PartialEq + Eq {
-    /// Returns the quantity value as a `f64`.
-    fn as_f64(&self) -> f64;
-}
-
 /// The side of a trade position.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[serde(rename_all = "lowercase")]

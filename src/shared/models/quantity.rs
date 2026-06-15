@@ -8,16 +8,22 @@ use super::{
     leverage::Leverage,
     margin::Margin,
     price::{PercentageCapped, Price},
-    trade::TradeQuantity,
 };
+
+// TODO: Consider renaming this trait to `Quantity` in a future release
+/// A validated quantity-like value used by trade calculations.
+pub trait QuantityLike: crate::sealed::Sealed + Clone + Copy + PartialEq + Eq {
+    /// Returns the quantity value as a `f64`.
+    fn as_f64(&self) -> f64;
+}
 
 /// A validated quantity value denominated in USD.
 ///
-/// OrderQuantity represents the notional value of a trading position in USD.
+/// `OrderQuantity` represents the notional value of a trading position in USD.
 /// This type ensures that quantity values are within acceptable bounds and can be safely used when
 /// trading futures.
 ///
-/// OrderQuantity values must be:
+/// `OrderQuantity` values must be:
 /// + Integer values (whole USD amounts)
 /// + Greater than or equal to [`OrderQuantity::MIN`] (1 USD)
 /// + Less than or equal to [`OrderQuantity::MAX`] (500,000 USD)
@@ -215,7 +221,9 @@ impl OrderQuantity {
     }
 }
 
-impl TradeQuantity for OrderQuantity {
+impl crate::sealed::Sealed for OrderQuantity {}
+
+impl QuantityLike for OrderQuantity {
     fn as_f64(&self) -> f64 {
         self.as_f64()
     }
