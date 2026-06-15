@@ -65,6 +65,23 @@ fn test_estimate_liquidation_price_accepts_trade_quantities() {
     let _ = estimate_liquidation_price(side, cross_quantity, entry_price, leverage);
 }
 
+#[test]
+fn test_aggregate_cross_entry_price() {
+    let existing_quantity = CrossQuantity::try_from(1_000).unwrap();
+    let existing_entry_price = Price::try_from(100_000).unwrap();
+    let added_quantity = CrossQuantity::try_from(2_000).unwrap();
+    let added_price = Price::try_from(50_000).unwrap();
+
+    let entry_price = aggregate_cross_entry_price(
+        existing_quantity,
+        existing_entry_price,
+        added_quantity,
+        added_price,
+    );
+
+    assert_eq!(entry_price, Price::try_from(60_000).unwrap());
+}
+
 fn get_lnm_fee() -> PercentageCapped {
     PercentageCapped::try_from(0.1).unwrap()
 }

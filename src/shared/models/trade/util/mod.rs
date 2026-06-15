@@ -152,6 +152,24 @@ pub fn estimate_pl(
     quantity.as_f64() * inverse_price_delta
 }
 
+/// Aggregates a cross-position entry price after adding quantity at a new price.
+///
+/// Uses inverse-contract weighting, where quantities are weighted by inverse price.
+pub fn aggregate_cross_entry_price(
+    existing_quantity: impl TradeQuantity,
+    existing_entry_price: Price,
+    added_quantity: impl TradeQuantity,
+    added_price: Price,
+) -> Price {
+    let existing_quantity = existing_quantity.as_f64();
+    let added_quantity = added_quantity.as_f64();
+    let total_quantity = existing_quantity + added_quantity;
+    let weighted_inverse =
+        existing_quantity / existing_entry_price.as_f64() + added_quantity / added_price.as_f64();
+
+    Price::bounded(total_quantity / weighted_inverse)
+}
+
 /// Estimates the price corresponding to a specific profit/loss amount.
 ///
 /// Given a starting price and a target P/L in satoshis, calculates what the end price would need to
