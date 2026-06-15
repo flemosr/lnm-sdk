@@ -47,6 +47,30 @@ pub fn estimate_liquidation_price(
     Price::bounded(liquidation_calc)
 }
 
+/// Estimates the liquidation price for a trade position from explicit collateral margin.
+///
+/// Calculates the price at which a position would be liquidated using the supplied margin as the
+/// collateral backing the position. Unlike [`estimate_liquidation_price`], this does not derive the
+/// margin from leverage, so it can be used for cross-margin positions where account collateral is
+/// shared across exposure.
+pub fn estimate_liquidation_price_from_margin(
+    side: TradeSide,
+    quantity: impl TradeQuantity,
+    entry_price: Price,
+    margin: Margin,
+) -> Price {
+    let quantity = quantity.as_f64();
+    let inverse_entry = 1.0 / entry_price.as_f64();
+    let collateral_per_contract = margin.as_f64() / SATS_PER_BTC / quantity;
+
+    let liquidation_calc = match side {
+        TradeSide::Buy => 1.0 / (inverse_entry + collateral_per_contract),
+        TradeSide::Sell => 1.0 / (inverse_entry - collateral_per_contract).max(0.0),
+    };
+
+    Price::bounded(liquidation_calc)
+}
+
 /// Evaluates and validates parameters for opening a new trade.
 ///
 /// Validates all trade parameters including stop-loss and take-profit levels against the

@@ -66,6 +66,21 @@ fn test_estimate_liquidation_price_accepts_trade_quantities() {
 }
 
 #[test]
+fn test_estimate_liquidation_price_from_margin() {
+    let quantity = CrossQuantity::try_from(1_000).unwrap();
+    let entry_price = Price::try_from(100_000).unwrap();
+    let margin = Margin::try_from(500_000).unwrap();
+
+    let long_liquidation =
+        estimate_liquidation_price_from_margin(TradeSide::Buy, quantity, entry_price, margin);
+    let short_liquidation =
+        estimate_liquidation_price_from_margin(TradeSide::Sell, quantity, entry_price, margin);
+
+    assert_eq!(long_liquidation, Price::try_from(66_666.5).unwrap());
+    assert_eq!(short_liquidation, Price::try_from(200_000).unwrap());
+}
+
+#[test]
 fn test_aggregate_cross_entry_price() {
     let existing_quantity = CrossQuantity::try_from(1_000).unwrap();
     let existing_entry_price = Price::try_from(100_000).unwrap();
