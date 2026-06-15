@@ -56,6 +56,25 @@ pub enum CrossQuantityValidationError {
 }
 
 #[derive(Debug, Error)]
+pub enum CrossExposureValidationError {
+    #[error("Cross margin is too low for the requested exposure")]
+    CrossMarginTooLow,
+
+    #[error("Cross exposure running position is missing an entry price")]
+    MissingEntryPrice,
+
+    #[error("Cross quantity {qtd} exceeds maximum {max_qtd} for leverage {leverage}")]
+    CrossQuantityTooHighForLeverage {
+        qtd: CrossQuantity,
+        max_qtd: CrossQuantity,
+        leverage: CrossLeverage,
+    },
+
+    #[error("[CrossQuantityValidation] {0}")]
+    CrossQuantityValidation(#[from] CrossQuantityValidationError),
+}
+
+#[derive(Debug, Error)]
 pub enum FuturesIsolatedTradeRequestValidationError {
     #[error("Price cannot be set for market orders")]
     PriceSetForMarketOrder,

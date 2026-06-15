@@ -22,7 +22,7 @@ pub mod error {
     pub use super::rest::{
         error::RestApiV3Error,
         models::error::{
-            ClientIdValidationError, CrossQuantityValidationError,
+            ClientIdValidationError, CrossExposureValidationError, CrossQuantityValidationError,
             FuturesIsolatedTradeRequestValidationError,
         },
     };
@@ -53,7 +53,7 @@ pub mod models {
         oracle::{Index, LastPrice},
         page::Page,
         ticker::{Ticker, TickerPrice},
-        trade::{CrossOrder, CrossPosition, Trade},
+        trade::{CrossExposure, CrossExposureRunning, CrossOrder, CrossPosition, Trade},
         transfer::CrossTransfer,
     };
 }

@@ -5,17 +5,23 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::shared::models::{
+    SATS_PER_BTC,
     leverage::Leverage,
     margin::Margin,
     price::Price,
     quantity::Quantity,
     serde_util,
-    trade::{TradeExecution, TradeExecutionType, TradeSide, TradeSize},
+    trade::{
+        TradeExecution, TradeExecutionType, TradeSide, TradeSize,
+        util::estimate_liquidation_price_from_margin,
+    },
 };
 
 use super::{
-    client_id::ClientId, cross_leverage::CrossLeverage,
-    error::FuturesIsolatedTradeRequestValidationError,
+    client_id::ClientId,
+    cross_leverage::CrossLeverage,
+    cross_quantity::CrossQuantity,
+    error::{CrossExposureValidationError, FuturesIsolatedTradeRequestValidationError},
 };
 
 #[derive(Serialize, Debug)]
@@ -965,6 +971,159 @@ impl fmt::Display for CrossOrder {
     }
 }
 
+const CROSS_MAINTENANCE_MARGIN_RATE: f64 = 0.0015;
+
+/// Active cross-margin market exposure.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct CrossExposureRunning {
+    side: TradeSide,
+    quantity: CrossQuantity,
+    entry_price: Price,
+    liquidation: Price,
+    running_margin: Margin,
+    maintenance_margin: Margin,
+}
+
+impl CrossExposureRunning {
+    fn new(
+        margin: impl TryInto<Margin>,
+        leverage: CrossLeverage,
+        side: TradeSide,
+        quantity: CrossQuantity,
+        entry_price: Price,
+    ) -> Result<Self, CrossExposureValidationError> {
+        let margin = margin
+            .try_into()
+            .map_err(|_| CrossExposureValidationError::CrossMarginTooLow)?;
+
+        let max_qtd = CrossQuantity::max(leverage);
+        if quantity > max_qtd {
+            return Err(
+                CrossExposureValidationError::CrossQuantityTooHighForLeverage {
+                    qtd: quantity,
+                    max_qtd,
+                    leverage,
+                },
+            );
+        }
+
+        let notional_sats = quantity.as_f64() * SATS_PER_BTC / entry_price.as_f64();
+        let running_margin = Margin::bounded((notional_sats / leverage.as_f64()).floor());
+        let maintenance_margin =
+            Margin::bounded((notional_sats * CROSS_MAINTENANCE_MARGIN_RATE).floor());
+        let liquidation_margin = margin
+            .as_u64()
+            .checked_sub(maintenance_margin.as_u64())
+            .and_then(|margin| Margin::try_from(margin).ok())
+            .ok_or(CrossExposureValidationError::CrossMarginTooLow)?;
+
+        if running_margin >= liquidation_margin {
+            return Err(CrossExposureValidationError::CrossMarginTooLow);
+        }
+
+        let liquidation =
+            estimate_liquidation_price_from_margin(side, quantity, entry_price, liquidation_margin);
+
+        Ok(Self {
+            side,
+            quantity,
+            entry_price,
+            liquidation,
+            running_margin,
+            maintenance_margin,
+        })
+    }
+
+    /// Returns the net cross position side.
+    pub fn side(&self) -> TradeSide {
+        self.side
+    }
+
+    /// Returns the absolute cross position quantity in USD notional.
+    pub fn quantity(&self) -> CrossQuantity {
+        self.quantity
+    }
+
+    /// Returns the cross position entry price.
+    pub fn entry_price(&self) -> Price {
+        self.entry_price
+    }
+
+    /// Returns the cross position liquidation price.
+    pub fn liquidation(&self) -> Price {
+        self.liquidation
+    }
+
+    /// Returns the current running margin allocated to the cross position.
+    pub fn running_margin(&self) -> Margin {
+        self.running_margin
+    }
+
+    /// Returns the current maintenance margin required by the cross position.
+    pub fn maintenance_margin(&self) -> Margin {
+        self.maintenance_margin
+    }
+}
+
+/// Cross-margin market exposure derived from a cross account/position.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum CrossExposure {
+    /// No active market exposure. The cross account may still hold margin/collateral.
+    Neutral,
+
+    /// Active net market exposure.
+    Running(CrossExposureRunning),
+}
+
+impl CrossExposure {
+    /// Builds a cross exposure from account margin/collateral and optional running-position data.
+    pub fn new(
+        margin: u64,
+        leverage: CrossLeverage,
+        exposure_running: Option<(TradeSide, CrossQuantity, Price)>,
+    ) -> Result<Self, CrossExposureValidationError> {
+        match exposure_running {
+            None => Ok(Self::Neutral),
+            Some((side, quantity, entry_price)) => Ok(Self::Running(CrossExposureRunning::new(
+                margin,
+                leverage,
+                side,
+                quantity,
+                entry_price,
+            )?)),
+        }
+    }
+
+    /// Builds a running cross exposure from the account margin/collateral and market inputs.
+    pub fn running(
+        margin: u64,
+        leverage: CrossLeverage,
+        side: TradeSide,
+        quantity: CrossQuantity,
+        entry_price: Price,
+    ) -> Result<Self, CrossExposureValidationError> {
+        Ok(Self::Running(CrossExposureRunning::new(
+            margin,
+            leverage,
+            side,
+            quantity,
+            entry_price,
+        )?))
+    }
+
+    /// Returns the running-position parameters, if this exposure is active.
+    pub fn as_running_params(&self) -> Option<(TradeSide, CrossQuantity, Price)> {
+        match self {
+            CrossExposure::Neutral => None,
+            CrossExposure::Running(exposure_running) => Some((
+                exposure_running.side(),
+                exposure_running.quantity(),
+                exposure_running.entry_price(),
+            )),
+        }
+    }
+}
+
 /// A cross-margin futures position returned from the LN Markets API.
 ///
 /// Represents a user's aggregated cross-margin position where margin is shared across the entire
@@ -1062,6 +1221,55 @@ impl CrossPosition {
     /// ```
     pub fn quantity(&self) -> i64 {
         self.quantity
+    }
+
+    /// Returns the cross-margin market exposure derived from this position.
+    ///
+    /// This converts the signed position quantity into a neutral or running exposure. A positive
+    /// quantity becomes a long exposure, a negative quantity becomes a short exposure, and zero
+    /// quantity becomes [`CrossExposure::Neutral`].
+    ///
+    /// The derivation validates that running exposure data is internally consistent, including the
+    /// presence of an entry price and the leverage-specific [`CrossQuantity::max`] limit.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # fn example(position: lnm_sdk::api_v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::api_v3::models::CrossExposure;
+    ///
+    /// match position.exposure()? {
+    ///     CrossExposure::Neutral => {
+    ///         println!("No active cross-market exposure");
+    ///     }
+    ///     CrossExposure::Running(exposure) => {
+    ///         println!("Side: {:?}", exposure.side());
+    ///         println!("Quantity: {}", exposure.quantity());
+    ///         println!("Entry price: {}", exposure.entry_price());
+    ///         println!("Liquidation: {}", exposure.liquidation());
+    ///         println!("Running margin: {}", exposure.running_margin());
+    ///         println!("Maintenance margin: {}", exposure.maintenance_margin());
+    ///     }
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn exposure(&self) -> Result<CrossExposure, CrossExposureValidationError> {
+        if self.quantity == 0 {
+            return Ok(CrossExposure::Neutral);
+        }
+
+        let side = if self.quantity > 0 {
+            TradeSide::Buy
+        } else {
+            TradeSide::Sell
+        };
+        let quantity = CrossQuantity::try_from(self.quantity.unsigned_abs())?;
+        let entry_price = self
+            .entry_price
+            .ok_or(CrossExposureValidationError::MissingEntryPrice)?;
+
+        CrossExposure::running(self.margin, self.leverage, side, quantity, entry_price)
     }
 
     /// Returns the leverage multiplier applied to the position.
@@ -1271,5 +1479,137 @@ impl fmt::Display for CrossPosition {
             write!(f, "\n  {line}")?;
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn cross_position(quantity: i64, margin: u64, entry_price: Option<Price>) -> CrossPosition {
+        CrossPosition {
+            id: Uuid::nil(),
+            margin,
+            quantity,
+            leverage: CrossLeverage::try_from(10_u64).unwrap(),
+            entry_price,
+            running_margin: 0,
+            initial_margin: 0,
+            maintenance_margin: 0,
+            liquidation: None,
+            trading_fees: 0,
+            funding_fees: 0,
+            total_pl: 0,
+            delta_pl: 0,
+        }
+    }
+
+    #[test]
+    fn test_cross_exposure_running_calculates_margin_requirements() {
+        let quantity = CrossQuantity::try_from(1_000).unwrap();
+        let entry_price = Price::try_from(100_000).unwrap();
+        let exposure = CrossExposure::running(
+            500_000,
+            CrossLeverage::try_from(10_u64).unwrap(),
+            TradeSide::Buy,
+            quantity,
+            entry_price,
+        )
+        .unwrap();
+
+        let CrossExposure::Running(running) = exposure else {
+            panic!("expected running exposure");
+        };
+
+        assert_eq!(running.side(), TradeSide::Buy);
+        assert_eq!(running.quantity(), quantity);
+        assert_eq!(running.entry_price(), entry_price);
+        assert_eq!(running.liquidation(), Price::try_from(66_733.5).unwrap());
+        assert_eq!(running.running_margin(), Margin::try_from(100_000).unwrap());
+        assert_eq!(
+            running.maintenance_margin(),
+            Margin::try_from(1_500).unwrap()
+        );
+        assert_eq!(
+            exposure.as_running_params(),
+            Some((TradeSide::Buy, quantity, entry_price))
+        );
+    }
+
+    #[test]
+    fn test_cross_exposure_running_margin_floors_fractional_notional() {
+        let exposure = CrossExposure::running(
+            500_000,
+            CrossLeverage::try_from(1_u64).unwrap(),
+            TradeSide::Buy,
+            CrossQuantity::try_from(2).unwrap(),
+            Price::try_from(66_834).unwrap(),
+        )
+        .unwrap();
+
+        let CrossExposure::Running(running) = exposure else {
+            panic!("expected running exposure");
+        };
+
+        assert_eq!(running.running_margin(), Margin::try_from(2_992).unwrap());
+    }
+
+    #[test]
+    fn test_cross_exposure_rejects_insufficient_margin() {
+        let exposure = CrossExposure::running(
+            101_500,
+            CrossLeverage::try_from(10_u64).unwrap(),
+            TradeSide::Buy,
+            CrossQuantity::try_from(1_000).unwrap(),
+            Price::try_from(100_000).unwrap(),
+        );
+
+        assert!(matches!(
+            exposure,
+            Err(CrossExposureValidationError::CrossMarginTooLow)
+        ));
+    }
+
+    #[test]
+    fn test_cross_position_exposure_returns_neutral_for_zero_quantity() {
+        let position = cross_position(0, 0, None);
+
+        assert_eq!(position.exposure().unwrap(), CrossExposure::Neutral);
+    }
+
+    #[test]
+    fn test_cross_position_exposure_rejects_quantity_above_leverage_max() {
+        let mut position =
+            cross_position(10_000_005, 500_000, Some(Price::try_from(100_000).unwrap()));
+        position.leverage = CrossLeverage::try_from(100_u64).unwrap();
+
+        let error = position.exposure().unwrap_err();
+
+        assert!(matches!(
+            error,
+            CrossExposureValidationError::CrossQuantityTooHighForLeverage {
+                qtd,
+                max_qtd,
+                leverage,
+            } if qtd == CrossQuantity::try_from(10_000_005).unwrap()
+                && max_qtd == CrossQuantity::try_from(10_000_000).unwrap()
+                && leverage == CrossLeverage::try_from(100_u64).unwrap()
+        ));
+    }
+
+    #[test]
+    fn test_cross_position_exposure_derives_running_short() {
+        let entry_price = Price::try_from(100_000).unwrap();
+        let position = cross_position(-1_000, 500_000, Some(entry_price));
+        let exposure = position.exposure().unwrap();
+
+        let CrossExposure::Running(running) = exposure else {
+            panic!("expected running exposure");
+        };
+
+        assert_eq!(running.side(), TradeSide::Sell);
+        assert_eq!(running.quantity(), CrossQuantity::try_from(1_000).unwrap());
+        assert_eq!(running.entry_price(), entry_price);
+        assert_eq!(running.liquidation(), Price::try_from(199_402).unwrap());
     }
 }
