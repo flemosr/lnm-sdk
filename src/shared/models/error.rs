@@ -13,13 +13,13 @@ pub enum QuantityValidationError {
         "OrderQuantity must be at least {}. Value: {value}",
         OrderQuantity::MIN
     )]
-    TooLow { value: u64 },
+    TooLow { value: i128 },
 
     #[error(
         "OrderQuantity must be less than or equal to {}. Value: {value}",
         OrderQuantity::MAX
     )]
-    TooHigh { value: u64 },
+    TooHigh { value: u128 },
 
     #[error("OrderQuantity must be an integer. Value: {value}")]
     NotAnInteger { value: f64 },

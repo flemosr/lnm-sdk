@@ -42,7 +42,7 @@ pub trait QuantityLike: crate::sealed::Sealed + Clone + Copy + PartialEq + Eq {
 /// assert!(OrderQuantity::try_from(600_000).is_err());
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct OrderQuantity(u64);
+pub struct OrderQuantity(u32);
 
 /// Deprecated compatibility alias for [`OrderQuantity`].
 #[deprecated(note = "use OrderQuantity")]
@@ -86,13 +86,27 @@ impl OrderQuantity {
         T: Into<f64>,
     {
         let as_f64: f64 = value.into();
-        let rounded = as_f64.round().max(0.0) as u64;
+        let rounded = as_f64.round().max(0.0) as u32;
         let clamped = rounded.clamp(Self::MIN.0, Self::MAX.0);
 
         Self(clamped)
     }
 
-    /// Returns the quantity value as its underlying `u64` representation.
+    /// Returns the quantity value as its underlying `u32` representation.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lnm_sdk::api_v3::models::OrderQuantity;
+    ///
+    /// let quantity = OrderQuantity::try_from(1_000).unwrap();
+    /// assert_eq!(quantity.as_u32(), 1_000);
+    /// ```
+    pub fn as_u32(&self) -> u32 {
+        self.0
+    }
+
+    /// Returns the quantity value as a `u64`.
     ///
     /// # Examples
     ///
@@ -103,7 +117,21 @@ impl OrderQuantity {
     /// assert_eq!(quantity.as_u64(), 1_000);
     /// ```
     pub fn as_u64(&self) -> u64 {
-        self.0
+        self.0 as u64
+    }
+
+    /// Returns the quantity value as an `i64`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lnm_sdk::api_v3::models::OrderQuantity;
+    ///
+    /// let quantity = OrderQuantity::try_from(1_000).unwrap();
+    /// assert_eq!(quantity.as_i64(), 1_000);
+    /// ```
+    pub fn as_i64(&self) -> i64 {
+        self.0 as i64
     }
 
     /// Returns the quantity value as a `f64`.
@@ -120,7 +148,10 @@ impl OrderQuantity {
         self.0 as f64
     }
 
-    /// Adds two quantity values and validates the result.
+    /// Adds a signed integer amount to this quantity and validates the result.
+    ///
+    /// The operand may be any primitive integer type, including negative values. Only the final
+    /// result is validated against [`OrderQuantity::MIN`] and [`OrderQuantity::MAX`].
     ///
     /// # Examples
     ///
@@ -128,18 +159,35 @@ impl OrderQuantity {
     /// use lnm_sdk::api_v3::models::OrderQuantity;
     ///
     /// let base = OrderQuantity::try_from(1_000).unwrap();
-    /// let added = OrderQuantity::try_from(500).unwrap();
     ///
+    /// // Add another `OrderQuantity`
+    /// let added = OrderQuantity::try_from(500).unwrap();
     /// let total = base.try_add(added).unwrap();
-    /// assert_eq!(total.as_u64(), 1_500);
+    /// assert_eq!(total.as_u32(), 1_500);
+    ///
+    /// // Add a raw integer
+    /// let total = base.try_add(500i32).unwrap();
+    /// assert_eq!(total.as_u32(), 1_500);
+    ///
+    /// // Subtract via a negative operand
+    /// let total = base.try_add(-500i64).unwrap();
+    /// assert_eq!(total.as_u32(), 500);
     /// ```
-    pub fn try_add(self, other: Self) -> Result<Self, QuantityValidationError> {
-        let sum = self.0.saturating_add(other.0);
+    pub fn try_add(self, other: impl TryInto<i128>) -> Result<Self, QuantityValidationError> {
+        let other = other
+            .try_into()
+            .map_err(|_| QuantityValidationError::TooHigh { value: u128::MAX })?;
+        let sum = i128::from(self)
+            .checked_add(other)
+            .ok_or(QuantityValidationError::TooHigh { value: u128::MAX })?;
 
         Self::try_from(sum)
     }
 
-    /// Subtracts a quantity value from another and validates the result.
+    /// Subtracts a signed integer amount from this quantity and validates the result.
+    ///
+    /// The operand may be any primitive integer type, including negative values. Only the final
+    /// result is validated against [`OrderQuantity::MIN`] and [`OrderQuantity::MAX`].
     ///
     /// # Examples
     ///
@@ -147,13 +195,27 @@ impl OrderQuantity {
     /// use lnm_sdk::api_v3::models::OrderQuantity;
     ///
     /// let base = OrderQuantity::try_from(1_000).unwrap();
-    /// let removed = OrderQuantity::try_from(500).unwrap();
     ///
+    /// // Subtract another `OrderQuantity`
+    /// let removed = OrderQuantity::try_from(500).unwrap();
     /// let remaining = base.try_sub(removed).unwrap();
-    /// assert_eq!(remaining.as_u64(), 500);
+    /// assert_eq!(remaining.as_u32(), 500);
+    ///
+    /// // Subtract a raw integer
+    /// let remaining = base.try_sub(500i32).unwrap();
+    /// assert_eq!(remaining.as_u32(), 500);
+    ///
+    /// // Add via a negative operand
+    /// let remaining = base.try_sub(-500i64).unwrap();
+    /// assert_eq!(remaining.as_u32(), 1_500);
     /// ```
-    pub fn try_sub(self, other: Self) -> Result<Self, QuantityValidationError> {
-        let difference = self.0.saturating_sub(other.0);
+    pub fn try_sub(self, other: impl TryInto<i128>) -> Result<Self, QuantityValidationError> {
+        let other = other
+            .try_into()
+            .map_err(|_| QuantityValidationError::TooLow { value: i128::MIN })?;
+        let difference = i128::from(self)
+            .checked_sub(other)
+            .ok_or(QuantityValidationError::TooHigh { value: u128::MAX })?;
 
         Self::try_from(difference)
     }
@@ -184,7 +246,7 @@ impl OrderQuantity {
     ) -> Result<Self, QuantityValidationError> {
         let qtd = margin.as_f64() * leverage.as_f64() * price.as_f64() / SATS_PER_BTC;
 
-        Self::try_from(qtd.floor() as u64)
+        Self::try_from(qtd.floor() as u128)
     }
 
     /// Calculates quantity from a percentage of a given balance.
@@ -209,15 +271,21 @@ impl OrderQuantity {
     ///
     /// assert_eq!(quantity.as_u64(), 1_000); // 1_000 [USD]
     /// ```
+    // TODO: Remove this helper in a future release. The implementation mixes `u64` balance
+    // input with `f64` price/percentage arithmetic and cannot report invalid balance input
+    // precisely through `QuantityValidationError`.
+    #[deprecated(
+        note = "this helper is numerically ambiguous and will be removed in a future release"
+    )]
     pub fn try_from_balance_perc(
         balance: u64,
         market_price: Price,
         balance_perc: PercentageCapped,
     ) -> Result<Self, QuantityValidationError> {
         let balance_usd = balance as f64 * market_price.as_f64() / SATS_PER_BTC;
-        let quantity_target = balance_usd * balance_perc.as_f64() / 100.;
+        let quantity_target = balance_usd * balance_perc.as_f64() / 100.0;
 
-        OrderQuantity::try_from(quantity_target.floor())
+        Self::try_from(quantity_target.floor())
     }
 }
 
@@ -229,9 +297,33 @@ impl QuantityLike for OrderQuantity {
     }
 }
 
-impl From<OrderQuantity> for u64 {
+impl From<OrderQuantity> for u32 {
     fn from(value: OrderQuantity) -> Self {
         value.0
+    }
+}
+
+impl From<OrderQuantity> for u64 {
+    fn from(value: OrderQuantity) -> Self {
+        value.0 as u64
+    }
+}
+
+impl From<OrderQuantity> for u128 {
+    fn from(value: OrderQuantity) -> Self {
+        value.0 as u128
+    }
+}
+
+impl From<OrderQuantity> for i64 {
+    fn from(value: OrderQuantity) -> Self {
+        value.0 as i64
+    }
+}
+
+impl From<OrderQuantity> for i128 {
+    fn from(value: OrderQuantity) -> Self {
+        value.0 as i128
     }
 }
 
@@ -245,7 +337,7 @@ impl TryFrom<u8> for OrderQuantity {
     type Error = QuantityValidationError;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
-        Self::try_from(value as u64)
+        Self::try_from(value as u128)
     }
 }
 
@@ -253,7 +345,7 @@ impl TryFrom<u16> for OrderQuantity {
     type Error = QuantityValidationError;
 
     fn try_from(value: u16) -> Result<Self, Self::Error> {
-        Self::try_from(value as u64)
+        Self::try_from(value as u128)
     }
 }
 
@@ -261,7 +353,7 @@ impl TryFrom<u32> for OrderQuantity {
     type Error = QuantityValidationError;
 
     fn try_from(value: u32) -> Result<Self, Self::Error> {
-        Self::try_from(value as u64)
+        Self::try_from(value as u128)
     }
 }
 
@@ -269,47 +361,25 @@ impl TryFrom<u64> for OrderQuantity {
     type Error = QuantityValidationError;
 
     fn try_from(value: u64) -> Result<Self, Self::Error> {
-        if value < Self::MIN.0 {
-            return Err(QuantityValidationError::TooLow { value });
+        Self::try_from(value as u128)
+    }
+}
+
+impl TryFrom<u128> for OrderQuantity {
+    type Error = QuantityValidationError;
+
+    fn try_from(value: u128) -> Result<Self, Self::Error> {
+        if value < Self::MIN.0 as u128 {
+            return Err(QuantityValidationError::TooLow {
+                value: value as i128,
+            });
         }
 
-        if value > Self::MAX.0 {
+        if value > Self::MAX.0 as u128 {
             return Err(QuantityValidationError::TooHigh { value });
         }
 
-        Ok(OrderQuantity(value))
-    }
-}
-
-impl TryFrom<i8> for OrderQuantity {
-    type Error = QuantityValidationError;
-
-    fn try_from(value: i8) -> Result<Self, Self::Error> {
-        Self::try_from(value.max(0) as u64)
-    }
-}
-
-impl TryFrom<i16> for OrderQuantity {
-    type Error = QuantityValidationError;
-
-    fn try_from(value: i16) -> Result<Self, Self::Error> {
-        Self::try_from(value.max(0) as u64)
-    }
-}
-
-impl TryFrom<i32> for OrderQuantity {
-    type Error = QuantityValidationError;
-
-    fn try_from(quantity: i32) -> Result<Self, Self::Error> {
-        Self::try_from(quantity.max(0) as u64)
-    }
-}
-
-impl TryFrom<i64> for OrderQuantity {
-    type Error = QuantityValidationError;
-
-    fn try_from(value: i64) -> Result<Self, Self::Error> {
-        Self::try_from(value.max(0) as u64)
+        Ok(OrderQuantity(value as u32))
     }
 }
 
@@ -317,7 +387,57 @@ impl TryFrom<usize> for OrderQuantity {
     type Error = QuantityValidationError;
 
     fn try_from(value: usize) -> Result<Self, Self::Error> {
-        Self::try_from(value as u64)
+        Self::try_from(value as u128)
+    }
+}
+
+impl TryFrom<i8> for OrderQuantity {
+    type Error = QuantityValidationError;
+
+    fn try_from(value: i8) -> Result<Self, Self::Error> {
+        Self::try_from(value as i128)
+    }
+}
+
+impl TryFrom<i16> for OrderQuantity {
+    type Error = QuantityValidationError;
+
+    fn try_from(value: i16) -> Result<Self, Self::Error> {
+        Self::try_from(value as i128)
+    }
+}
+
+impl TryFrom<i32> for OrderQuantity {
+    type Error = QuantityValidationError;
+
+    fn try_from(quantity: i32) -> Result<Self, Self::Error> {
+        Self::try_from(quantity as i128)
+    }
+}
+
+impl TryFrom<i64> for OrderQuantity {
+    type Error = QuantityValidationError;
+
+    fn try_from(value: i64) -> Result<Self, Self::Error> {
+        Self::try_from(value as i128)
+    }
+}
+
+impl TryFrom<i128> for OrderQuantity {
+    type Error = QuantityValidationError;
+
+    fn try_from(value: i128) -> Result<Self, Self::Error> {
+        if value < Self::MIN.0 as i128 {
+            return Err(QuantityValidationError::TooLow { value });
+        }
+
+        if value > Self::MAX.0 as i128 {
+            return Err(QuantityValidationError::TooHigh {
+                value: value as u128,
+            });
+        }
+
+        Ok(OrderQuantity(value as u32))
     }
 }
 
@@ -325,7 +445,7 @@ impl TryFrom<isize> for OrderQuantity {
     type Error = QuantityValidationError;
 
     fn try_from(value: isize) -> Result<Self, Self::Error> {
-        Self::try_from(value.max(0) as u64)
+        Self::try_from(value as i128)
     }
 }
 
@@ -345,7 +465,7 @@ impl TryFrom<f64> for OrderQuantity {
             return Err(QuantityValidationError::NotAnInteger { value });
         }
 
-        Self::try_from(value.max(0.) as u64)
+        Self::try_from(value as i128)
     }
 }
 
@@ -360,7 +480,7 @@ impl Serialize for OrderQuantity {
     where
         S: serde::Serializer,
     {
-        serializer.serialize_u64(self.0)
+        serializer.serialize_u32(self.0)
     }
 }
 
@@ -369,8 +489,8 @@ impl<'de> Deserialize<'de> for OrderQuantity {
     where
         D: serde::Deserializer<'de>,
     {
-        let quantity_u64 = u64::deserialize(deserializer)?;
-        OrderQuantity::try_from(quantity_u64).map_err(|e| de::Error::custom(e.to_string()))
+        let quantity = u32::deserialize(deserializer)?;
+        OrderQuantity::try_from(quantity).map_err(|e| de::Error::custom(e.to_string()))
     }
 }
 
@@ -397,7 +517,8 @@ mod tests {
 
         assert!(matches!(
             error,
-            QuantityValidationError::TooHigh { value } if value == OrderQuantity::MAX.as_u64() + OrderQuantity::MIN.as_u64()
+            QuantityValidationError::TooHigh { value }
+                if value == (OrderQuantity::MAX.as_u64() + OrderQuantity::MIN.as_u64()) as u128
         ));
     }
 
@@ -430,7 +551,86 @@ mod tests {
 
         assert!(matches!(
             error,
-            QuantityValidationError::TooLow { value } if value == 0
+            QuantityValidationError::TooLow { value } if value == -1
+        ));
+    }
+
+    #[test]
+    fn test_try_add_quantity_with_primitive_integer() {
+        let base = OrderQuantity::try_from(1_000).unwrap();
+
+        let total = base.try_add(500i32).unwrap();
+        assert_eq!(total, OrderQuantity::try_from(1_500).unwrap());
+
+        let total = base.try_add(500usize).unwrap();
+        assert_eq!(total, OrderQuantity::try_from(1_500).unwrap());
+
+        let total = base.try_add(500u128).unwrap();
+        assert_eq!(total, OrderQuantity::try_from(1_500).unwrap());
+    }
+
+    #[test]
+    fn test_try_sub_quantity_with_primitive_integer() {
+        let base = OrderQuantity::try_from(1_000).unwrap();
+
+        let remaining = base.try_sub(500i32).unwrap();
+        assert_eq!(remaining, OrderQuantity::try_from(500).unwrap());
+
+        let remaining = base.try_sub(500usize).unwrap();
+        assert_eq!(remaining, OrderQuantity::try_from(500).unwrap());
+
+        let remaining = base.try_sub(500u128).unwrap();
+        assert_eq!(remaining, OrderQuantity::try_from(500).unwrap());
+    }
+
+    #[test]
+    fn test_try_add_quantity_negative_operand_reduces_value() {
+        let base = OrderQuantity::try_from(1_000).unwrap();
+
+        let total = base.try_add(-500i64).unwrap();
+        assert_eq!(total, OrderQuantity::try_from(500).unwrap());
+    }
+
+    #[test]
+    fn test_try_add_quantity_negative_operand_fails_when_below_min() {
+        let error = OrderQuantity::try_from(500)
+            .unwrap()
+            .try_add(-501i64)
+            .err()
+            .unwrap();
+
+        assert!(matches!(
+            error,
+            QuantityValidationError::TooLow { value } if value == -1
+        ));
+    }
+
+    #[test]
+    fn test_try_sub_quantity_negative_operand_increases_value() {
+        let base = OrderQuantity::try_from(1_000).unwrap();
+
+        let total = base.try_sub(-500i64).unwrap();
+        assert_eq!(total, OrderQuantity::try_from(1_500).unwrap());
+    }
+
+    #[test]
+    fn test_try_sub_quantity_large_negative_operand_reports_too_high() {
+        let error = OrderQuantity::MAX.try_sub(i128::MIN).err().unwrap();
+
+        assert!(matches!(
+            error,
+            QuantityValidationError::TooHigh { value } if value == u128::MAX
+        ));
+    }
+
+    #[test]
+    fn test_try_add_quantity_overflow_reports_true_value() {
+        let error = OrderQuantity::MAX.try_add(10u32).err().unwrap();
+
+        assert!(matches!(
+            error,
+            QuantityValidationError::TooHigh { value }
+                if value == OrderQuantity::MAX.as_u64() as u128 + 10
         ));
     }
 
