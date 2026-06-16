@@ -32,7 +32,7 @@ use super::{cross_quantity::CrossQuantity, error::CrossLeverageValidationError};
 /// assert!(CrossLeverage::try_from(101).is_err());
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct CrossLeverage(u64);
+pub struct CrossLeverage(u8);
 
 impl CrossLeverage {
     /// The minimum allowed leverage value (1x).
@@ -72,24 +72,52 @@ impl CrossLeverage {
         T: Into<f64>,
     {
         let as_f64: f64 = value.into();
-        let rounded = as_f64.round().max(0.0) as u64;
+        let rounded = as_f64.round().max(0.0) as u8;
         let clamped = rounded.clamp(Self::MIN.0, Self::MAX.0);
 
         Self(clamped)
     }
 
-    /// Returns the cross leverage value as its underlying `u64` representation.
+    /// Returns the cross leverage value as its underlying `u8` representation.
     ///
     /// # Examples
     ///
     /// ```
     /// use lnm_sdk::api_v3::models::CrossLeverage;
     ///
-    /// let leverage = CrossLeverage::try_from(25.0).unwrap();
+    /// let leverage = CrossLeverage::try_from(25).unwrap();
+    /// assert_eq!(leverage.as_u8(), 25);
+    /// ```
+    pub fn as_u8(&self) -> u8 {
+        self.0
+    }
+
+    /// Returns the cross leverage value as a `u64`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lnm_sdk::api_v3::models::CrossLeverage;
+    ///
+    /// let leverage = CrossLeverage::try_from(25).unwrap();
     /// assert_eq!(leverage.as_u64(), 25);
     /// ```
     pub fn as_u64(&self) -> u64 {
-        self.0
+        self.0 as u64
+    }
+
+    /// Returns the cross leverage value as an `i64`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lnm_sdk::api_v3::models::CrossLeverage;
+    ///
+    /// let leverage = CrossLeverage::try_from(25).unwrap();
+    /// assert_eq!(leverage.as_i64(), 25);
+    /// ```
+    pub fn as_i64(&self) -> i64 {
+        self.0 as i64
     }
 
     /// Returns the cross leverage value as a `f64`.
@@ -135,9 +163,51 @@ impl CrossLeverage {
     }
 }
 
+impl From<CrossLeverage> for u8 {
+    fn from(value: CrossLeverage) -> u8 {
+        value.0
+    }
+}
+
+impl From<CrossLeverage> for u16 {
+    fn from(value: CrossLeverage) -> u16 {
+        value.0 as u16
+    }
+}
+
+impl From<CrossLeverage> for u32 {
+    fn from(value: CrossLeverage) -> u32 {
+        value.0 as u32
+    }
+}
+
 impl From<CrossLeverage> for u64 {
     fn from(value: CrossLeverage) -> u64 {
-        value.0
+        value.0 as u64
+    }
+}
+
+impl From<CrossLeverage> for i16 {
+    fn from(value: CrossLeverage) -> i16 {
+        value.0 as i16
+    }
+}
+
+impl From<CrossLeverage> for i32 {
+    fn from(value: CrossLeverage) -> i32 {
+        value.0 as i32
+    }
+}
+
+impl From<CrossLeverage> for i64 {
+    fn from(value: CrossLeverage) -> i64 {
+        value.0 as i64
+    }
+}
+
+impl From<CrossLeverage> for i128 {
+    fn from(value: CrossLeverage) -> i128 {
+        value.0 as i128
     }
 }
 
@@ -153,27 +223,11 @@ impl From<CrossLeverage> for Leverage {
     }
 }
 
-impl TryFrom<u64> for CrossLeverage {
-    type Error = CrossLeverageValidationError;
-
-    fn try_from(value: u64) -> Result<Self, Self::Error> {
-        if value < Self::MIN.0 {
-            return Err(CrossLeverageValidationError::TooLow { value });
-        }
-
-        if value > Self::MAX.0 {
-            return Err(CrossLeverageValidationError::TooHigh { value });
-        }
-
-        Ok(CrossLeverage(value))
-    }
-}
-
 impl TryFrom<u8> for CrossLeverage {
     type Error = CrossLeverageValidationError;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
-        Self::try_from(value as u64)
+        Self::try_from(value as u128)
     }
 }
 
@@ -181,7 +235,7 @@ impl TryFrom<u16> for CrossLeverage {
     type Error = CrossLeverageValidationError;
 
     fn try_from(value: u16) -> Result<Self, Self::Error> {
-        Self::try_from(value as u64)
+        Self::try_from(value as u128)
     }
 }
 
@@ -189,39 +243,33 @@ impl TryFrom<u32> for CrossLeverage {
     type Error = CrossLeverageValidationError;
 
     fn try_from(value: u32) -> Result<Self, Self::Error> {
-        Self::try_from(value as u64)
+        Self::try_from(value as u128)
     }
 }
 
-impl TryFrom<i8> for CrossLeverage {
+impl TryFrom<u64> for CrossLeverage {
     type Error = CrossLeverageValidationError;
 
-    fn try_from(value: i8) -> Result<Self, Self::Error> {
-        Self::try_from(value.max(0) as u64)
+    fn try_from(value: u64) -> Result<Self, Self::Error> {
+        Self::try_from(value as u128)
     }
 }
 
-impl TryFrom<i16> for CrossLeverage {
+impl TryFrom<u128> for CrossLeverage {
     type Error = CrossLeverageValidationError;
 
-    fn try_from(value: i16) -> Result<Self, Self::Error> {
-        Self::try_from(value.max(0) as u64)
-    }
-}
+    fn try_from(value: u128) -> Result<Self, Self::Error> {
+        if value < Self::MIN.0 as u128 {
+            return Err(CrossLeverageValidationError::TooLow {
+                value: value as i128,
+            });
+        }
 
-impl TryFrom<i32> for CrossLeverage {
-    type Error = CrossLeverageValidationError;
+        if value > Self::MAX.0 as u128 {
+            return Err(CrossLeverageValidationError::TooHigh { value });
+        }
 
-    fn try_from(value: i32) -> Result<Self, Self::Error> {
-        Self::try_from(value.max(0) as u64)
-    }
-}
-
-impl TryFrom<i64> for CrossLeverage {
-    type Error = CrossLeverageValidationError;
-
-    fn try_from(value: i64) -> Result<Self, Self::Error> {
-        Self::try_from(value.max(0) as u64)
+        Ok(CrossLeverage(value as u8))
     }
 }
 
@@ -229,7 +277,57 @@ impl TryFrom<usize> for CrossLeverage {
     type Error = CrossLeverageValidationError;
 
     fn try_from(value: usize) -> Result<Self, Self::Error> {
-        Self::try_from(value as u64)
+        Self::try_from(value as u128)
+    }
+}
+
+impl TryFrom<i8> for CrossLeverage {
+    type Error = CrossLeverageValidationError;
+
+    fn try_from(value: i8) -> Result<Self, Self::Error> {
+        Self::try_from(value as i128)
+    }
+}
+
+impl TryFrom<i16> for CrossLeverage {
+    type Error = CrossLeverageValidationError;
+
+    fn try_from(value: i16) -> Result<Self, Self::Error> {
+        Self::try_from(value as i128)
+    }
+}
+
+impl TryFrom<i32> for CrossLeverage {
+    type Error = CrossLeverageValidationError;
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        Self::try_from(value as i128)
+    }
+}
+
+impl TryFrom<i64> for CrossLeverage {
+    type Error = CrossLeverageValidationError;
+
+    fn try_from(value: i64) -> Result<Self, Self::Error> {
+        Self::try_from(value as i128)
+    }
+}
+
+impl TryFrom<i128> for CrossLeverage {
+    type Error = CrossLeverageValidationError;
+
+    fn try_from(value: i128) -> Result<Self, Self::Error> {
+        if value < Self::MIN.0 as i128 {
+            return Err(CrossLeverageValidationError::TooLow { value });
+        }
+
+        if value > Self::MAX.0 as i128 {
+            return Err(CrossLeverageValidationError::TooHigh {
+                value: value as u128,
+            });
+        }
+
+        Ok(CrossLeverage(value as u8))
     }
 }
 
@@ -237,7 +335,7 @@ impl TryFrom<isize> for CrossLeverage {
     type Error = CrossLeverageValidationError;
 
     fn try_from(value: isize) -> Result<Self, Self::Error> {
-        Self::try_from(value.max(0) as u64)
+        Self::try_from(value as i128)
     }
 }
 
@@ -257,7 +355,7 @@ impl TryFrom<f64> for CrossLeverage {
             return Err(CrossLeverageValidationError::NotAnInteger { value });
         }
 
-        Self::try_from(value.max(0.) as u64)
+        Self::try_from(value as i128)
     }
 }
 
@@ -272,7 +370,7 @@ impl Serialize for CrossLeverage {
     where
         S: serde::Serializer,
     {
-        serializer.serialize_u64(self.0)
+        serializer.serialize_u8(self.0)
     }
 }
 
@@ -281,7 +379,7 @@ impl<'de> Deserialize<'de> for CrossLeverage {
     where
         D: serde::Deserializer<'de>,
     {
-        let leverage_u64 = u64::deserialize(deserializer)?;
-        CrossLeverage::try_from(leverage_u64).map_err(|e| de::Error::custom(e.to_string()))
+        let leverage_u8 = u8::deserialize(deserializer)?;
+        CrossLeverage::try_from(leverage_u8).map_err(|e| de::Error::custom(e.to_string()))
     }
 }

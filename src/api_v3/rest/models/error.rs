@@ -25,13 +25,13 @@ pub enum CrossLeverageValidationError {
         "CrossLeverage must be at least {}. Value: {value}",
         CrossLeverage::MIN
     )]
-    TooLow { value: u64 },
+    TooLow { value: i128 },
 
     #[error(
         "CrossLeverage must be less than or equal to {}. Value: {value}",
         CrossLeverage::MAX
     )]
-    TooHigh { value: u64 },
+    TooHigh { value: u128 },
 
     #[error("CrossLeverage must be an integer. Value: {value}")]
     NotAnInteger { value: f64 },
