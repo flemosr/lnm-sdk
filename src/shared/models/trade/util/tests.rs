@@ -1,4 +1,4 @@
-use crate::api_v3::models::CrossQuantity;
+use crate::{api_v3::models::CrossQuantity, shared::models::error::MarginValidationError};
 
 use super::*;
 
@@ -520,7 +520,10 @@ fn test_added_margin_long_position() {
     let (new_margin, new_leverage, new_liquidation) =
         evaluate_added_margin(side, quantity, price, original_margin, additional_margin).unwrap();
 
-    assert_eq!(new_margin, original_margin + additional_margin.into());
+    assert_eq!(
+        new_margin,
+        original_margin.try_add(additional_margin.get()).unwrap()
+    );
     assert!(new_leverage < original_leverage);
 
     let original_liquidation =
@@ -540,7 +543,10 @@ fn test_added_margin_short_position() {
     let (new_margin, new_leverage, new_liquidation) =
         evaluate_added_margin(side, quantity, price, original_margin, additional_margin).unwrap();
 
-    assert_eq!(new_margin, original_margin + additional_margin.into());
+    assert_eq!(
+        new_margin,
+        original_margin.try_add(additional_margin.get()).unwrap()
+    );
     assert!(new_leverage < original_leverage);
 
     let original_liquidation =
@@ -726,6 +732,28 @@ fn test_cash_in_from_long_loss() {
 
     // Stoploss still above liquidation, should remain unchanged
     assert_eq!(new_stoploss, original_stoploss);
+}
+
+#[test]
+fn test_cash_in_large_amount_reports_final_margin_too_low() {
+    let side = TradeSide::Buy;
+    let quantity = OrderQuantity::try_from(1_000).unwrap();
+    let price = Price::try_from(100_000.0).unwrap();
+    let leverage = Leverage::try_from(10.0).unwrap();
+    let margin = Margin::calculate(quantity, price, leverage);
+    let amount_value = Margin::MAX.as_u64() + 1;
+    let amount = NonZeroU64::new(amount_value).unwrap();
+
+    let error = evaluate_cash_in(side, quantity, margin, price, None, price, amount)
+        .err()
+        .unwrap();
+    let expected_value = margin.as_u64() as i128 - amount_value as i128;
+
+    assert!(matches!(
+        error,
+        TradeValidationError::CashInInvalidMargin(MarginValidationError::TooLow { value })
+            if value == expected_value
+    ));
 }
 
 #[test]
