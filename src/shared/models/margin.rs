@@ -1,4 +1,4 @@
-use std::{convert::TryFrom, fmt, num::NonZeroU64, ops::Add};
+use std::{convert::TryFrom, fmt, num::NonZeroU64};
 
 use serde::{Deserialize, Serialize, de};
 
@@ -38,6 +38,12 @@ impl Margin {
     /// The minimum allowed margin value (1 satoshi).
     pub const MIN: Self = Self(1);
 
+    /// The maximum allowed margin value (21,000,000 BTC, or 2.1 quadrillion satoshis).
+    ///
+    /// This limit keeps every valid `Margin` value exactly representable as an `f64`, since
+    /// `2_100_000_000_000_000 < 2^53`.
+    pub const MAX: Self = Self(2_100_000_000_000_000);
+
     /// Creates a `Margin` by rounding and bounding the given value to the valid range.
     ///
     /// This method rounds the input to the nearest integer and ensures it is at least
@@ -70,9 +76,9 @@ impl Margin {
     {
         let as_f64: f64 = value.into();
         let rounded = as_f64.round().max(0.0) as u64;
-        let margin = rounded.max(Self::MIN.0);
+        let clamped = rounded.clamp(Self::MIN.0, Self::MAX.0);
 
-        Self(margin)
+        Self(clamped)
     }
 
     /// Returns the margin value as its underlying `u64` representation.
@@ -105,6 +111,8 @@ impl Margin {
 
     /// Returns the margin value as a `f64`.
     ///
+    /// Because `Margin::MAX` is below `2^53`, every valid margin value is represented exactly.
+    ///
     /// # Examples
     ///
     /// ```
@@ -117,7 +125,10 @@ impl Margin {
         self.0 as f64
     }
 
-    /// Adds two margin values and validates the result.
+    /// Adds a signed integer amount to this margin and validates the result.
+    ///
+    /// The operand may be any primitive integer type, including negative values. Only the final
+    /// result is validated against [`Margin::MIN`] and [`Margin::MAX`].
     ///
     /// # Examples
     ///
@@ -125,23 +136,35 @@ impl Margin {
     /// use lnm_sdk::api_v3::models::Margin;
     ///
     /// let base = Margin::try_from(10_000).unwrap();
-    /// let added = Margin::try_from(5_000).unwrap();
     ///
+    /// // Add another `Margin`
+    /// let added = Margin::try_from(5_000).unwrap();
     /// let total = base.try_add(added).unwrap();
     /// assert_eq!(total.as_u64(), 15_000);
+    ///
+    /// // Add a raw integer
+    /// let total = base.try_add(5_000i64).unwrap();
+    /// assert_eq!(total.as_u64(), 15_000);
+    ///
+    /// // Subtract via a negative operand
+    /// let total = base.try_add(-5_000i64).unwrap();
+    /// assert_eq!(total.as_u64(), 5_000);
     /// ```
-    pub fn try_add(self, other: Self) -> Result<Self, MarginValidationError> {
-        let sum = self
-            .0
-            .checked_add(other.0)
-            .ok_or_else(|| MarginValidationError::TooHigh {
-                value: self.0 as u128 + other.0 as u128,
-            })?;
+    pub fn try_add(self, other: impl TryInto<i128>) -> Result<Self, MarginValidationError> {
+        let other = other
+            .try_into()
+            .map_err(|_| MarginValidationError::TooHigh { value: u128::MAX })?;
+        let sum = i128::from(self)
+            .checked_add(other)
+            .ok_or(MarginValidationError::TooHigh { value: u128::MAX })?;
 
-        Ok(Self(sum))
+        Self::try_from(sum)
     }
 
-    /// Subtracts a margin value from another and validates the result.
+    /// Subtracts a signed integer amount from this margin and validates the result.
+    ///
+    /// The operand may be any primitive integer type, including negative values. Only the final
+    /// result is validated against [`Margin::MIN`] and [`Margin::MAX`].
     ///
     /// # Examples
     ///
@@ -149,13 +172,27 @@ impl Margin {
     /// use lnm_sdk::api_v3::models::Margin;
     ///
     /// let base = Margin::try_from(10_000).unwrap();
-    /// let removed = Margin::try_from(5_000).unwrap();
     ///
+    /// // Subtract another `Margin`
+    /// let removed = Margin::try_from(5_000).unwrap();
     /// let remaining = base.try_sub(removed).unwrap();
     /// assert_eq!(remaining.as_u64(), 5_000);
+    ///
+    /// // Subtract a raw integer
+    /// let remaining = base.try_sub(5_000i64).unwrap();
+    /// assert_eq!(remaining.as_u64(), 5_000);
+    ///
+    /// // Add via a negative operand
+    /// let remaining = base.try_sub(-5_000i64).unwrap();
+    /// assert_eq!(remaining.as_u64(), 15_000);
     /// ```
-    pub fn try_sub(self, other: Self) -> Result<Self, MarginValidationError> {
-        let difference = self.0.saturating_sub(other.0);
+    pub fn try_sub(self, other: impl TryInto<i128>) -> Result<Self, MarginValidationError> {
+        let other = other
+            .try_into()
+            .map_err(|_| MarginValidationError::TooLow { value: i128::MIN })?;
+        let difference = i128::from(self)
+            .checked_sub(other)
+            .ok_or(MarginValidationError::TooHigh { value: u128::MAX })?;
 
         Self::try_from(difference)
     }
@@ -255,17 +292,15 @@ impl Margin {
     }
 }
 
-impl Add for Margin {
-    type Output = Self;
-
-    fn add(self, other: Self) -> Self::Output {
-        Margin(self.0 + other.0)
-    }
-}
-
 impl From<Margin> for u64 {
     fn from(value: Margin) -> Self {
         value.0
+    }
+}
+
+impl From<Margin> for u128 {
+    fn from(value: Margin) -> Self {
+        value.0 as u128
     }
 }
 
@@ -275,15 +310,15 @@ impl From<Margin> for i64 {
     }
 }
 
-impl From<Margin> for f64 {
+impl From<Margin> for i128 {
     fn from(value: Margin) -> Self {
-        value.0 as f64
+        value.0 as i128
     }
 }
 
-impl From<NonZeroU64> for Margin {
-    fn from(value: NonZeroU64) -> Self {
-        Margin(value.get())
+impl From<Margin> for f64 {
+    fn from(value: Margin) -> Self {
+        value.0 as f64
     }
 }
 
@@ -291,7 +326,7 @@ impl TryFrom<u8> for Margin {
     type Error = MarginValidationError;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
-        Self::try_from(value as u64)
+        Self::try_from(value as u128)
     }
 }
 
@@ -299,7 +334,7 @@ impl TryFrom<u16> for Margin {
     type Error = MarginValidationError;
 
     fn try_from(value: u16) -> Result<Self, Self::Error> {
-        Self::try_from(value as u64)
+        Self::try_from(value as u128)
     }
 }
 
@@ -307,7 +342,7 @@ impl TryFrom<u32> for Margin {
     type Error = MarginValidationError;
 
     fn try_from(value: u32) -> Result<Self, Self::Error> {
-        Self::try_from(value as u64)
+        Self::try_from(value as u128)
     }
 }
 
@@ -315,43 +350,25 @@ impl TryFrom<u64> for Margin {
     type Error = MarginValidationError;
 
     fn try_from(value: u64) -> Result<Self, Self::Error> {
-        if value < Self::MIN.0 {
-            return Err(MarginValidationError::TooLow { value });
+        Self::try_from(value as u128)
+    }
+}
+
+impl TryFrom<u128> for Margin {
+    type Error = MarginValidationError;
+
+    fn try_from(value: u128) -> Result<Self, Self::Error> {
+        if value < Self::MIN.0 as u128 {
+            return Err(MarginValidationError::TooLow {
+                value: value as i128,
+            });
         }
 
-        Ok(Self(value))
-    }
-}
+        if value > Self::MAX.0 as u128 {
+            return Err(MarginValidationError::TooHigh { value });
+        }
 
-impl TryFrom<i8> for Margin {
-    type Error = MarginValidationError;
-
-    fn try_from(value: i8) -> Result<Self, Self::Error> {
-        Self::try_from(value.max(0) as u64)
-    }
-}
-
-impl TryFrom<i16> for Margin {
-    type Error = MarginValidationError;
-
-    fn try_from(value: i16) -> Result<Self, Self::Error> {
-        Self::try_from(value.max(0) as u64)
-    }
-}
-
-impl TryFrom<i32> for Margin {
-    type Error = MarginValidationError;
-
-    fn try_from(value: i32) -> Result<Self, Self::Error> {
-        Self::try_from(value.max(0) as u64)
-    }
-}
-
-impl TryFrom<i64> for Margin {
-    type Error = MarginValidationError;
-
-    fn try_from(value: i64) -> Result<Self, Self::Error> {
-        Self::try_from(value.max(0) as u64)
+        Ok(Margin(value as u64))
     }
 }
 
@@ -359,7 +376,65 @@ impl TryFrom<usize> for Margin {
     type Error = MarginValidationError;
 
     fn try_from(value: usize) -> Result<Self, Self::Error> {
-        Self::try_from(value as u64)
+        Self::try_from(value as u128)
+    }
+}
+
+impl TryFrom<NonZeroU64> for Margin {
+    type Error = MarginValidationError;
+
+    fn try_from(value: NonZeroU64) -> Result<Self, Self::Error> {
+        Self::try_from(value.get())
+    }
+}
+
+impl TryFrom<i8> for Margin {
+    type Error = MarginValidationError;
+
+    fn try_from(value: i8) -> Result<Self, Self::Error> {
+        Self::try_from(value as i128)
+    }
+}
+
+impl TryFrom<i16> for Margin {
+    type Error = MarginValidationError;
+
+    fn try_from(value: i16) -> Result<Self, Self::Error> {
+        Self::try_from(value as i128)
+    }
+}
+
+impl TryFrom<i32> for Margin {
+    type Error = MarginValidationError;
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        Self::try_from(value as i128)
+    }
+}
+
+impl TryFrom<i64> for Margin {
+    type Error = MarginValidationError;
+
+    fn try_from(value: i64) -> Result<Self, Self::Error> {
+        Self::try_from(value as i128)
+    }
+}
+
+impl TryFrom<i128> for Margin {
+    type Error = MarginValidationError;
+
+    fn try_from(value: i128) -> Result<Self, Self::Error> {
+        if value < Self::MIN.0 as i128 {
+            return Err(MarginValidationError::TooLow { value });
+        }
+
+        if value > Self::MAX.0 as i128 {
+            return Err(MarginValidationError::TooHigh {
+                value: value as u128,
+            });
+        }
+
+        Ok(Margin(value as u64))
     }
 }
 
@@ -367,7 +442,7 @@ impl TryFrom<isize> for Margin {
     type Error = MarginValidationError;
 
     fn try_from(value: isize) -> Result<Self, Self::Error> {
-        Self::try_from(value.max(0) as u64)
+        Self::try_from(value as i128)
     }
 }
 
@@ -383,15 +458,15 @@ impl TryFrom<f64> for Margin {
     type Error = MarginValidationError;
 
     fn try_from(value: f64) -> Result<Self, Self::Error> {
-        if value.fract() != 0.0 {
-            return Err(MarginValidationError::NotAnInteger { value });
-        }
-
         if !value.is_finite() {
             return Err(MarginValidationError::NotFinite);
         }
 
-        Self::try_from(value.max(0.) as u64)
+        if value.fract() != 0.0 {
+            return Err(MarginValidationError::NotAnInteger { value });
+        }
+
+        Self::try_from(value as i128)
     }
 }
 
@@ -437,13 +512,13 @@ mod tests {
     }
 
     #[test]
-    fn test_try_add_margin_fails_on_overflow() {
-        let max_margin = Margin::try_from(u64::MAX).unwrap();
-        let error = max_margin.try_add(Margin::MIN).err().unwrap();
+    fn test_try_add_margin_fails_above_max() {
+        let error = Margin::MAX.try_add(Margin::MIN).err().unwrap();
 
         assert!(matches!(
             error,
-            MarginValidationError::TooHigh { value } if value == u64::MAX as u128 + 1
+            MarginValidationError::TooHigh { value }
+                if value == Margin::MAX.as_u64() as u128 + 1
         ));
     }
 
@@ -473,8 +548,119 @@ mod tests {
 
         assert!(matches!(
             error,
-            MarginValidationError::TooLow { value } if value == 0
+            MarginValidationError::TooLow { value } if value == -1
         ));
+    }
+
+    #[test]
+    fn test_try_add_margin_with_primitive_integer() {
+        let base = Margin::try_from(10_000).unwrap();
+
+        let total = base.try_add(5_000u32).unwrap();
+        assert_eq!(total, Margin::try_from(15_000).unwrap());
+
+        let total = base.try_add(5_000usize).unwrap();
+        assert_eq!(total, Margin::try_from(15_000).unwrap());
+
+        let total = base.try_add(5_000u128).unwrap();
+        assert_eq!(total, Margin::try_from(15_000).unwrap());
+    }
+
+    #[test]
+    fn test_try_sub_margin_with_primitive_integer() {
+        let base = Margin::try_from(10_000).unwrap();
+
+        let remaining = base.try_sub(5_000u32).unwrap();
+        assert_eq!(remaining, Margin::try_from(5_000).unwrap());
+
+        let remaining = base.try_sub(5_000usize).unwrap();
+        assert_eq!(remaining, Margin::try_from(5_000).unwrap());
+
+        let remaining = base.try_sub(5_000u128).unwrap();
+        assert_eq!(remaining, Margin::try_from(5_000).unwrap());
+    }
+
+    #[test]
+    fn test_try_add_margin_negative_operand_reduces_value() {
+        let base = Margin::try_from(10_000).unwrap();
+
+        let total = base.try_add(-5_000i64).unwrap();
+        assert_eq!(total, Margin::try_from(5_000).unwrap());
+    }
+
+    #[test]
+    fn test_try_add_margin_negative_operand_fails_when_below_min() {
+        let error = Margin::try_from(500)
+            .unwrap()
+            .try_add(-501i64)
+            .err()
+            .unwrap();
+
+        assert!(matches!(
+            error,
+            MarginValidationError::TooLow { value } if value == -1
+        ));
+    }
+
+    #[test]
+    fn test_try_sub_margin_negative_operand_increases_value() {
+        let base = Margin::try_from(10_000).unwrap();
+
+        let total = base.try_sub(-5_000i64).unwrap();
+        assert_eq!(total, Margin::try_from(15_000).unwrap());
+    }
+
+    #[test]
+    fn test_try_sub_margin_large_negative_operand_reports_too_high() {
+        let error = Margin::MAX.try_sub(i128::MIN).err().unwrap();
+
+        assert!(matches!(
+            error,
+            MarginValidationError::TooHigh { value } if value == u128::MAX
+        ));
+    }
+
+    #[test]
+    fn test_margin_try_from_u128() {
+        let error = Margin::try_from(0u128).err().unwrap();
+        assert!(matches!(error, MarginValidationError::TooLow { value } if value == 0));
+
+        let error = Margin::try_from(u128::MAX).err().unwrap();
+        assert!(matches!(error, MarginValidationError::TooHigh { value } if value == u128::MAX));
+
+        let error = Margin::try_from(Margin::MAX.as_u64() as u128 + 1)
+            .err()
+            .unwrap();
+        assert!(matches!(
+            error,
+            MarginValidationError::TooHigh { value }
+                if value == Margin::MAX.as_u64() as u128 + 1
+        ));
+
+        assert_eq!(
+            Margin::try_from(Margin::MAX.as_u64() as u128).unwrap(),
+            Margin::MAX
+        );
+    }
+
+    #[test]
+    fn test_margin_max_is_exactly_representable_as_f64() {
+        let max_f64 = Margin::MAX.as_f64();
+        let back = Margin::try_from(max_f64).unwrap();
+        assert_eq!(back, Margin::MAX);
+    }
+
+    #[test]
+    fn test_margin_try_from_non_zero_u64() {
+        let margin = Margin::try_from(NonZeroU64::new(10_000).unwrap()).unwrap();
+        assert_eq!(margin, Margin::try_from(10_000).unwrap());
+
+        let error = Margin::try_from(NonZeroU64::new(Margin::MAX.as_u64() + 1).unwrap())
+            .err()
+            .unwrap();
+        assert!(
+            matches!(error, MarginValidationError::TooHigh { value } if value == Margin::MAX.as_u64() as u128 + 1)
+        );
     }
 
     #[test]

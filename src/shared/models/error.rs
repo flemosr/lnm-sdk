@@ -28,9 +28,9 @@ pub enum QuantityValidationError {
 #[derive(Debug, Error)]
 pub enum MarginValidationError {
     #[error("Margin must be at least {}. Value: {value}", Margin::MIN)]
-    TooLow { value: u64 },
+    TooLow { value: i128 },
 
-    #[error("Margin must be less than or equal to {}. Value: {value}", u64::MAX)]
+    #[error("Margin must be less than or equal to {}. Value: {value}", Margin::MAX)]
     TooHigh { value: u128 },
 
     #[error("Margin must be a finite number")]
