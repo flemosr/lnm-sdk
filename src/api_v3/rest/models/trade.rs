@@ -6,6 +6,7 @@ use uuid::Uuid;
 
 use crate::shared::models::{
     SATS_PER_BTC,
+    error::MarginValidationError,
     leverage::Leverage,
     margin::Margin,
     price::Price,
@@ -984,16 +985,19 @@ pub struct CrossExposureRunning {
 }
 
 impl CrossExposureRunning {
-    fn new(
-        margin: impl TryInto<Margin>,
+    fn new<M>(
+        margin: M,
         leverage: CrossLeverage,
         side: TradeSide,
         quantity: CrossQuantity,
         entry_price: Price,
-    ) -> Result<Self, CrossExposureValidationError> {
+    ) -> Result<Self, CrossExposureValidationError>
+    where
+        M: TryInto<Margin, Error = MarginValidationError>,
+    {
         let margin = margin
             .try_into()
-            .map_err(|_| CrossExposureValidationError::CrossMarginTooLow)?;
+            .map_err(CrossExposureValidationError::CrossMargin)?;
 
         let max_qtd = CrossQuantity::max(leverage);
         if quantity > max_qtd {
@@ -1011,10 +1015,8 @@ impl CrossExposureRunning {
         let maintenance_margin =
             Margin::bounded((notional_sats * CROSS_MAINTENANCE_MARGIN_RATE).floor());
         let liquidation_margin = margin
-            .as_u64()
-            .checked_sub(maintenance_margin.as_u64())
-            .and_then(|margin| Margin::try_from(margin).ok())
-            .ok_or(CrossExposureValidationError::CrossMarginTooLow)?;
+            .try_sub(maintenance_margin)
+            .map_err(|_| CrossExposureValidationError::CrossMarginTooLow)?;
 
         if running_margin >= liquidation_margin {
             return Err(CrossExposureValidationError::CrossMarginTooLow);
@@ -1566,6 +1568,26 @@ mod tests {
         assert!(matches!(
             exposure,
             Err(CrossExposureValidationError::CrossMarginTooLow)
+        ));
+    }
+
+    #[test]
+    fn test_cross_exposure_rejects_invalid_cross_margin() {
+        let margin = Margin::MAX.as_u64() + 1;
+        let error = CrossExposure::running(
+            margin,
+            CrossLeverage::try_from(10_u64).unwrap(),
+            TradeSide::Buy,
+            CrossQuantity::try_from(1_000).unwrap(),
+            Price::try_from(100_000).unwrap(),
+        )
+        .err()
+        .unwrap();
+
+        assert!(matches!(
+            error,
+            CrossExposureValidationError::CrossMargin(MarginValidationError::TooHigh { value })
+                if value == margin as u128
         ));
     }
 

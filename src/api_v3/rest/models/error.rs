@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-use crate::shared::models::error::QuantityValidationError;
+use crate::shared::models::error::{MarginValidationError, QuantityValidationError};
 
 use super::{client_id::ClientId, cross_leverage::CrossLeverage, cross_quantity::CrossQuantity};
 
@@ -59,6 +59,9 @@ pub enum CrossQuantityValidationError {
 pub enum CrossExposureValidationError {
     #[error("Cross margin is too low for the requested exposure")]
     CrossMarginTooLow,
+
+    #[error("[CrossMarginValidation] {0}")]
+    CrossMargin(#[from] MarginValidationError),
 
     #[error("Cross exposure running position is missing an entry price")]
     MissingEntryPrice,
