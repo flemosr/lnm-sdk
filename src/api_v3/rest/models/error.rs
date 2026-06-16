@@ -43,13 +43,13 @@ pub enum CrossQuantityValidationError {
         "CrossQuantity must be at least {}. Value: {value}",
         CrossQuantity::MIN
     )]
-    TooLow { value: u64 },
+    TooLow { value: i128 },
 
     #[error(
         "CrossQuantity must be less than or equal to {}. Value: {value}",
         CrossQuantity::HARD_MAX
     )]
-    TooHigh { value: u64 },
+    TooHigh { value: u128 },
 
     #[error("CrossQuantity must be an integer. Value: {value}")]
     NotAnInteger { value: f64 },
