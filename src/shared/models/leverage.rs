@@ -35,10 +35,10 @@ pub struct Leverage(f64);
 
 impl Leverage {
     /// The minimum allowed leverage value (1x).
-    pub const MIN: Self = Self(1.);
+    pub const MIN: Self = Self(1.0);
 
     /// The maximum allowed leverage value (100x).
-    pub const MAX: Self = Self(100.);
+    pub const MAX: Self = Self(100.0);
 
     /// Creates a `Leverage` by bounding the given value to the valid range.
     ///
@@ -147,14 +147,6 @@ impl TryFrom<u32> for Leverage {
     }
 }
 
-impl TryFrom<u64> for Leverage {
-    type Error = LeverageValidationError;
-
-    fn try_from(value: u64) -> Result<Self, Self::Error> {
-        Self::try_from(value as f64)
-    }
-}
-
 impl TryFrom<i8> for Leverage {
     type Error = LeverageValidationError;
 
@@ -179,30 +171,6 @@ impl TryFrom<i32> for Leverage {
     }
 }
 
-impl TryFrom<i64> for Leverage {
-    type Error = LeverageValidationError;
-
-    fn try_from(value: i64) -> Result<Self, Self::Error> {
-        Self::try_from(value as f64)
-    }
-}
-
-impl TryFrom<usize> for Leverage {
-    type Error = LeverageValidationError;
-
-    fn try_from(value: usize) -> Result<Self, Self::Error> {
-        Self::try_from(value as f64)
-    }
-}
-
-impl TryFrom<isize> for Leverage {
-    type Error = LeverageValidationError;
-
-    fn try_from(value: isize) -> Result<Self, Self::Error> {
-        Self::try_from(value as f64)
-    }
-}
-
 impl TryFrom<f32> for Leverage {
     type Error = LeverageValidationError;
 
@@ -215,6 +183,10 @@ impl TryFrom<f64> for Leverage {
     type Error = LeverageValidationError;
 
     fn try_from(value: f64) -> Result<Self, Self::Error> {
+        if value.is_nan() {
+            return Err(LeverageValidationError::NotANumber);
+        }
+
         if value < Self::MIN.0 {
             return Err(LeverageValidationError::TooLow { value });
         }
@@ -265,5 +237,17 @@ impl<'de> Deserialize<'de> for Leverage {
     {
         let leverage_f64 = f64::deserialize(deserializer)?;
         Leverage::try_from(leverage_f64).map_err(|e| de::Error::custom(e.to_string()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_try_from_nan_returns_not_a_number() {
+        let error = Leverage::try_from(f64::NAN).err().unwrap();
+
+        assert!(matches!(error, LeverageValidationError::NotANumber));
     }
 }

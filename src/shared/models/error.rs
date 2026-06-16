@@ -47,6 +47,9 @@ pub enum LeverageValidationError {
 
     #[error("Leverage must be at most {}. Value: {value}", Leverage::MAX)]
     TooHigh { value: f64 },
+
+    #[error("Leverage must be a number")]
+    NotANumber,
 }
 
 #[derive(Debug, Error)]
