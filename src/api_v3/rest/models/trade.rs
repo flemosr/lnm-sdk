@@ -178,7 +178,7 @@ impl Trade {
         self.id
     }
 
-    /// Returns the execution type (Market or Limit).
+    /// Returns the execution type (Market, Limit, or Liquidation).
     ///
     /// # Examples
     ///
@@ -740,7 +740,7 @@ impl CrossOrder {
         self.id
     }
 
-    /// Returns the execution type (Market or Limit).
+    /// Returns the execution type (Market, Limit, or Liquidation).
     ///
     /// # Examples
     ///
@@ -1610,5 +1610,27 @@ mod tests {
         assert_eq!(running.quantity(), CrossQuantity::try_from(1_000).unwrap());
         assert_eq!(running.entry_price(), entry_price);
         assert_eq!(running.liquidation(), Price::try_from(199_402).unwrap());
+    }
+
+    #[test]
+    fn test_cross_order_deserializes_liquidation_type() {
+        let json = r#"{
+            "id": "be4f36fe-55ea-4f77-838d-d1df26f216e1",
+            "type": "liquidation",
+            "side": "buy",
+            "quantity": 10,
+            "price": 77055,
+            "tradingFee": 12,
+            "createdAt": "2026-04-22T11:07:19.867Z",
+            "filledAt": "2026-04-22T11:07:19.867Z",
+            "canceledAt": null,
+            "open": false,
+            "filled": true,
+            "canceled": false,
+            "clientId": null
+        }"#;
+
+        let order: CrossOrder = serde_json::from_str(json).expect("must deserialize");
+        assert_eq!(order.trade_type(), TradeExecutionType::Liquidation);
     }
 }

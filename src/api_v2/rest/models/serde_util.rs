@@ -44,6 +44,7 @@ pub(in crate::api_v2) mod trade_execution_type {
         serializer.serialize_str(match value {
             TradeExecutionType::Market => "m",
             TradeExecutionType::Limit => "l",
+            TradeExecutionType::Liquidation => "liquidation",
         })
     }
 
@@ -55,6 +56,7 @@ pub(in crate::api_v2) mod trade_execution_type {
         match s.as_str() {
             "m" => Ok(TradeExecutionType::Market),
             "l" => Ok(TradeExecutionType::Limit),
+            "liquidation" => Ok(TradeExecutionType::Liquidation),
             _ => Err(serde::de::Error::custom(format!(
                 "unknown trade execution type: {s}",
             ))),

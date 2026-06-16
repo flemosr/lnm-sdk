@@ -155,6 +155,7 @@ impl fmt::Display for TradeSize {
 pub enum TradeExecutionType {
     Market,
     Limit,
+    Liquidation,
 }
 
 impl fmt::Display for TradeExecutionType {
@@ -162,6 +163,7 @@ impl fmt::Display for TradeExecutionType {
         let type_str = match self {
             TradeExecutionType::Market => "Market",
             TradeExecutionType::Limit => "Limit",
+            TradeExecutionType::Liquidation => "Liquidation",
         };
         write!(f, "{}", type_str)
     }

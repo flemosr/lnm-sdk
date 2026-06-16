@@ -190,7 +190,7 @@ impl Trade {
         self.uid
     }
 
-    /// Returns the execution type (Market or Limit).
+    /// Returns the execution type (Market, Limit, or Liquidation).
     ///
     /// # Examples
     ///
