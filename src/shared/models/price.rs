@@ -629,14 +629,6 @@ impl TryFrom<u32> for Price {
     }
 }
 
-impl TryFrom<u64> for Price {
-    type Error = PriceValidationError;
-
-    fn try_from(value: u64) -> Result<Self, Self::Error> {
-        Self::try_from(value as f64)
-    }
-}
-
 impl TryFrom<i8> for Price {
     type Error = PriceValidationError;
 
@@ -661,30 +653,6 @@ impl TryFrom<i32> for Price {
     }
 }
 
-impl TryFrom<i64> for Price {
-    type Error = PriceValidationError;
-
-    fn try_from(value: i64) -> Result<Self, Self::Error> {
-        Self::try_from(value as f64)
-    }
-}
-
-impl TryFrom<usize> for Price {
-    type Error = PriceValidationError;
-
-    fn try_from(value: usize) -> Result<Self, Self::Error> {
-        Self::try_from(value as f64)
-    }
-}
-
-impl TryFrom<isize> for Price {
-    type Error = PriceValidationError;
-
-    fn try_from(value: isize) -> Result<Self, Self::Error> {
-        Self::try_from(value as f64)
-    }
-}
-
 impl TryFrom<f32> for Price {
     type Error = PriceValidationError;
 
@@ -697,6 +665,10 @@ impl TryFrom<f64> for Price {
     type Error = PriceValidationError;
 
     fn try_from(value: f64) -> Result<Self, Self::Error> {
+        if value.is_nan() {
+            return Err(PriceValidationError::NotANumber);
+        }
+
         if value < Self::MIN.0 {
             return Err(PriceValidationError::TooLow { value });
         }
@@ -752,5 +724,31 @@ impl<'de> Deserialize<'de> for Price {
     {
         let price_f64 = f64::deserialize(deserializer)?;
         Price::try_from(price_f64).map_err(|e| de::Error::custom(e.to_string()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_percentage_capped_try_from_nan_returns_not_a_number() {
+        let error = PercentageCapped::try_from(f64::NAN).err().unwrap();
+
+        assert!(matches!(error, PercentageCappedValidationError::NotANumber));
+    }
+
+    #[test]
+    fn test_percentage_try_from_nan_returns_not_a_number() {
+        let error = Percentage::try_from(f64::NAN).err().unwrap();
+
+        assert!(matches!(error, PercentageValidationError::NotANumber));
+    }
+
+    #[test]
+    fn test_price_try_from_nan_returns_not_a_number() {
+        let error = Price::try_from(f64::NAN).err().unwrap();
+
+        assert!(matches!(error, PriceValidationError::NotANumber));
     }
 }

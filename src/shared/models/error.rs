@@ -92,6 +92,9 @@ pub enum PriceValidationError {
 
     #[error("Price must be at most {}. Value: {value}", Price::MAX)]
     TooHigh { value: f64 },
+
+    #[error("Price must be a number")]
+    NotANumber,
 }
 
 #[derive(Debug, Error)]
