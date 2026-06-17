@@ -65,6 +65,9 @@ pub enum PercentageCappedValidationError {
         PercentageCapped::MAX
     )]
     AboveMaximum { value: f64 },
+
+    #[error("PercentageCapped must be a number")]
+    NotANumber,
 }
 
 #[derive(Debug, Error)]
@@ -75,8 +78,8 @@ pub enum PercentageValidationError {
     #[error("Percentage must be at most {}. Value: {value}", Percentage::MAX)]
     AboveMaximum { value: f64 },
 
-    #[error("Percentage must be a finite number")]
-    NotFinite,
+    #[error("Percentage must be a number")]
+    NotANumber,
 }
 
 #[derive(Debug, Error)]

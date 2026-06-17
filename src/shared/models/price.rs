@@ -91,6 +91,12 @@ impl PercentageCapped {
     }
 }
 
+impl From<PercentageCapped> for f64 {
+    fn from(value: PercentageCapped) -> f64 {
+        value.0
+    }
+}
+
 impl TryFrom<u8> for PercentageCapped {
     type Error = PercentageCappedValidationError;
 
@@ -111,14 +117,6 @@ impl TryFrom<u32> for PercentageCapped {
     type Error = PercentageCappedValidationError;
 
     fn try_from(value: u32) -> Result<Self, Self::Error> {
-        Self::try_from(value as f64)
-    }
-}
-
-impl TryFrom<u64> for PercentageCapped {
-    type Error = PercentageCappedValidationError;
-
-    fn try_from(value: u64) -> Result<Self, Self::Error> {
         Self::try_from(value as f64)
     }
 }
@@ -147,30 +145,6 @@ impl TryFrom<i32> for PercentageCapped {
     }
 }
 
-impl TryFrom<i64> for PercentageCapped {
-    type Error = PercentageCappedValidationError;
-
-    fn try_from(value: i64) -> Result<Self, Self::Error> {
-        Self::try_from(value as f64)
-    }
-}
-
-impl TryFrom<usize> for PercentageCapped {
-    type Error = PercentageCappedValidationError;
-
-    fn try_from(value: usize) -> Result<Self, Self::Error> {
-        Self::try_from(value as f64)
-    }
-}
-
-impl TryFrom<isize> for PercentageCapped {
-    type Error = PercentageCappedValidationError;
-
-    fn try_from(value: isize) -> Result<Self, Self::Error> {
-        Self::try_from(value as f64)
-    }
-}
-
 impl TryFrom<f32> for PercentageCapped {
     type Error = PercentageCappedValidationError;
 
@@ -183,6 +157,10 @@ impl TryFrom<f64> for PercentageCapped {
     type Error = PercentageCappedValidationError;
 
     fn try_from(value: f64) -> Result<Self, Self::Error> {
+        if value.is_nan() {
+            return Err(PercentageCappedValidationError::NotANumber);
+        }
+
         if value < Self::MIN.0 {
             return Err(PercentageCappedValidationError::BelowMinimum { value });
         }
@@ -192,12 +170,6 @@ impl TryFrom<f64> for PercentageCapped {
         }
 
         Ok(Self(value))
-    }
-}
-
-impl From<PercentageCapped> for f64 {
-    fn from(value: PercentageCapped) -> f64 {
-        value.0
     }
 }
 
@@ -307,6 +279,12 @@ impl Percentage {
     }
 }
 
+impl From<Percentage> for f64 {
+    fn from(value: Percentage) -> f64 {
+        value.0
+    }
+}
+
 impl TryFrom<u8> for Percentage {
     type Error = PercentageValidationError;
 
@@ -327,14 +305,6 @@ impl TryFrom<u32> for Percentage {
     type Error = PercentageValidationError;
 
     fn try_from(value: u32) -> Result<Self, Self::Error> {
-        Self::try_from(value as f64)
-    }
-}
-
-impl TryFrom<u64> for Percentage {
-    type Error = PercentageValidationError;
-
-    fn try_from(value: u64) -> Result<Self, Self::Error> {
         Self::try_from(value as f64)
     }
 }
@@ -363,30 +333,6 @@ impl TryFrom<i32> for Percentage {
     }
 }
 
-impl TryFrom<i64> for Percentage {
-    type Error = PercentageValidationError;
-
-    fn try_from(value: i64) -> Result<Self, Self::Error> {
-        Self::try_from(value as f64)
-    }
-}
-
-impl TryFrom<usize> for Percentage {
-    type Error = PercentageValidationError;
-
-    fn try_from(value: usize) -> Result<Self, Self::Error> {
-        Self::try_from(value as f64)
-    }
-}
-
-impl TryFrom<isize> for Percentage {
-    type Error = PercentageValidationError;
-
-    fn try_from(value: isize) -> Result<Self, Self::Error> {
-        Self::try_from(value as f64)
-    }
-}
-
 impl TryFrom<f32> for Percentage {
     type Error = PercentageValidationError;
 
@@ -399,6 +345,10 @@ impl TryFrom<f64> for Percentage {
     type Error = PercentageValidationError;
 
     fn try_from(value: f64) -> Result<Self, Self::Error> {
+        if value.is_nan() {
+            return Err(PercentageValidationError::NotANumber);
+        }
+
         if value < Self::MIN.0 {
             return Err(PercentageValidationError::BelowMinimum { value });
         }
@@ -408,12 +358,6 @@ impl TryFrom<f64> for Percentage {
         }
 
         Ok(Self(value))
-    }
-}
-
-impl From<Percentage> for f64 {
-    fn from(value: Percentage) -> f64 {
-        value.0
     }
 }
 
