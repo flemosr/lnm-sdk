@@ -22,8 +22,8 @@ pub mod error {
     pub use super::rest::{
         error::RestApiV3Error,
         models::error::{
-            ClientIdValidationError, CrossExposureValidationError, CrossQuantityValidationError,
-            FuturesIsolatedTradeRequestValidationError,
+            ClientIdValidationError, CrossExposureValidationError, CrossLeverageValidationError,
+            CrossQuantityValidationError, FuturesIsolatedTradeRequestValidationError,
         },
     };
 }
