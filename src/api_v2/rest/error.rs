@@ -3,6 +3,7 @@ use thiserror::Error;
 use super::models::error::FuturesTradeRequestValidationError;
 
 #[derive(Error, Debug)]
+#[non_exhaustive]
 pub enum RestApiV2Error {
     #[error("Invalid futures trade request error: {0}")]
     FuturesTradeRequestValidation(FuturesTradeRequestValidationError),

@@ -8,6 +8,7 @@ use super::{
 };
 
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum QuantityValidationError {
     #[error(
         "OrderQuantity must be at least {}. Value: {value}",
@@ -26,6 +27,7 @@ pub enum QuantityValidationError {
 }
 
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum MarginValidationError {
     #[error("Margin must be at least {}. Value: {value}", Margin::MIN)]
     TooLow { value: i128 },
@@ -41,6 +43,7 @@ pub enum MarginValidationError {
 }
 
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum LeverageValidationError {
     #[error("Leverage must be at least {}. Value: {value}", Leverage::MIN)]
     TooLow { value: f64 },
@@ -53,6 +56,7 @@ pub enum LeverageValidationError {
 }
 
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum PercentageCappedValidationError {
     #[error(
         "PercentageCapped must be at least {}. Value: {value}",
@@ -71,6 +75,7 @@ pub enum PercentageCappedValidationError {
 }
 
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum PercentageValidationError {
     #[error("Percentage must be at least {}. Value: {value}", Percentage::MIN)]
     BelowMinimum { value: f64 },
@@ -83,6 +88,7 @@ pub enum PercentageValidationError {
 }
 
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum PriceValidationError {
     #[error("Price must be at least {}. Value: {value}", Price::MIN)]
     TooLow { value: f64 },
@@ -98,6 +104,7 @@ pub enum PriceValidationError {
 }
 
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum TradeValidationError {
     #[error(
         "Stoploss ({stoploss}) can't be below liquidation price ({liquidation}) for long positions"

@@ -16,6 +16,7 @@ use super::{
 };
 
 #[derive(Error, Debug)]
+#[non_exhaustive]
 pub enum WebSocketConnectionError {
     #[error("InvalidDnsName error, {0}")]
     InvalidDnsName(InvalidDnsNameError),
@@ -66,6 +67,7 @@ pub enum WebSocketConnectionError {
 pub(in crate::api_v2) type ConnectionResult<T> = result::Result<T, WebSocketConnectionError>;
 
 #[derive(Error, Debug)]
+#[non_exhaustive]
 pub enum WebSocketApiError {
     #[error("Failed to spawn event loop: {0}")]
     FailedToSpawnEventLoop(WebSocketConnectionError),

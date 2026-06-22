@@ -5,6 +5,7 @@ use crate::shared::models::error::{MarginValidationError, QuantityValidationErro
 use super::{client_id::ClientId, cross_leverage::CrossLeverage, cross_quantity::CrossQuantity};
 
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum ClientIdValidationError {
     #[error(
         "Client ID must be at least {} character(s). Length: {len}",
@@ -20,6 +21,7 @@ pub enum ClientIdValidationError {
 }
 
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum CrossLeverageValidationError {
     #[error(
         "CrossLeverage must be at least {}. Value: {value}",
@@ -38,6 +40,7 @@ pub enum CrossLeverageValidationError {
 }
 
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum CrossQuantityValidationError {
     #[error(
         "CrossQuantity must be at least {}. Value: {value}",
@@ -56,6 +59,7 @@ pub enum CrossQuantityValidationError {
 }
 
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum CrossExposureValidationError {
     #[error("Cross margin is too low for the requested exposure")]
     CrossMarginTooLow,
@@ -78,6 +82,7 @@ pub enum CrossExposureValidationError {
 }
 
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum FuturesIsolatedTradeRequestValidationError {
     #[error("Price cannot be set for market orders")]
     PriceSetForMarketOrder,

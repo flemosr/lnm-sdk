@@ -6,6 +6,7 @@ use crate::shared::models::error::{
 };
 
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum FuturesTradeRequestValidationError {
     #[error("Price cannot be set for market orders")]
     PriceSetForMarketOrder,
@@ -24,6 +25,7 @@ pub enum FuturesTradeRequestValidationError {
 }
 
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum ValidationError {
     #[error("[PriceValidation] {0}")]
     PriceValidation(#[from] PriceValidationError),

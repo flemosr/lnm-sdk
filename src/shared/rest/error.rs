@@ -8,6 +8,7 @@ use crate::api_v2::rest::error::RestApiV2Error;
 use crate::api_v3::rest::error::RestApiV3Error;
 
 #[derive(Error, Debug)]
+#[non_exhaustive]
 pub enum RestApiError {
     #[error("Url parse error: {0}")]
     UrlParse(String),
