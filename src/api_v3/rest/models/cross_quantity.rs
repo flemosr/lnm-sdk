@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize, de};
 
 use crate::shared::models::{
     SATS_PER_BTC,
+    error::QuantityValidationError,
     margin::Margin,
     price::Price,
     quantity::{OrderQuantity, QuantityLike},
@@ -474,6 +475,14 @@ impl TryFrom<f64> for CrossQuantity {
         }
 
         Self::try_from(value as i128)
+    }
+}
+
+impl TryInto<OrderQuantity> for CrossQuantity {
+    type Error = QuantityValidationError;
+
+    fn try_into(self) -> Result<OrderQuantity, Self::Error> {
+        OrderQuantity::try_from(self.as_u64())
     }
 }
 
