@@ -2,7 +2,10 @@ use std::{collections::HashSet, fmt, str::FromStr};
 
 use chrono::{DateTime, Utc};
 use rand::Rng;
-use serde::{Deserialize, Deserializer, Serialize, Serializer, de};
+use serde::{
+    Deserialize, Deserializer, Serialize, Serializer,
+    de::{self, DeserializeOwned},
+};
 use serde_json::{Value, json};
 
 use super::error::{ConnectionResult, StreamConnectionError};
@@ -315,20 +318,603 @@ impl<'de> Deserialize<'de> for StreamTopic {
     }
 }
 
-/// Raw subscription notification payload.
-#[derive(Debug, Clone, PartialEq)]
-pub struct StreamSubscription {
-    topic: StreamTopic,
-    data: Value,
+fn deserialize_timestamp_millis<'de, D>(
+    deserializer: D,
+) -> std::result::Result<DateTime<Utc>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let millis = i64::deserialize(deserializer)?;
+    DateTime::<Utc>::from_timestamp_millis(millis)
+        .ok_or_else(|| de::Error::custom(format!("invalid timestamp milliseconds: {millis}")))
 }
 
-impl StreamSubscription {
-    pub fn topic(&self) -> &StreamTopic {
-        &self.topic
+fn deserialize_optional_timestamp_millis<'de, D>(
+    deserializer: D,
+) -> std::result::Result<Option<DateTime<Utc>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let millis = Option::<i64>::deserialize(deserializer)?;
+    millis
+        .map(|millis| {
+            DateTime::<Utc>::from_timestamp_millis(millis).ok_or_else(|| {
+                de::Error::custom(format!("invalid timestamp milliseconds: {millis}"))
+            })
+        })
+        .transpose()
+}
+
+fn decode_subscription_data<T>(data: Value) -> ConnectionResult<T>
+where
+    T: DeserializeOwned,
+{
+    serde_json::from_value(data).map_err(StreamConnectionError::DecodeJson)
+}
+
+/// Platform announcement notification payload.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamAnnouncement {
+    id: String,
+    title: String,
+    message: String,
+    link: String,
+}
+
+impl StreamAnnouncement {
+    pub fn id(&self) -> &str {
+        &self.id
     }
 
-    pub fn data(&self) -> &Value {
-        &self.data
+    pub fn title(&self) -> &str {
+        &self.title
+    }
+
+    pub fn message(&self) -> &str {
+        &self.message
+    }
+
+    pub fn link(&self) -> &str {
+        &self.link
+    }
+}
+
+/// Funding rate and settlement timestamp payload fragment.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamFundingRate {
+    rate: f64,
+    #[serde(deserialize_with = "deserialize_timestamp_millis")]
+    time: DateTime<Utc>,
+}
+
+impl StreamFundingRate {
+    pub fn rate(&self) -> f64 {
+        self.rate
+    }
+
+    pub fn time(&self) -> DateTime<Utc> {
+        self.time
+    }
+}
+
+/// Inverse futures aggregated ticker notification payload.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamTicker {
+    #[serde(deserialize_with = "deserialize_timestamp_millis")]
+    time: DateTime<Utc>,
+    last_price: Option<f64>,
+    index: Option<f64>,
+    funding: StreamFundingRate,
+}
+
+impl StreamTicker {
+    pub fn time(&self) -> DateTime<Utc> {
+        self.time
+    }
+
+    pub fn last_price(&self) -> Option<f64> {
+        self.last_price
+    }
+
+    pub fn index(&self) -> Option<f64> {
+        self.index
+    }
+
+    pub fn funding(&self) -> &StreamFundingRate {
+        &self.funding
+    }
+}
+
+/// Inverse futures last trade price notification payload.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamLastPrice {
+    #[serde(deserialize_with = "deserialize_timestamp_millis")]
+    time: DateTime<Utc>,
+    last_price: f64,
+}
+
+impl StreamLastPrice {
+    pub fn time(&self) -> DateTime<Utc> {
+        self.time
+    }
+
+    pub fn last_price(&self) -> f64 {
+        self.last_price
+    }
+}
+
+/// Inverse futures index price notification payload.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamIndex {
+    #[serde(deserialize_with = "deserialize_timestamp_millis")]
+    time: DateTime<Utc>,
+    index: f64,
+}
+
+impl StreamIndex {
+    pub fn time(&self) -> DateTime<Utc> {
+        self.time
+    }
+
+    pub fn index(&self) -> f64 {
+        self.index
+    }
+}
+
+/// One inverse futures volume ladder bucket.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamBucket {
+    min_size: f64,
+    max_size: f64,
+    ask_price: f64,
+    bid_price: f64,
+}
+
+impl StreamBucket {
+    pub fn min_size(&self) -> f64 {
+        self.min_size
+    }
+
+    pub fn max_size(&self) -> f64 {
+        self.max_size
+    }
+
+    pub fn ask_price(&self) -> f64 {
+        self.ask_price
+    }
+
+    pub fn bid_price(&self) -> f64 {
+        self.bid_price
+    }
+}
+
+/// Inverse futures volume ladder bucket notification payload.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamBuckets {
+    #[serde(deserialize_with = "deserialize_timestamp_millis")]
+    time: DateTime<Utc>,
+    buckets: Vec<StreamBucket>,
+}
+
+impl StreamBuckets {
+    pub fn time(&self) -> DateTime<Utc> {
+        self.time
+    }
+
+    pub fn buckets(&self) -> &[StreamBucket] {
+        &self.buckets
+    }
+}
+
+/// Inverse futures funding notification payload.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamFunding {
+    pair: String,
+    current: StreamFundingRate,
+}
+
+impl StreamFunding {
+    pub fn pair(&self) -> &str {
+        &self.pair
+    }
+
+    pub fn current(&self) -> &StreamFundingRate {
+        &self.current
+    }
+}
+
+/// Inverse futures OHLC candle notification payload.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamOhlc {
+    #[serde(deserialize_with = "deserialize_timestamp_millis")]
+    time: DateTime<Utc>,
+    open: f64,
+    high: f64,
+    low: f64,
+    close: f64,
+    volume: f64,
+}
+
+impl StreamOhlc {
+    pub fn time(&self) -> DateTime<Utc> {
+        self.time
+    }
+
+    pub fn open(&self) -> f64 {
+        self.open
+    }
+
+    pub fn high(&self) -> f64 {
+        self.high
+    }
+
+    pub fn low(&self) -> f64 {
+        self.low
+    }
+
+    pub fn close(&self) -> f64 {
+        self.close
+    }
+
+    pub fn volume(&self) -> f64 {
+        self.volume
+    }
+}
+
+/// Inverse futures isolated-margin trade event notification payload.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamIsolatedTradeEvent {
+    pair: String,
+    event: String,
+    trade: StreamIsolatedTrade,
+}
+
+impl StreamIsolatedTradeEvent {
+    pub fn pair(&self) -> &str {
+        &self.pair
+    }
+
+    pub fn event(&self) -> &str {
+        &self.event
+    }
+
+    pub fn trade(&self) -> &StreamIsolatedTrade {
+        &self.trade
+    }
+}
+
+/// Inverse futures isolated-margin trade payload fragment.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamIsolatedTrade {
+    id: Option<String>,
+    side: Option<String>,
+    #[serde(rename = "type")]
+    trade_type: Option<String>,
+    quantity: Option<f64>,
+    margin: Option<f64>,
+    leverage: Option<f64>,
+    price: Option<f64>,
+    opening_fee: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_timestamp_millis")]
+    created_at: Option<DateTime<Utc>>,
+    #[serde(default)]
+    client_id: Option<String>,
+}
+
+impl StreamIsolatedTrade {
+    pub fn id(&self) -> Option<&str> {
+        self.id.as_deref()
+    }
+
+    pub fn side(&self) -> Option<&str> {
+        self.side.as_deref()
+    }
+
+    pub fn trade_type(&self) -> Option<&str> {
+        self.trade_type.as_deref()
+    }
+
+    pub fn quantity(&self) -> Option<f64> {
+        self.quantity
+    }
+
+    pub fn margin(&self) -> Option<f64> {
+        self.margin
+    }
+
+    pub fn leverage(&self) -> Option<f64> {
+        self.leverage
+    }
+
+    pub fn price(&self) -> Option<f64> {
+        self.price
+    }
+
+    pub fn opening_fee(&self) -> Option<f64> {
+        self.opening_fee
+    }
+
+    pub fn created_at(&self) -> Option<DateTime<Utc>> {
+        self.created_at
+    }
+
+    pub fn client_id(&self) -> Option<&str> {
+        self.client_id.as_deref()
+    }
+}
+
+/// Inverse futures cross-margin order event notification payload.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamCrossOrderEvent {
+    pair: String,
+    event: String,
+    order: StreamCrossOrder,
+}
+
+impl StreamCrossOrderEvent {
+    pub fn pair(&self) -> &str {
+        &self.pair
+    }
+
+    pub fn event(&self) -> &str {
+        &self.event
+    }
+
+    pub fn order(&self) -> &StreamCrossOrder {
+        &self.order
+    }
+}
+
+/// Inverse futures cross-margin order payload fragment.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamCrossOrder {
+    id: Option<String>,
+    side: Option<String>,
+    #[serde(rename = "type")]
+    order_type: Option<String>,
+    quantity: Option<f64>,
+    price: Option<f64>,
+    trading_fee: Option<f64>,
+    #[serde(default)]
+    client_id: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_optional_timestamp_millis")]
+    created_at: Option<DateTime<Utc>>,
+}
+
+impl StreamCrossOrder {
+    pub fn id(&self) -> Option<&str> {
+        self.id.as_deref()
+    }
+
+    pub fn side(&self) -> Option<&str> {
+        self.side.as_deref()
+    }
+
+    pub fn order_type(&self) -> Option<&str> {
+        self.order_type.as_deref()
+    }
+
+    pub fn quantity(&self) -> Option<f64> {
+        self.quantity
+    }
+
+    pub fn price(&self) -> Option<f64> {
+        self.price
+    }
+
+    pub fn trading_fee(&self) -> Option<f64> {
+        self.trading_fee
+    }
+
+    pub fn client_id(&self) -> Option<&str> {
+        self.client_id.as_deref()
+    }
+
+    pub fn created_at(&self) -> Option<DateTime<Utc>> {
+        self.created_at
+    }
+}
+
+/// Inverse futures cross-margin position event notification payload.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamCrossPositionEvent {
+    pair: String,
+    event: String,
+    position: StreamCrossPosition,
+}
+
+impl StreamCrossPositionEvent {
+    pub fn pair(&self) -> &str {
+        &self.pair
+    }
+
+    pub fn event(&self) -> &str {
+        &self.event
+    }
+
+    pub fn position(&self) -> &StreamCrossPosition {
+        &self.position
+    }
+}
+
+/// Inverse futures cross-margin position payload fragment.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamCrossPosition {
+    quantity: Option<f64>,
+    leverage: Option<f64>,
+    margin: Option<f64>,
+    entry_price: Option<f64>,
+    liquidation: Option<f64>,
+    total_pl: Option<f64>,
+    funding_fees: Option<f64>,
+    trading_fees: Option<f64>,
+    initial_margin: Option<f64>,
+    maintenance_margin: Option<f64>,
+    running_margin: Option<f64>,
+    delta_pl: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_timestamp_millis")]
+    updated_at: Option<DateTime<Utc>>,
+}
+
+impl StreamCrossPosition {
+    pub fn quantity(&self) -> Option<f64> {
+        self.quantity
+    }
+
+    pub fn leverage(&self) -> Option<f64> {
+        self.leverage
+    }
+
+    pub fn margin(&self) -> Option<f64> {
+        self.margin
+    }
+
+    pub fn entry_price(&self) -> Option<f64> {
+        self.entry_price
+    }
+
+    pub fn liquidation(&self) -> Option<f64> {
+        self.liquidation
+    }
+
+    pub fn total_pl(&self) -> Option<f64> {
+        self.total_pl
+    }
+
+    pub fn funding_fees(&self) -> Option<f64> {
+        self.funding_fees
+    }
+
+    pub fn trading_fees(&self) -> Option<f64> {
+        self.trading_fees
+    }
+
+    pub fn initial_margin(&self) -> Option<f64> {
+        self.initial_margin
+    }
+
+    pub fn maintenance_margin(&self) -> Option<f64> {
+        self.maintenance_margin
+    }
+
+    pub fn running_margin(&self) -> Option<f64> {
+        self.running_margin
+    }
+
+    pub fn delta_pl(&self) -> Option<f64> {
+        self.delta_pl
+    }
+
+    pub fn updated_at(&self) -> Option<DateTime<Utc>> {
+        self.updated_at
+    }
+}
+
+/// Wallet deposit event notification payload.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamWalletDeposit {
+    currency: String,
+    network: String,
+    id: String,
+    amount: f64,
+    balance: f64,
+    status: String,
+    #[serde(default)]
+    tx_id: Option<String>,
+}
+
+impl StreamWalletDeposit {
+    pub fn currency(&self) -> &str {
+        &self.currency
+    }
+
+    pub fn network(&self) -> &str {
+        &self.network
+    }
+
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    pub fn amount(&self) -> f64 {
+        self.amount
+    }
+
+    pub fn balance(&self) -> f64 {
+        self.balance
+    }
+
+    pub fn status(&self) -> &str {
+        &self.status
+    }
+
+    pub fn tx_id(&self) -> Option<&str> {
+        self.tx_id.as_deref()
+    }
+}
+
+/// Wallet withdrawal event notification payload.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamWalletWithdrawal {
+    currency: String,
+    network: String,
+    id: String,
+    amount: f64,
+    fee: f64,
+    balance: f64,
+    status: String,
+    #[serde(default)]
+    tx_id: Option<String>,
+}
+
+impl StreamWalletWithdrawal {
+    pub fn currency(&self) -> &str {
+        &self.currency
+    }
+
+    pub fn network(&self) -> &str {
+        &self.network
+    }
+
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    pub fn amount(&self) -> f64 {
+        self.amount
+    }
+
+    pub fn fee(&self) -> f64 {
+        self.fee
+    }
+
+    pub fn balance(&self) -> f64 {
+        self.balance
+    }
+
+    pub fn status(&self) -> &str {
+        &self.status
+    }
+
+    pub fn tx_id(&self) -> Option<&str> {
+        self.tx_id.as_deref()
     }
 }
 
@@ -575,14 +1161,14 @@ impl WhoamiResult {
 }
 
 /// Message emitted by the Stream event loop after decoding an incoming JSON-RPC frame.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub(in crate::stream::v1) enum StreamJsonRpcMessage {
     Response {
         id: String,
         result: Result<Value, StreamJsonRpcError>,
         metadata: StreamResponseMetadata,
     },
-    Subscription(StreamSubscription),
+    Subscription(StreamUpdate),
 }
 
 impl TryFrom<JsonRpcEnvelope> for StreamJsonRpcMessage {
@@ -635,10 +1221,9 @@ impl TryFrom<JsonRpcEnvelope> for StreamJsonRpcMessage {
             let params: SubscriptionParams =
                 serde_json::from_value(params).map_err(StreamConnectionError::DecodeJson)?;
 
-            return Ok(Self::Subscription(StreamSubscription {
-                topic: params.topic,
-                data: params.data,
-            }));
+            let update = StreamUpdate::from_subscription(params.topic, params.data)?;
+
+            return Ok(Self::Subscription(update));
         }
 
         Err(StreamConnectionError::UnexpectedJsonRpcEnvelope(format!(
@@ -810,8 +1395,94 @@ pub(in crate::stream::v1) fn topics_match(a: &[StreamTopic], b: &[StreamTopic]) 
 /// Updates emitted by a Stream v1 WebSocket connection.
 #[derive(Debug, Clone)]
 pub enum StreamUpdate {
-    Subscription(StreamSubscription),
+    Announcements(StreamAnnouncement),
+    FuturesInverseBtcUsdTicker(StreamTicker),
+    FuturesInverseBtcUsdLastPrice(StreamLastPrice),
+    FuturesInverseBtcUsdIndex(StreamIndex),
+    FuturesInverseBtcUsdBuckets(StreamBuckets),
+    FuturesInverseBtcUsdFunding(StreamFunding),
+    FuturesInverseBtcUsdOhlc {
+        timeframe: StreamOhlcTimeframe,
+        candle: StreamOhlc,
+    },
+    FuturesInverseBtcUsdIsolatedTrades(StreamIsolatedTradeEvent),
+    FuturesInverseBtcUsdCrossOrders(StreamCrossOrderEvent),
+    FuturesInverseBtcUsdCrossPosition(StreamCrossPositionEvent),
+    WalletDeposit(StreamWalletDeposit),
+    WalletWithdrawal(StreamWalletWithdrawal),
     ConnectionStatus(StreamConnectionStatus),
+}
+
+impl StreamUpdate {
+    /// Returns the subscription topic for topic updates, or `None` for connection-status updates.
+    pub fn topic(&self) -> Option<StreamTopic> {
+        match self {
+            Self::Announcements(_) => Some(StreamTopic::Announcements),
+            Self::FuturesInverseBtcUsdTicker(_) => Some(StreamTopic::FuturesInverseBtcUsdTicker),
+            Self::FuturesInverseBtcUsdLastPrice(_) => {
+                Some(StreamTopic::FuturesInverseBtcUsdLastPrice)
+            }
+            Self::FuturesInverseBtcUsdIndex(_) => Some(StreamTopic::FuturesInverseBtcUsdIndex),
+            Self::FuturesInverseBtcUsdBuckets(_) => Some(StreamTopic::FuturesInverseBtcUsdBuckets),
+            Self::FuturesInverseBtcUsdFunding(_) => Some(StreamTopic::FuturesInverseBtcUsdFunding),
+            Self::FuturesInverseBtcUsdOhlc { timeframe, .. } => {
+                Some(StreamTopic::FuturesInverseBtcUsdOhlc(*timeframe))
+            }
+            Self::FuturesInverseBtcUsdIsolatedTrades(_) => {
+                Some(StreamTopic::FuturesInverseBtcUsdIsolatedTrades)
+            }
+            Self::FuturesInverseBtcUsdCrossOrders(_) => {
+                Some(StreamTopic::FuturesInverseBtcUsdCrossOrders)
+            }
+            Self::FuturesInverseBtcUsdCrossPosition(_) => {
+                Some(StreamTopic::FuturesInverseBtcUsdCrossPosition)
+            }
+            Self::WalletDeposit(_) => Some(StreamTopic::WalletDeposit),
+            Self::WalletWithdrawal(_) => Some(StreamTopic::WalletWithdrawal),
+            Self::ConnectionStatus(_) => None,
+        }
+    }
+
+    pub(in crate::stream::v1) fn from_subscription(
+        topic: StreamTopic,
+        data: Value,
+    ) -> ConnectionResult<Self> {
+        Ok(match topic {
+            StreamTopic::Announcements => Self::Announcements(decode_subscription_data(data)?),
+            StreamTopic::FuturesInverseBtcUsdTicker => {
+                Self::FuturesInverseBtcUsdTicker(decode_subscription_data(data)?)
+            }
+            StreamTopic::FuturesInverseBtcUsdLastPrice => {
+                Self::FuturesInverseBtcUsdLastPrice(decode_subscription_data(data)?)
+            }
+            StreamTopic::FuturesInverseBtcUsdIndex => {
+                Self::FuturesInverseBtcUsdIndex(decode_subscription_data(data)?)
+            }
+            StreamTopic::FuturesInverseBtcUsdBuckets => {
+                Self::FuturesInverseBtcUsdBuckets(decode_subscription_data(data)?)
+            }
+            StreamTopic::FuturesInverseBtcUsdFunding => {
+                Self::FuturesInverseBtcUsdFunding(decode_subscription_data(data)?)
+            }
+            StreamTopic::FuturesInverseBtcUsdOhlc(timeframe) => Self::FuturesInverseBtcUsdOhlc {
+                timeframe,
+                candle: decode_subscription_data(data)?,
+            },
+            StreamTopic::FuturesInverseBtcUsdIsolatedTrades => {
+                Self::FuturesInverseBtcUsdIsolatedTrades(decode_subscription_data(data)?)
+            }
+            StreamTopic::FuturesInverseBtcUsdCrossOrders => {
+                Self::FuturesInverseBtcUsdCrossOrders(decode_subscription_data(data)?)
+            }
+            StreamTopic::FuturesInverseBtcUsdCrossPosition => {
+                Self::FuturesInverseBtcUsdCrossPosition(decode_subscription_data(data)?)
+            }
+            StreamTopic::WalletDeposit => Self::WalletDeposit(decode_subscription_data(data)?),
+            StreamTopic::WalletWithdrawal => {
+                Self::WalletWithdrawal(decode_subscription_data(data)?)
+            }
+        })
+    }
 }
 
 impl From<StreamConnectionStatus> for StreamUpdate {
@@ -820,15 +1491,30 @@ impl From<StreamConnectionStatus> for StreamUpdate {
     }
 }
 
-impl From<StreamSubscription> for StreamUpdate {
-    fn from(value: StreamSubscription) -> Self {
-        Self::Subscription(value)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn decode_subscription_update(topic: &str, data: &str) -> StreamUpdate {
+        let json = format!(
+            r#"{{
+                "jsonrpc": "2.0",
+                "method": "subscription",
+                "params": {{
+                    "topic": "{topic}",
+                    "data": {data}
+                }}
+            }}"#
+        );
+
+        let message: StreamJsonRpcMessage =
+            serde_json::from_str(&json).expect("must parse subscription message");
+        let StreamJsonRpcMessage::Subscription(update) = message else {
+            panic!("expected subscription message");
+        };
+
+        update
+    }
 
     #[test]
     fn stream_topic_round_trips_dynamic_ohlc_topic() {
@@ -858,25 +1544,194 @@ mod tests {
 
     #[test]
     fn json_rpc_message_deserializes_subscription_notification() {
-        let json = r#"{
-            "jsonrpc": "2.0",
-            "method": "subscription",
-            "params": {
-                "topic": "futures/inverse/btc_usd/lastPrice",
-                "data": { "time": 0, "lastPrice": 100000 }
-            }
-        }"#;
-
-        let message: StreamJsonRpcMessage = serde_json::from_str(json).expect("must parse message");
-        let StreamJsonRpcMessage::Subscription(subscription) = message else {
-            panic!("expected subscription message");
-        };
+        let update = decode_subscription_update(
+            "futures/inverse/btc_usd/lastPrice",
+            r#"{ "time": 0, "lastPrice": 100000 }"#,
+        );
 
         assert_eq!(
-            subscription.topic(),
-            &StreamTopic::FuturesInverseBtcUsdLastPrice
+            update.topic(),
+            Some(StreamTopic::FuturesInverseBtcUsdLastPrice)
         );
-        assert_eq!(subscription.data()["lastPrice"], 100000);
+
+        let StreamUpdate::FuturesInverseBtcUsdLastPrice(last_price) = update else {
+            panic!("expected last price update");
+        };
+
+        assert_eq!(last_price.time().timestamp_millis(), 0);
+        assert_eq!(last_price.last_price(), 100000.0);
+    }
+
+    #[test]
+    fn subscription_notifications_decode_public_payloads() {
+        let update = decode_subscription_update(
+            "announcements",
+            r#"{ "id": "ann-1", "title": "title", "message": "message", "link": "https://example.com" }"#,
+        );
+        let StreamUpdate::Announcements(announcement) = update else {
+            panic!("expected announcement update");
+        };
+        assert_eq!(announcement.id(), "ann-1");
+        assert_eq!(announcement.title(), "title");
+        assert_eq!(announcement.message(), "message");
+        assert_eq!(announcement.link(), "https://example.com");
+
+        let update = decode_subscription_update(
+            "futures/inverse/btc_usd/ticker",
+            r#"{ "time": 0, "lastPrice": 100000, "index": null, "funding": { "rate": 0.01, "time": 60000 } }"#,
+        );
+        let StreamUpdate::FuturesInverseBtcUsdTicker(ticker) = update else {
+            panic!("expected ticker update");
+        };
+        assert_eq!(ticker.time().timestamp_millis(), 0);
+        assert_eq!(ticker.last_price(), Some(100000.0));
+        assert_eq!(ticker.index(), None);
+        assert_eq!(ticker.funding().rate(), 0.01);
+        assert_eq!(ticker.funding().time().timestamp_millis(), 60000);
+
+        let update = decode_subscription_update(
+            "futures/inverse/btc_usd/index",
+            r#"{ "time": 0, "index": 100001 }"#,
+        );
+        let StreamUpdate::FuturesInverseBtcUsdIndex(index) = update else {
+            panic!("expected index update");
+        };
+        assert_eq!(index.time().timestamp_millis(), 0);
+        assert_eq!(index.index(), 100001.0);
+
+        let update = decode_subscription_update(
+            "futures/inverse/btc_usd/buckets",
+            r#"{ "time": 0, "buckets": [{ "minSize": 1, "maxSize": 2, "askPrice": 3, "bidPrice": 4 }] }"#,
+        );
+        let StreamUpdate::FuturesInverseBtcUsdBuckets(buckets) = update else {
+            panic!("expected buckets update");
+        };
+        assert_eq!(buckets.time().timestamp_millis(), 0);
+        assert_eq!(buckets.buckets()[0].min_size(), 1.0);
+        assert_eq!(buckets.buckets()[0].max_size(), 2.0);
+        assert_eq!(buckets.buckets()[0].ask_price(), 3.0);
+        assert_eq!(buckets.buckets()[0].bid_price(), 4.0);
+
+        let update = decode_subscription_update(
+            "futures/inverse/btc_usd/funding",
+            r#"{ "pair": "btc_usd", "current": { "rate": -0.01, "time": 120000 } }"#,
+        );
+        let StreamUpdate::FuturesInverseBtcUsdFunding(funding) = update else {
+            panic!("expected funding update");
+        };
+        assert_eq!(funding.pair(), "btc_usd");
+        assert_eq!(funding.current().rate(), -0.01);
+        assert_eq!(funding.current().time().timestamp_millis(), 120000);
+
+        let update = decode_subscription_update(
+            "futures/inverse/btc_usd/ohlc/1m",
+            r#"{ "time": 0, "open": 1, "high": 2, "low": 3, "close": 4, "volume": 5 }"#,
+        );
+        let StreamUpdate::FuturesInverseBtcUsdOhlc { timeframe, candle } = update else {
+            panic!("expected ohlc update");
+        };
+        assert_eq!(timeframe, StreamOhlcTimeframe::OneMinute);
+        assert_eq!(candle.time().timestamp_millis(), 0);
+        assert_eq!(candle.open(), 1.0);
+        assert_eq!(candle.high(), 2.0);
+        assert_eq!(candle.low(), 3.0);
+        assert_eq!(candle.close(), 4.0);
+        assert_eq!(candle.volume(), 5.0);
+    }
+
+    #[test]
+    fn subscription_notifications_decode_private_payloads() {
+        let update = decode_subscription_update(
+            "futures/inverse/btc_usd/isolated/trades",
+            r#"{ "pair": "btc_usd", "event": "open", "trade": { "id": "trade-1", "side": "buy", "type": "limit", "quantity": 1, "margin": 2, "leverage": 3, "price": 4, "openingFee": 5, "createdAt": 0, "clientId": "client-1" } }"#,
+        );
+        let StreamUpdate::FuturesInverseBtcUsdIsolatedTrades(event) = update else {
+            panic!("expected isolated trade update");
+        };
+        assert_eq!(event.pair(), "btc_usd");
+        assert_eq!(event.event(), "open");
+        assert_eq!(event.trade().id(), Some("trade-1"));
+        assert_eq!(event.trade().side(), Some("buy"));
+        assert_eq!(event.trade().trade_type(), Some("limit"));
+        assert_eq!(event.trade().quantity(), Some(1.0));
+        assert_eq!(event.trade().margin(), Some(2.0));
+        assert_eq!(event.trade().leverage(), Some(3.0));
+        assert_eq!(event.trade().price(), Some(4.0));
+        assert_eq!(event.trade().opening_fee(), Some(5.0));
+        assert_eq!(event.trade().created_at().unwrap().timestamp_millis(), 0);
+        assert_eq!(event.trade().client_id(), Some("client-1"));
+
+        let update = decode_subscription_update(
+            "futures/inverse/btc_usd/cross/orders",
+            r#"{ "pair": "btc_usd", "event": "new", "order": { "id": "order-1", "side": "buy", "type": "limit", "quantity": 1, "price": 2, "tradingFee": 3, "clientId": "client-1", "createdAt": 0 } }"#,
+        );
+        let StreamUpdate::FuturesInverseBtcUsdCrossOrders(event) = update else {
+            panic!("expected cross order update");
+        };
+        assert_eq!(event.pair(), "btc_usd");
+        assert_eq!(event.event(), "new");
+        assert_eq!(event.order().id(), Some("order-1"));
+        assert_eq!(event.order().side(), Some("buy"));
+        assert_eq!(event.order().order_type(), Some("limit"));
+        assert_eq!(event.order().quantity(), Some(1.0));
+        assert_eq!(event.order().price(), Some(2.0));
+        assert_eq!(event.order().trading_fee(), Some(3.0));
+        assert_eq!(event.order().client_id(), Some("client-1"));
+        assert_eq!(event.order().created_at().unwrap().timestamp_millis(), 0);
+
+        let update = decode_subscription_update(
+            "futures/inverse/btc_usd/cross/position",
+            r#"{ "pair": "btc_usd", "event": "new", "position": { "quantity": 1, "leverage": 2, "margin": 3, "entryPrice": 4, "liquidation": 5, "totalPl": 6, "fundingFees": 7, "tradingFees": 8, "initialMargin": 9, "maintenanceMargin": 10, "runningMargin": 11, "deltaPl": 12, "updatedAt": 0 } }"#,
+        );
+        let StreamUpdate::FuturesInverseBtcUsdCrossPosition(event) = update else {
+            panic!("expected cross position update");
+        };
+        assert_eq!(event.pair(), "btc_usd");
+        assert_eq!(event.event(), "new");
+        assert_eq!(event.position().quantity(), Some(1.0));
+        assert_eq!(event.position().leverage(), Some(2.0));
+        assert_eq!(event.position().margin(), Some(3.0));
+        assert_eq!(event.position().entry_price(), Some(4.0));
+        assert_eq!(event.position().liquidation(), Some(5.0));
+        assert_eq!(event.position().total_pl(), Some(6.0));
+        assert_eq!(event.position().funding_fees(), Some(7.0));
+        assert_eq!(event.position().trading_fees(), Some(8.0));
+        assert_eq!(event.position().initial_margin(), Some(9.0));
+        assert_eq!(event.position().maintenance_margin(), Some(10.0));
+        assert_eq!(event.position().running_margin(), Some(11.0));
+        assert_eq!(event.position().delta_pl(), Some(12.0));
+        assert_eq!(event.position().updated_at().unwrap().timestamp_millis(), 0);
+
+        let update = decode_subscription_update(
+            "wallet/deposit",
+            r#"{ "currency": "btc", "network": "lightning", "id": "deposit-1", "amount": 1, "balance": 2, "status": "confirmed", "txId": "tx-1" }"#,
+        );
+        let StreamUpdate::WalletDeposit(deposit) = update else {
+            panic!("expected deposit update");
+        };
+        assert_eq!(deposit.currency(), "btc");
+        assert_eq!(deposit.network(), "lightning");
+        assert_eq!(deposit.id(), "deposit-1");
+        assert_eq!(deposit.amount(), 1.0);
+        assert_eq!(deposit.balance(), 2.0);
+        assert_eq!(deposit.status(), "confirmed");
+        assert_eq!(deposit.tx_id(), Some("tx-1"));
+
+        let update = decode_subscription_update(
+            "wallet/withdrawal",
+            r#"{ "currency": "btc", "network": "lightning", "id": "withdrawal-1", "amount": 1, "fee": 2, "balance": 3, "status": "confirmed", "txId": "tx-1" }"#,
+        );
+        let StreamUpdate::WalletWithdrawal(withdrawal) = update else {
+            panic!("expected withdrawal update");
+        };
+        assert_eq!(withdrawal.currency(), "btc");
+        assert_eq!(withdrawal.network(), "lightning");
+        assert_eq!(withdrawal.id(), "withdrawal-1");
+        assert_eq!(withdrawal.amount(), 1.0);
+        assert_eq!(withdrawal.fee(), 2.0);
+        assert_eq!(withdrawal.balance(), 3.0);
+        assert_eq!(withdrawal.status(), "confirmed");
+        assert_eq!(withdrawal.tx_id(), Some("tx-1"));
     }
 
     #[test]

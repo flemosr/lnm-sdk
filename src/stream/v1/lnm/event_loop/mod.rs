@@ -119,8 +119,8 @@ impl StreamEventLoop {
 
                                             let _ = oneshot_tx.send(result);
                                         }
-                                    } else if let StreamJsonRpcMessage::Subscription(subscription) = json_rpc_message {
-                                        let _ = responses_tx.send(subscription.into());
+                                    } else if let StreamJsonRpcMessage::Subscription(update) = json_rpc_message {
+                                        let _ = responses_tx.send(update);
                                     }
                                 }
                                 LnmStreamResponse::Ping(payload) => {

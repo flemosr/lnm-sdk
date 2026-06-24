@@ -14,9 +14,12 @@ pub use config::StreamClientConfig;
 use error::Result;
 use lnm::LnmStreamRepo;
 pub use models::{
-    AuthenticateResult, HelloResult, StreamJsonRpcError, StreamOhlcTimeframe, StreamRateLimit,
-    StreamResponseMetadata, StreamSubscription, StreamTopic, StreamUpdate, TimeResult,
-    WhoamiResult,
+    AuthenticateResult, HelloResult, StreamAnnouncement, StreamBucket, StreamBuckets,
+    StreamCrossOrder, StreamCrossOrderEvent, StreamCrossPosition, StreamCrossPositionEvent,
+    StreamFunding, StreamFundingRate, StreamIndex, StreamIsolatedTrade, StreamIsolatedTradeEvent,
+    StreamJsonRpcError, StreamLastPrice, StreamOhlc, StreamOhlcTimeframe, StreamRateLimit,
+    StreamResponseMetadata, StreamTicker, StreamTopic, StreamUpdate, StreamWalletDeposit,
+    StreamWalletWithdrawal, TimeResult, WhoamiResult,
 };
 pub use repositories::StreamRepository;
 pub use state::StreamConnectionStatus;
