@@ -27,6 +27,9 @@ pub mod api_v2;
 /// ```
 pub mod api_v3;
 
+/// Stream API implementations.
+pub mod stream;
+
 mod shared;
 
 mod sealed {
