@@ -16,7 +16,7 @@ pub use crate::shared::models::error::OhlcRangeParseError;
 
 use super::{
     lnm::TopicStatus,
-    models::{StreamTopic, StreamUpdate},
+    models::{topic::StreamTopic, update::StreamUpdate},
     state::StreamConnectionStatus,
 };
 

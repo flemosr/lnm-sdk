@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 use tokio::sync::{Mutex as AsyncMutex, broadcast, mpsc::error::TryRecvError, oneshot};
 use tokio::time;
 
-use crate::stream::v1::models::{StreamJsonRpcMessage, StreamResponseMetadata};
+use crate::stream::v1::models::{metadata::StreamResponseMetadata, rpc::StreamJsonRpcMessage};
 
 use super::*;
 

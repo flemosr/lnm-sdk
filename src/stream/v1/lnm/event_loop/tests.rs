@@ -4,7 +4,7 @@ use serde_json::json;
 use tokio::time;
 
 use super::*;
-use crate::stream::v1::models::StreamResponseMetadata;
+use crate::stream::v1::models::metadata::StreamResponseMetadata;
 
 struct FakeConnector {
     connections: SyncMutex<VecDeque<FakeConnection>>,

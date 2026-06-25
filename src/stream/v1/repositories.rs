@@ -6,7 +6,11 @@ use tokio::sync::broadcast::Receiver;
 
 use super::{
     error::Result,
-    models::{AuthenticateResult, HelloResult, StreamTopic, StreamUpdate, WhoamiResult},
+    models::{
+        rpc::{AuthenticateResult, HelloResult, WhoamiResult},
+        topic::StreamTopic,
+        update::StreamUpdate,
+    },
     state::StreamConnectionStatus,
 };
 

@@ -20,7 +20,7 @@ use webpki_roots::TLS_SERVER_ROOTS;
 
 use super::super::super::{
     error::{ConnectionResult, StreamConnectionError},
-    models::{StreamJsonRpcMessage, StreamJsonRpcRequest},
+    models::rpc::{StreamJsonRpcMessage, StreamJsonRpcRequest},
 };
 
 #[derive(Clone, Debug)]

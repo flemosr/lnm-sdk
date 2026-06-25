@@ -13,8 +13,11 @@ use crate::stream::v1::config::StreamClientConfig;
 use super::super::{
     error::{ConnectionResult, StreamConnectionError},
     models::{
-        StreamJsonRpcMessage, StreamJsonRpcReqMethod, StreamJsonRpcRequest, StreamJsonRpcResult,
-        StreamTopic, StreamUpdate, topics_match, topics_param,
+        rpc::{
+            StreamJsonRpcMessage, StreamJsonRpcReqMethod, StreamJsonRpcRequest, StreamJsonRpcResult,
+        },
+        topic::{StreamTopic, topics_match, topics_param},
+        update::StreamUpdate,
     },
     state::{StreamConnectionStatus, StreamConnectionStatusManager},
 };

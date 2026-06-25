@@ -20,8 +20,12 @@ use super::{
     config::StreamClientConfig,
     error::{ConnectionResult, Result, StreamApiError, StreamConnectionError},
     models::{
-        AuthenticateResult, HelloResult, StreamJsonRpcReqMethod, StreamJsonRpcRequest,
-        StreamJsonRpcResult, StreamTopic, StreamUpdate, WhoamiResult, topics_match, topics_param,
+        rpc::{
+            AuthenticateResult, HelloResult, StreamJsonRpcReqMethod, StreamJsonRpcRequest,
+            StreamJsonRpcResult, WhoamiResult,
+        },
+        topic::{StreamTopic, topics_match, topics_param},
+        update::StreamUpdate,
     },
     repositories::StreamRepository,
     state::{StreamConnectionStatus, StreamConnectionStatusManager},
