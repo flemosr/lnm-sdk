@@ -1,11 +1,13 @@
 use std::{future::Future, sync::Arc};
 
+use async_trait::async_trait;
 use fastwebsockets::{FragmentCollector, Frame, OpCode, WebSocketError, handshake};
 use http_body_util::Empty;
 use hyper::{
     Request, Uri,
     body::Bytes,
     header::{CONNECTION, HOST, UPGRADE},
+    rt::Executor,
     upgrade::Upgraded,
 };
 use hyper_util::rt::TokioIo;
@@ -29,9 +31,22 @@ pub(super) enum LnmStreamResponse {
     Pong,
 }
 
+#[async_trait]
+pub(super) trait StreamConnectionIo: Send {
+    async fn send_json_rpc(&mut self, req: &StreamJsonRpcRequest) -> ConnectionResult<()>;
+
+    async fn send_close(&mut self) -> ConnectionResult<()>;
+
+    async fn send_pong(&mut self, payload: Vec<u8>) -> ConnectionResult<()>;
+
+    async fn send_ping(&mut self) -> ConnectionResult<()>;
+
+    async fn read_response(&mut self) -> ConnectionResult<LnmStreamResponse>;
+}
+
 struct SpawnExecutor;
 
-impl<Fut> hyper::rt::Executor<Fut> for SpawnExecutor
+impl<Fut> Executor<Fut> for SpawnExecutor
 where
     Fut: Future + Send + 'static,
     Fut::Output: Send + 'static,
@@ -45,9 +60,9 @@ pub(super) struct StreamApiConnection(FragmentCollector<TokioIo<Upgraded>>);
 
 struct StreamEndpoint {
     uri: Uri,
-    host: String,
+    addr: String,
     authority: String,
-    port: u16,
+    server_name: ServerName<'static>,
 }
 
 impl StreamEndpoint {
@@ -70,12 +85,15 @@ impl StreamEndpoint {
             .as_str()
             .to_string();
         let port = uri.port_u16().unwrap_or(443);
+        let addr = format!("{host}:{port}");
+        let server_name =
+            ServerName::try_from(host).map_err(StreamConnectionError::InvalidDnsName)?;
 
         Ok(Self {
             uri,
-            host,
+            addr,
             authority,
-            port,
+            server_name,
         })
     }
 }
@@ -83,10 +101,6 @@ impl StreamEndpoint {
 impl StreamApiConnection {
     pub async fn new(endpoint: &str) -> ConnectionResult<Self> {
         let endpoint = StreamEndpoint::parse(endpoint)?;
-        let endpoint_addr = format!("{}:{}", endpoint.host, endpoint.port);
-
-        let server_name = ServerName::try_from(endpoint.host.clone())
-            .map_err(StreamConnectionError::InvalidDnsName)?;
 
         let tls_connector = {
             let mut root_cert_store = RootCertStore::empty();
@@ -99,18 +113,18 @@ impl StreamApiConnection {
             TlsConnector::from(Arc::new(config))
         };
 
-        let tcp_stream = TcpStream::connect(&endpoint_addr)
+        let tcp_stream = TcpStream::connect(&endpoint.addr)
             .await
             .map_err(StreamConnectionError::CreateTcpStream)?;
         let tls_stream = tls_connector
-            .connect(server_name, tcp_stream)
+            .connect(endpoint.server_name, tcp_stream)
             .await
             .map_err(StreamConnectionError::ConnectTcpStream)?;
 
         let req = Request::builder()
             .method("GET")
-            .uri(endpoint.uri.clone())
-            .header(HOST, endpoint.authority.as_str())
+            .uri(endpoint.uri)
+            .header(HOST, endpoint.authority)
             .header(UPGRADE, "websocket")
             .header(CONNECTION, "upgrade")
             .header("Sec-WebSocket-Key", handshake::generate_key())
@@ -132,29 +146,32 @@ impl StreamApiConnection {
             .await
             .map_err(StreamConnectionError::WriteFrame)
     }
+}
 
-    pub async fn send_json_rpc(&mut self, req: &StreamJsonRpcRequest) -> ConnectionResult<()> {
+#[async_trait]
+impl StreamConnectionIo for StreamApiConnection {
+    async fn send_json_rpc(&mut self, req: &StreamJsonRpcRequest) -> ConnectionResult<()> {
         let payload = req.try_to_bytes()?.into();
         let frame = Frame::text(payload);
         self.send_frame(frame).await
     }
 
-    pub async fn send_close(&mut self) -> ConnectionResult<()> {
+    async fn send_close(&mut self) -> ConnectionResult<()> {
         let frame = Frame::close(1000, &[]);
         self.send_frame(frame).await
     }
 
-    pub async fn send_pong(&mut self, payload: Vec<u8>) -> ConnectionResult<()> {
+    async fn send_pong(&mut self, payload: Vec<u8>) -> ConnectionResult<()> {
         let frame = Frame::pong(payload.into());
         self.send_frame(frame).await
     }
 
-    pub async fn send_ping(&mut self) -> ConnectionResult<()> {
+    async fn send_ping(&mut self) -> ConnectionResult<()> {
         let frame = Frame::new(true, OpCode::Ping, None, Vec::new().into());
         self.send_frame(frame).await
     }
 
-    pub async fn read_response(&mut self) -> ConnectionResult<LnmStreamResponse> {
+    async fn read_response(&mut self) -> ConnectionResult<LnmStreamResponse> {
         let frame = match self.0.read_frame().await {
             Ok(frame) => frame,
             Err(WebSocketError::ConnectionClosed) => return Ok(LnmStreamResponse::Close),

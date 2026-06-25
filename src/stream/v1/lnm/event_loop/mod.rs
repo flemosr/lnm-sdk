@@ -16,7 +16,7 @@ use super::super::{
 
 mod connection;
 
-use connection::{LnmStreamResponse, StreamApiConnection};
+use connection::{LnmStreamResponse, StreamApiConnection, StreamConnectionIo};
 
 type PendingMap = HashMap<
     String,
