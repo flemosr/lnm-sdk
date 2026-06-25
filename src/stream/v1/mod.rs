@@ -53,10 +53,15 @@ impl StreamClient {
     pub async fn connect(&self) -> Result<StreamConnection> {
         let mut conn_guard = self.conn.lock().await;
 
-        if let Some(conn) = conn_guard.as_ref()
-            && conn.is_connected().await
-        {
-            return Ok(conn.clone());
+        if let Some(conn) = conn_guard.as_ref() {
+            match conn.connection_status().await {
+                StreamConnectionStatus::Connected | StreamConnectionStatus::Reconnecting => {
+                    return Ok(conn.clone());
+                }
+                StreamConnectionStatus::DisconnectInitiated
+                | StreamConnectionStatus::Disconnected
+                | StreamConnectionStatus::Failed(_) => {}
+            }
         }
 
         let new_conn = Arc::new(LnmStreamRepo::new(self.config.clone()).await?);
