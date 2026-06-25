@@ -2,8 +2,8 @@
 
 A Rust SDK for interacting with [LN Markets](https://lnmarkets.com/).
 
-> **Note:** This is an unofficial SDK. API v3 support is functional but not yet feature-complete. 
-> For implementation status, see the
+> **Note:** This is an unofficial SDK. REST API v3 support is functional but not yet
+> feature-complete; for implementation status, see the
 > [API v3 implementation docs](https://github.com/flemosr/lnm-sdk/blob/main/docs/api-v3-implementation.md).
 >
 > LN Markets disabled API v2 on Mar 31 2026. An implementation (REST + WebSocket) is currently
@@ -43,6 +43,12 @@ Each `RestClient` includes an internal FIFO rate limiter that automatically pace
 within the API's rate limits, with separate queues for authenticated and public endpoints. This
 behavior is enabled by default and can be configured or disabled via `RestClientConfig`.
 
+Stream API v1 types are available through `lnm_sdk::stream::v1`.
+
+```rust,ignore
+use lnm_sdk::stream::v1::{StreamClient, StreamClientConfig, models::*, error::*};
+```
+
 ## Examples
 
 Complete runnable examples are available in the
@@ -50,23 +56,28 @@ Complete runnable examples are available in the
 
 ### REST API v3 - Public
 
-```rust,ignore
+```rust,no_run
+use std::env;
+
 use lnm_sdk::api_v3::{RestClient, RestClientConfig};
 
-//...
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let domain = env::var("LNM_API_DOMAIN").expect("LNM_API_DOMAIN must be set");
 
-let domain = env::var("LNM_API_DOMAIN").expect("LNM_API_DOMAIN must be set");
+    let rest = RestClient::new(RestClientConfig::default(), &domain)?;
 
-let rest = RestClient::new(RestClientConfig::default(), &domain)?;
-    
-// Get the futures ticker
-let _ticker = rest.futures_data.get_ticker().await?;
+    // Get the futures ticker
+    let _ticker = rest.futures_data.get_ticker().await?;
 
-// Get candles (OHLCs) history
-let _candles = rest
-    .futures_data
-    .get_candles(None, None, None, None, None)
-    .await?;
+    // Get candles (OHLCs) history
+    let _candles = rest
+        .futures_data
+        .get_candles(None, None, None, None, None)
+        .await?;
+
+    Ok(())
+}
 ```
 
 For more complete public API examples, see the
@@ -74,66 +85,130 @@ For more complete public API examples, see the
 
 ### REST API v3 - Authenticated
 
-```rust,ignore
+```rust,no_run
+use std::env;
+
 use lnm_sdk::api_v3::{
     RestClient, RestClientConfig,
     models::{Leverage, OrderQuantity, TradeExecution, TradeSide, TradeSize},
 };
 
-// ...
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let rest = RestClient::with_credentials(
+        RestClientConfig::default(),
+        env::var("LNM_API_DOMAIN")?,
+        env::var("LNM_API_V3_KEY")?,
+        env::var("LNM_API_V3_SECRET")?,
+        env::var("LNM_API_V3_PASSPHRASE")?,
+    )?;
 
-let domain = env::var("LNM_API_DOMAIN").expect("LNM_API_DOMAIN must be set");
-let key = env::var("LNM_API_V3_KEY").expect("LNM_API_V3_KEY must be set");
-let secret = env::var("LNM_API_V3_SECRET").expect("LNM_API_V3_SECRET must be set");
-let passphrase = env::var("LNM_API_V3_PASSPHRASE").expect("LNM_API_V3_PASSPHRASE must be set");
+    // Get account information
+    let _account = rest.account.get_account().await?;
 
-let rest = RestClient::with_credentials(
-    RestClientConfig::default(),
-    &domain,
-    key,
-    secret,
-    passphrase,
-)?;
-    
-// Get account information
-let _account = rest.account.get_account().await?;
+    // Place a new isolated trade
+    let trade = rest
+        .futures_isolated
+        .new_trade(
+            TradeSide::Buy,
+            TradeSize::from(OrderQuantity::try_from(1)?), // 1 USD
+            Leverage::try_from(30)?,                      // 30x leverage
+            TradeExecution::Market,
+            None, // stoploss
+            None, // takeprofit
+            None, // client trade id
+        )
+        .await?;
 
-// Place a new isolated trade
-let trade = rest
-    .futures_isolated
-    .new_trade(
-        TradeSide::Buy,
-        TradeSize::from(OrderQuantity::try_from(1)?), // 1 USD
-        Leverage::try_from(30)?,                 // 30x leverage
-        TradeExecution::Market,
-        None, // stoploss
-        None, // takeprofit
-        None, // client trade id
-    )
-    .await?;
+    // Close the trade
+    let _closed_trade = rest.futures_isolated.close_trade(trade.id()).await?;
 
-// Close the trade
-let _closed_trade = rest
-    .futures_isolated
-    .close_trade(trade.id())
-    .await?;
-  
-// Place a new cross order
-let _new_order = rest
-    .futures_cross
-    .place_order(
-        TradeSide::Buy,
-        OrderQuantity::try_from(1)?, // 1 USD
-        TradeExecution::Market,
-        None, // client order id
-    )
-    .await?;
+    // Place a new cross order
+    let _new_order = rest
+        .futures_cross
+        .place_order(
+            TradeSide::Buy,
+            OrderQuantity::try_from(1)?, // 1 USD
+            TradeExecution::Market,
+            None, // client order id
+        )
+        .await?;
 
-let _close_order = rest.futures_cross.close_position().await?;
+    let _close_order = rest.futures_cross.close_position().await?;
+
+    Ok(())
+}
 ```
 
 For more complete authenticated REST API examples, see the
 [`v3_rest_auth` example](https://github.com/flemosr/lnm-sdk/blob/main/examples/v3_rest_auth.rs).
+
+### Stream API v1 - Public Subscriptions
+
+```rust,no_run
+use lnm_sdk::stream::v1::{
+    StreamClient, StreamClientConfig,
+    models::{StreamTopic, StreamUpdate},
+};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = StreamClient::new(StreamClientConfig::default());
+    let stream = client.connect().await?;
+    let mut updates = stream.receiver().await?;
+
+    stream
+        .subscribe(vec![StreamTopic::FuturesInverseBtcUsdLastPrice])
+        .await?;
+
+    if let Ok(update) = updates.recv().await {
+        match update {
+            StreamUpdate::ConnectionStatus(status) => println!("status: {status}"),
+            update => println!("update for {:?}: {update:?}", update.topic()),
+        }
+    }
+
+    stream.disconnect().await?;
+
+    Ok(())
+}
+```
+
+For a complete public Stream example, see the
+[`stream_v1_public` example](https://github.com/flemosr/lnm-sdk/blob/main/examples/stream_v1_public.rs).
+
+### Stream API v1 - Authenticated Private Subscriptions
+
+```rust,no_run
+use std::env;
+
+use lnm_sdk::stream::v1::{StreamClient, StreamClientConfig, models::StreamTopic};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = StreamClient::new(StreamClientConfig::default());
+    let stream = client.connect().await?;
+
+    stream
+        .authenticate(
+            &env::var("LNM_API_V3_KEY")?,
+            &env::var("LNM_API_V3_SECRET")?,
+            &env::var("LNM_API_V3_PASSPHRASE")?,
+        )
+        .await?;
+
+    stream
+        .subscribe(vec![StreamTopic::FuturesInverseBtcUsdCrossOrders])
+        .await?;
+
+    stream.disconnect().await?;
+
+    Ok(())
+}
+```
+
+For a complete authenticated Stream example, see the
+[`stream_v1_auth` example](https://github.com/flemosr/lnm-sdk/blob/main/examples/stream_v1_auth.rs).
 
 ## Testing
 
@@ -149,7 +224,8 @@ cargo test -- --include-ignored --test-threads=1
 
 ## API Reference
 
-+ [LN Markets API v3 Documentation](https://api.lnmarkets.com/v3/)
++ [LN Markets REST API Documentation](https://docs.lnmarkets.com/en/api)
++ [LN Markets Stream API Documentation](https://docs.lnmarkets.com/en/stream)
 
 ## Development History
 
