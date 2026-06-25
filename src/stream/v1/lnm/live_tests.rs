@@ -12,9 +12,13 @@ use tokio::{sync::broadcast, time};
 use uuid::Uuid;
 
 use crate::{
-    api_v3::{
-        RestClient, RestClientConfig,
-        models::{ClientId, Leverage, OrderQuantity, PercentageCapped, TradeExecution, TradeSide},
+    api_v3::{RestClient, RestClientConfig},
+    shared::models::{
+        client_id::ClientId,
+        leverage::Leverage,
+        price::PercentageCapped,
+        quantity::OrderQuantity,
+        trade::{TradeExecution, TradeSide},
     },
     stream::v1::{
         StreamClient, StreamClientConfig, StreamConnection,
@@ -298,10 +302,10 @@ fn live_client_id(prefix: &str) -> ClientId {
 }
 
 fn matches_id_or_client_id(
-    id: Option<&str>,
-    client_id: Option<&str>,
-    expected_id: &str,
-    expected_client_id: &str,
+    id: Option<Uuid>,
+    client_id: Option<&ClientId>,
+    expected_id: Uuid,
+    expected_client_id: &ClientId,
 ) -> bool {
     id == Some(expected_id) || client_id == Some(expected_client_id)
 }
@@ -436,7 +440,6 @@ async fn test_live_stream_private_updates_triggered_by_rest() {
     );
 
     let isolated_client_id = live_client_id("lnm-live-iso");
-    let isolated_client_id_string = isolated_client_id.as_str().to_string();
     let isolated_trade = time_test!(
         "create 1 USD isolated market trade",
         rest.futures_isolated
@@ -447,12 +450,12 @@ async fn test_live_stream_private_updates_triggered_by_rest() {
                 TradeExecution::Market,
                 None,
                 None,
-                Some(isolated_client_id),
+                Some(isolated_client_id.clone()),
             )
             .await
             .expect("must create isolated market trade")
     );
-    let isolated_trade_id = isolated_trade.id().to_string();
+    let isolated_trade_id = isolated_trade.id();
 
     let isolated_open_update = time_test!(
         "receive isolated trade stream update",
@@ -466,8 +469,8 @@ async fn test_live_stream_private_updates_triggered_by_rest() {
                     if matches_id_or_client_id(
                         event.trade().id(),
                         event.trade().client_id(),
-                        &isolated_trade_id,
-                        &isolated_client_id_string,
+                        isolated_trade_id,
+                        &isolated_client_id,
                     )
             ),
         )
@@ -496,7 +499,7 @@ async fn test_live_stream_private_updates_triggered_by_rest() {
             |update| matches!(
                 update,
                 StreamUpdate::FuturesInverseBtcUsdIsolatedTrades(event)
-                    if event.trade().id() == Some(isolated_trade_id.as_str())
+                    if event.trade().id() == Some(isolated_trade_id)
             ),
         )
         .await
@@ -512,7 +515,6 @@ async fn test_live_stream_private_updates_triggered_by_rest() {
         .apply_discount(PercentageCapped::try_from(30).unwrap())
         .unwrap();
     let cross_limit_client_id = live_client_id("lnm-live-xlim");
-    let cross_limit_client_id_string = cross_limit_client_id.as_str().to_string();
     let cross_limit_order = time_test!(
         "place 1 USD cross limit order",
         rest.futures_cross
@@ -520,12 +522,12 @@ async fn test_live_stream_private_updates_triggered_by_rest() {
                 TradeSide::Buy,
                 OrderQuantity::try_from(1).unwrap(),
                 TradeExecution::Limit(limit_price),
-                Some(cross_limit_client_id),
+                Some(cross_limit_client_id.clone()),
             )
             .await
             .expect("must place cross limit order")
     );
-    let cross_limit_order_id = cross_limit_order.id().to_string();
+    let cross_limit_order_id = cross_limit_order.id();
 
     let cross_order_update = time_test!(
         "receive cross order stream update",
@@ -539,8 +541,8 @@ async fn test_live_stream_private_updates_triggered_by_rest() {
                     if matches_id_or_client_id(
                         event.order().id(),
                         event.order().client_id(),
-                        &cross_limit_order_id,
-                        &cross_limit_client_id_string,
+                        cross_limit_order_id,
+                        &cross_limit_client_id,
                     )
             ),
         )
@@ -569,7 +571,7 @@ async fn test_live_stream_private_updates_triggered_by_rest() {
             |update| matches!(
                 update,
                 StreamUpdate::FuturesInverseBtcUsdCrossOrders(event)
-                    if event.order().id() == Some(cross_limit_order_id.as_str())
+                    if event.order().id() == Some(cross_limit_order_id)
             ),
         )
         .await

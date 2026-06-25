@@ -1,7 +1,14 @@
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
+use uuid::Uuid;
 
 use crate::shared::models::{
+    client_id::ClientId,
+    cross_leverage::CrossLeverage,
+    leverage::Leverage,
+    margin::Margin,
+    price::Price,
+    quantity::OrderQuantity,
     serde_util,
     trade::{TradeExecutionType, TradeSide},
 };
@@ -33,27 +40,31 @@ impl StreamIsolatedTradeEvent {
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StreamIsolatedTrade {
-    id: Option<String>,
+    id: Option<Uuid>,
     side: Option<TradeSide>,
     #[serde(rename = "type")]
     trade_type: Option<TradeExecutionType>,
-    quantity: Option<f64>,
-    margin: Option<f64>,
-    leverage: Option<f64>,
-    price: Option<f64>,
-    opening_fee: Option<f64>,
+    quantity: Option<OrderQuantity>,
+    margin: Option<Margin>,
+    leverage: Option<Leverage>,
+    #[serde(default, deserialize_with = "serde_util::price_option::deserialize")]
+    price: Option<Price>,
+    opening_fee: Option<u64>,
     #[serde(
         default,
         deserialize_with = "serde_util::datetime_option_rfc3339_or_millis::deserialize"
     )]
     created_at: Option<DateTime<Utc>>,
-    #[serde(default)]
-    client_id: Option<String>,
+    #[serde(
+        default,
+        deserialize_with = "serde_util::client_id_option::deserialize"
+    )]
+    client_id: Option<ClientId>,
 }
 
 impl StreamIsolatedTrade {
-    pub fn id(&self) -> Option<&str> {
-        self.id.as_deref()
+    pub fn id(&self) -> Option<Uuid> {
+        self.id
     }
 
     pub fn side(&self) -> Option<TradeSide> {
@@ -64,23 +75,23 @@ impl StreamIsolatedTrade {
         self.trade_type
     }
 
-    pub fn quantity(&self) -> Option<f64> {
+    pub fn quantity(&self) -> Option<OrderQuantity> {
         self.quantity
     }
 
-    pub fn margin(&self) -> Option<f64> {
+    pub fn margin(&self) -> Option<Margin> {
         self.margin
     }
 
-    pub fn leverage(&self) -> Option<f64> {
+    pub fn leverage(&self) -> Option<Leverage> {
         self.leverage
     }
 
-    pub fn price(&self) -> Option<f64> {
+    pub fn price(&self) -> Option<Price> {
         self.price
     }
 
-    pub fn opening_fee(&self) -> Option<f64> {
+    pub fn opening_fee(&self) -> Option<u64> {
         self.opening_fee
     }
 
@@ -88,8 +99,8 @@ impl StreamIsolatedTrade {
         self.created_at
     }
 
-    pub fn client_id(&self) -> Option<&str> {
-        self.client_id.as_deref()
+    pub fn client_id(&self) -> Option<&ClientId> {
+        self.client_id.as_ref()
     }
 }
 
@@ -120,15 +131,19 @@ impl StreamCrossOrderEvent {
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StreamCrossOrder {
-    id: Option<String>,
+    id: Option<Uuid>,
     side: Option<TradeSide>,
     #[serde(rename = "type")]
     order_type: Option<TradeExecutionType>,
-    quantity: Option<f64>,
-    price: Option<f64>,
-    trading_fee: Option<f64>,
-    #[serde(default)]
-    client_id: Option<String>,
+    quantity: Option<OrderQuantity>,
+    #[serde(default, deserialize_with = "serde_util::price_option::deserialize")]
+    price: Option<Price>,
+    trading_fee: Option<u64>,
+    #[serde(
+        default,
+        deserialize_with = "serde_util::client_id_option::deserialize"
+    )]
+    client_id: Option<ClientId>,
     #[serde(
         default,
         deserialize_with = "serde_util::datetime_option_rfc3339_or_millis::deserialize"
@@ -137,8 +152,8 @@ pub struct StreamCrossOrder {
 }
 
 impl StreamCrossOrder {
-    pub fn id(&self) -> Option<&str> {
-        self.id.as_deref()
+    pub fn id(&self) -> Option<Uuid> {
+        self.id
     }
 
     pub fn side(&self) -> Option<TradeSide> {
@@ -149,20 +164,20 @@ impl StreamCrossOrder {
         self.order_type
     }
 
-    pub fn quantity(&self) -> Option<f64> {
+    pub fn quantity(&self) -> Option<OrderQuantity> {
         self.quantity
     }
 
-    pub fn price(&self) -> Option<f64> {
+    pub fn price(&self) -> Option<Price> {
         self.price
     }
 
-    pub fn trading_fee(&self) -> Option<f64> {
+    pub fn trading_fee(&self) -> Option<u64> {
         self.trading_fee
     }
 
-    pub fn client_id(&self) -> Option<&str> {
-        self.client_id.as_deref()
+    pub fn client_id(&self) -> Option<&ClientId> {
+        self.client_id.as_ref()
     }
 
     pub fn created_at(&self) -> Option<DateTime<Utc>> {
@@ -197,18 +212,20 @@ impl StreamCrossPositionEvent {
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StreamCrossPosition {
-    quantity: Option<f64>,
-    leverage: Option<f64>,
-    margin: Option<f64>,
-    entry_price: Option<f64>,
-    liquidation: Option<f64>,
-    total_pl: Option<f64>,
-    funding_fees: Option<f64>,
-    trading_fees: Option<f64>,
-    initial_margin: Option<f64>,
-    maintenance_margin: Option<f64>,
-    running_margin: Option<f64>,
-    delta_pl: Option<f64>,
+    quantity: Option<i64>,
+    leverage: Option<CrossLeverage>,
+    margin: Option<u64>,
+    #[serde(default, deserialize_with = "serde_util::price_option::deserialize")]
+    entry_price: Option<Price>,
+    #[serde(default, deserialize_with = "serde_util::price_option::deserialize")]
+    liquidation: Option<Price>,
+    total_pl: Option<i64>,
+    funding_fees: Option<i64>,
+    trading_fees: Option<u64>,
+    initial_margin: Option<u64>,
+    maintenance_margin: Option<u64>,
+    running_margin: Option<u64>,
+    delta_pl: Option<i64>,
     #[serde(
         default,
         deserialize_with = "serde_util::datetime_option_rfc3339_or_millis::deserialize"
@@ -217,51 +234,51 @@ pub struct StreamCrossPosition {
 }
 
 impl StreamCrossPosition {
-    pub fn quantity(&self) -> Option<f64> {
+    pub fn quantity(&self) -> Option<i64> {
         self.quantity
     }
 
-    pub fn leverage(&self) -> Option<f64> {
+    pub fn leverage(&self) -> Option<CrossLeverage> {
         self.leverage
     }
 
-    pub fn margin(&self) -> Option<f64> {
+    pub fn margin(&self) -> Option<u64> {
         self.margin
     }
 
-    pub fn entry_price(&self) -> Option<f64> {
+    pub fn entry_price(&self) -> Option<Price> {
         self.entry_price
     }
 
-    pub fn liquidation(&self) -> Option<f64> {
+    pub fn liquidation(&self) -> Option<Price> {
         self.liquidation
     }
 
-    pub fn total_pl(&self) -> Option<f64> {
+    pub fn total_pl(&self) -> Option<i64> {
         self.total_pl
     }
 
-    pub fn funding_fees(&self) -> Option<f64> {
+    pub fn funding_fees(&self) -> Option<i64> {
         self.funding_fees
     }
 
-    pub fn trading_fees(&self) -> Option<f64> {
+    pub fn trading_fees(&self) -> Option<u64> {
         self.trading_fees
     }
 
-    pub fn initial_margin(&self) -> Option<f64> {
+    pub fn initial_margin(&self) -> Option<u64> {
         self.initial_margin
     }
 
-    pub fn maintenance_margin(&self) -> Option<f64> {
+    pub fn maintenance_margin(&self) -> Option<u64> {
         self.maintenance_margin
     }
 
-    pub fn running_margin(&self) -> Option<f64> {
+    pub fn running_margin(&self) -> Option<u64> {
         self.running_margin
     }
 
-    pub fn delta_pl(&self) -> Option<f64> {
+    pub fn delta_pl(&self) -> Option<i64> {
         self.delta_pl
     }
 
@@ -277,42 +294,92 @@ mod tests {
 
     #[test]
     fn stream_isolated_trade_event_deserializes() {
+        let trade_id =
+            Uuid::parse_str("00000000-0000-0000-0000-000000000001").expect("must parse trade id");
+        let client_id = ClientId::try_from("client-1").expect("must parse client id");
         let event: StreamIsolatedTradeEvent = serde_json::from_str(
-            r#"{ "pair": "btc_usd", "event": "open", "trade": { "id": "trade-1", "side": "buy", "type": "limit", "quantity": 1, "margin": 2, "leverage": 3, "price": 4, "openingFee": 5, "createdAt": 0, "clientId": "client-1" } }"#,
+            r#"{ "pair": "btc_usd", "event": "open", "trade": { "id": "00000000-0000-0000-0000-000000000001", "side": "buy", "type": "limit", "quantity": 1, "margin": 2, "leverage": 3, "price": 4, "openingFee": 5, "createdAt": 0, "clientId": "client-1" } }"#,
         )
         .expect("must deserialize isolated trade event");
 
         assert_eq!(event.pair(), "btc_usd");
         assert_eq!(event.event(), "open");
-        assert_eq!(event.trade().id(), Some("trade-1"));
+        assert_eq!(event.trade().id(), Some(trade_id));
         assert_eq!(event.trade().side(), Some(TradeSide::Buy));
         assert_eq!(event.trade().trade_type(), Some(TradeExecutionType::Limit));
-        assert_eq!(event.trade().quantity(), Some(1.0));
-        assert_eq!(event.trade().margin(), Some(2.0));
-        assert_eq!(event.trade().leverage(), Some(3.0));
-        assert_eq!(event.trade().price(), Some(4.0));
-        assert_eq!(event.trade().opening_fee(), Some(5.0));
+        assert_eq!(
+            event.trade().quantity(),
+            Some(OrderQuantity::try_from(1).unwrap())
+        );
+        assert_eq!(event.trade().margin(), Some(Margin::try_from(2).unwrap()));
+        assert_eq!(
+            event.trade().leverage(),
+            Some(Leverage::try_from(3.0).unwrap())
+        );
+        assert_eq!(event.trade().price(), Some(Price::try_from(4.0).unwrap()));
+        assert_eq!(event.trade().opening_fee(), Some(5));
         assert_eq!(event.trade().created_at().unwrap().timestamp_millis(), 0);
-        assert_eq!(event.trade().client_id(), Some("client-1"));
+        assert_eq!(event.trade().client_id(), Some(&client_id));
+    }
+
+    #[test]
+    fn stream_isolated_trade_event_deserializes_partial_close_event() {
+        let trade_id =
+            Uuid::parse_str("00000000-0000-0000-0000-000000000003").expect("must parse trade id");
+        let client_id = ClientId::try_from("client-3").expect("must parse client id");
+        let event: StreamIsolatedTradeEvent = serde_json::from_str(
+            r#"{ "pair": "btc_usd", "event": "closed", "trade": { "id": "00000000-0000-0000-0000-000000000003", "clientId": "client-3" } }"#,
+        )
+        .expect("must deserialize partial isolated trade event");
+
+        assert_eq!(event.trade().id(), Some(trade_id));
+        assert_eq!(event.trade().client_id(), Some(&client_id));
+        assert_eq!(event.trade().side(), None);
+        assert_eq!(event.trade().quantity(), None);
+        assert_eq!(event.trade().margin(), None);
+        assert_eq!(event.trade().price(), None);
     }
 
     #[test]
     fn stream_cross_order_event_deserializes() {
+        let order_id =
+            Uuid::parse_str("00000000-0000-0000-0000-000000000002").expect("must parse order id");
+        let client_id = ClientId::try_from("client-1").expect("must parse client id");
         let event: StreamCrossOrderEvent = serde_json::from_str(
-            r#"{ "pair": "btc_usd", "event": "new", "order": { "id": "order-1", "side": "buy", "type": "limit", "quantity": 1, "price": 2, "tradingFee": 3, "clientId": "client-1", "createdAt": 0 } }"#,
+            r#"{ "pair": "btc_usd", "event": "new", "order": { "id": "00000000-0000-0000-0000-000000000002", "side": "buy", "type": "limit", "quantity": 1, "price": 2, "tradingFee": 3, "clientId": "client-1", "createdAt": 0 } }"#,
         )
         .expect("must deserialize cross order event");
 
         assert_eq!(event.pair(), "btc_usd");
         assert_eq!(event.event(), "new");
-        assert_eq!(event.order().id(), Some("order-1"));
+        assert_eq!(event.order().id(), Some(order_id));
         assert_eq!(event.order().side(), Some(TradeSide::Buy));
         assert_eq!(event.order().order_type(), Some(TradeExecutionType::Limit));
-        assert_eq!(event.order().quantity(), Some(1.0));
-        assert_eq!(event.order().price(), Some(2.0));
-        assert_eq!(event.order().trading_fee(), Some(3.0));
-        assert_eq!(event.order().client_id(), Some("client-1"));
+        assert_eq!(
+            event.order().quantity(),
+            Some(OrderQuantity::try_from(1).unwrap())
+        );
+        assert_eq!(event.order().price(), Some(Price::try_from(2.0).unwrap()));
+        assert_eq!(event.order().trading_fee(), Some(3));
+        assert_eq!(event.order().client_id(), Some(&client_id));
         assert_eq!(event.order().created_at().unwrap().timestamp_millis(), 0);
+    }
+
+    #[test]
+    fn stream_cross_order_event_deserializes_partial_cancel_event() {
+        let order_id =
+            Uuid::parse_str("00000000-0000-0000-0000-000000000004").expect("must parse order id");
+        let event: StreamCrossOrderEvent = serde_json::from_str(
+            r#"{ "pair": "btc_usd", "event": "canceled", "order": { "id": "00000000-0000-0000-0000-000000000004", "tradingFee": null, "clientId": "" } }"#,
+        )
+        .expect("must deserialize partial cross order event");
+
+        assert_eq!(event.order().id(), Some(order_id));
+        assert_eq!(event.order().trading_fee(), None);
+        assert_eq!(event.order().client_id(), None);
+        assert_eq!(event.order().side(), None);
+        assert_eq!(event.order().quantity(), None);
+        assert_eq!(event.order().price(), None);
     }
 
     #[test]
@@ -324,18 +391,27 @@ mod tests {
 
         assert_eq!(event.pair(), "btc_usd");
         assert_eq!(event.event(), "new");
-        assert_eq!(event.position().quantity(), Some(1.0));
-        assert_eq!(event.position().leverage(), Some(2.0));
-        assert_eq!(event.position().margin(), Some(3.0));
-        assert_eq!(event.position().entry_price(), Some(4.0));
-        assert_eq!(event.position().liquidation(), Some(5.0));
-        assert_eq!(event.position().total_pl(), Some(6.0));
-        assert_eq!(event.position().funding_fees(), Some(7.0));
-        assert_eq!(event.position().trading_fees(), Some(8.0));
-        assert_eq!(event.position().initial_margin(), Some(9.0));
-        assert_eq!(event.position().maintenance_margin(), Some(10.0));
-        assert_eq!(event.position().running_margin(), Some(11.0));
-        assert_eq!(event.position().delta_pl(), Some(12.0));
+        assert_eq!(event.position().quantity(), Some(1));
+        assert_eq!(
+            event.position().leverage(),
+            Some(CrossLeverage::try_from(2).unwrap())
+        );
+        assert_eq!(event.position().margin(), Some(3));
+        assert_eq!(
+            event.position().entry_price(),
+            Some(Price::try_from(4.0).unwrap())
+        );
+        assert_eq!(
+            event.position().liquidation(),
+            Some(Price::try_from(5.0).unwrap())
+        );
+        assert_eq!(event.position().total_pl(), Some(6));
+        assert_eq!(event.position().funding_fees(), Some(7));
+        assert_eq!(event.position().trading_fees(), Some(8));
+        assert_eq!(event.position().initial_margin(), Some(9));
+        assert_eq!(event.position().maintenance_margin(), Some(10));
+        assert_eq!(event.position().running_margin(), Some(11));
+        assert_eq!(event.position().delta_pl(), Some(12));
         assert_eq!(event.position().updated_at().unwrap().timestamp_millis(), 0);
     }
 }
