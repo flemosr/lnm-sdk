@@ -6,6 +6,9 @@ pub struct StreamClientConfig {
     endpoint: String,
     heartbeat_interval: Duration,
     disconnect_timeout: Duration,
+    reconnect_initial_backoff: Duration,
+    reconnect_max_backoff: Duration,
+    reconnect_max_attempts: Option<usize>,
 }
 
 impl StreamClientConfig {
@@ -33,6 +36,23 @@ impl StreamClientConfig {
         self.disconnect_timeout
     }
 
+    /// Returns the initial reconnect backoff.
+    pub fn reconnect_initial_backoff(&self) -> Duration {
+        self.reconnect_initial_backoff
+    }
+
+    /// Returns the maximum reconnect backoff.
+    pub fn reconnect_max_backoff(&self) -> Duration {
+        self.reconnect_max_backoff
+    }
+
+    /// Returns the maximum number of reconnect attempts.
+    ///
+    /// `None` means the client will keep trying until explicitly disconnected.
+    pub fn reconnect_max_attempts(&self) -> Option<usize> {
+        self.reconnect_max_attempts
+    }
+
     /// Sets the Stream API endpoint.
     ///
     /// Default: `wss://stream.lnmarkets.com/v1`
@@ -56,6 +76,30 @@ impl StreamClientConfig {
         self.disconnect_timeout = disconnect_timeout;
         self
     }
+
+    /// Sets the initial reconnect backoff.
+    ///
+    /// Default: `1` second
+    pub fn with_reconnect_initial_backoff(mut self, reconnect_initial_backoff: Duration) -> Self {
+        self.reconnect_initial_backoff = reconnect_initial_backoff;
+        self
+    }
+
+    /// Sets the maximum reconnect backoff.
+    ///
+    /// Default: `30` seconds
+    pub fn with_reconnect_max_backoff(mut self, reconnect_max_backoff: Duration) -> Self {
+        self.reconnect_max_backoff = reconnect_max_backoff;
+        self
+    }
+
+    /// Sets the maximum number of reconnect attempts.
+    ///
+    /// Default: `None`, retry indefinitely until explicitly disconnected.
+    pub fn with_reconnect_max_attempts(mut self, reconnect_max_attempts: Option<usize>) -> Self {
+        self.reconnect_max_attempts = reconnect_max_attempts;
+        self
+    }
 }
 
 impl Default for StreamClientConfig {
@@ -64,6 +108,9 @@ impl Default for StreamClientConfig {
             endpoint: "wss://stream.lnmarkets.com/v1".to_string(),
             heartbeat_interval: Duration::from_secs(30),
             disconnect_timeout: Duration::from_secs(6),
+            reconnect_initial_backoff: Duration::from_secs(1),
+            reconnect_max_backoff: Duration::from_secs(30),
+            reconnect_max_attempts: None,
         }
     }
 }

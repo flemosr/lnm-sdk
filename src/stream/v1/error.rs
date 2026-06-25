@@ -67,6 +67,23 @@ pub enum StreamConnectionError {
     #[error("NoServerPong error")]
     NoServerPong,
 
+    #[error("ConnectionInterrupted error")]
+    ConnectionInterrupted,
+
+    #[error("ReconnectAttemptsExhausted error")]
+    ReconnectAttemptsExhausted,
+
+    #[error("ReauthenticationRejected error")]
+    ReauthenticationRejected,
+
+    #[error(
+        "SubscriptionRestoreMismatch error, requested {requested:?}, subscribed {subscribed:?}"
+    )]
+    SubscriptionRestoreMismatch {
+        requested: Vec<StreamTopic>,
+        subscribed: Vec<StreamTopic>,
+    },
+
     #[error("UnexpectedJsonRpcEnvelope error, {0}")]
     UnexpectedJsonRpcEnvelope(String),
 
@@ -90,6 +107,18 @@ pub enum StreamConnectionError {
 
     #[error("InvalidSecretHmac error, {0}")]
     InvalidSecretHmac(InvalidLength),
+}
+
+impl StreamConnectionError {
+    pub(crate) fn is_reconnectable(&self) -> bool {
+        matches!(
+            self,
+            Self::WriteFrame(_)
+                | Self::ReadFrame(_)
+                | Self::ServerRequestedClose
+                | Self::NoServerPong
+        )
+    }
 }
 
 pub(super) type ConnectionResult<T> = result::Result<T, StreamConnectionError>;
