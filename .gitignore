@@ -1,7 +1,15 @@
 .env
 .DS_Store
-.workcell
+
+.agents/
+.claude/
+.codex/
+.opencode/
+/opencode.*
+.pi/
+.workcell/
+
+tmp/
 
 Cargo.lock
 target/
-tmp/
