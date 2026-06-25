@@ -8,17 +8,22 @@ use serde::{
 };
 use serde_json::{Value, json};
 
-use crate::shared::models::{
-    ohlc::{OhlcCandle, OhlcRange},
-    oracle::{Index, LastPrice},
+pub use crate::shared::models::{
     price::Price,
-    serde_util,
-    ticker::TickerPrice,
     trade::{TradeExecutionType, TradeSide},
 };
 
-use super::error::{ConnectionResult, StreamConnectionError};
-use super::state::StreamConnectionStatus;
+use crate::shared::models::{
+    ohlc::{OhlcCandle, OhlcRange},
+    oracle::{Index, LastPrice},
+    serde_util,
+    ticker::TickerPrice,
+};
+
+use super::{
+    error::{ConnectionResult, StreamConnectionError, StreamJsonRpcError},
+    state::StreamConnectionStatus,
+};
 
 /// Rate-limit metadata returned by the Stream API on JSON-RPC responses.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
@@ -75,50 +80,6 @@ impl StreamResponseMetadata {
 
     pub fn rate_limit(&self) -> Option<StreamRateLimit> {
         self.rate_limit
-    }
-}
-
-/// JSON-RPC error returned by the Stream API.
-#[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct StreamJsonRpcError {
-    code: i64,
-    message: String,
-    data: Option<Value>,
-}
-
-impl StreamJsonRpcError {
-    pub fn code(&self) -> i64 {
-        self.code
-    }
-
-    pub fn message(&self) -> &str {
-        &self.message
-    }
-
-    pub fn data(&self) -> Option<&Value> {
-        self.data.as_ref()
-    }
-
-    /// Returns `error.data.code` when present.
-    pub fn application_code(&self) -> Option<&str> {
-        self.data
-            .as_ref()
-            .and_then(Value::as_object)
-            .and_then(|data| data.get("code"))
-            .and_then(Value::as_str)
-    }
-}
-
-impl fmt::Display for StreamJsonRpcError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self.application_code() {
-            Some(application_code) => write!(
-                f,
-                "JSON-RPC error {} ({application_code}): {}",
-                self.code, self.message
-            ),
-            None => write!(f, "JSON-RPC error {}: {}", self.code, self.message),
-        }
     }
 }
 

@@ -1,8 +1,10 @@
-use std::{io, result, string::FromUtf8Error};
+use std::{fmt, io, result, string::FromUtf8Error};
 
 use fastwebsockets::{OpCode, WebSocketError};
 use hmac::digest::InvalidLength;
 use hyper::http::{self, uri::InvalidUri};
+use serde::Deserialize;
+use serde_json::Value;
 use thiserror::Error;
 use tokio::{
     sync::{broadcast, mpsc, oneshot},
@@ -10,11 +12,57 @@ use tokio::{
 };
 use tokio_rustls::rustls::pki_types::InvalidDnsNameError;
 
+pub use crate::shared::models::error::OhlcRangeParseError;
+
 use super::{
     lnm::TopicStatus,
-    models::{StreamJsonRpcError, StreamTopic, StreamUpdate},
+    models::{StreamTopic, StreamUpdate},
     state::StreamConnectionStatus,
 };
+
+/// JSON-RPC error returned by the Stream API.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct StreamJsonRpcError {
+    code: i64,
+    message: String,
+    data: Option<Value>,
+}
+
+impl StreamJsonRpcError {
+    pub fn code(&self) -> i64 {
+        self.code
+    }
+
+    pub fn message(&self) -> &str {
+        &self.message
+    }
+
+    pub fn data(&self) -> Option<&Value> {
+        self.data.as_ref()
+    }
+
+    /// Returns `error.data.code` when present.
+    pub fn application_code(&self) -> Option<&str> {
+        self.data
+            .as_ref()
+            .and_then(Value::as_object)
+            .and_then(|data| data.get("code"))
+            .and_then(Value::as_str)
+    }
+}
+
+impl fmt::Display for StreamJsonRpcError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.application_code() {
+            Some(application_code) => write!(
+                f,
+                "JSON-RPC error {} ({application_code}): {}",
+                self.code, self.message
+            ),
+            None => write!(f, "JSON-RPC error {}: {}", self.code, self.message),
+        }
+    }
+}
 
 #[derive(Error, Debug)]
 #[non_exhaustive]

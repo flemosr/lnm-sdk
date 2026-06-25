@@ -2,30 +2,20 @@ use std::sync::Arc;
 
 use tokio::sync::Mutex;
 
+/// Error types returned by the Stream v1 API.
 pub mod error;
+
+/// Data models used by the Stream v1 API.
+pub mod models;
 
 mod config;
 mod lnm;
-mod models;
 mod repositories;
 mod state;
 
-pub use crate::shared::models::{
-    error::OhlcRangeParseError,
-    price::Price,
-    trade::{TradeExecutionType, TradeSide},
-};
 pub use config::StreamClientConfig;
 use error::Result;
 use lnm::LnmStreamRepo;
-pub use models::{
-    AuthenticateResult, HelloResult, StreamAnnouncement, StreamBucket, StreamBuckets,
-    StreamCrossOrder, StreamCrossOrderEvent, StreamCrossPosition, StreamCrossPositionEvent,
-    StreamFunding, StreamFundingRate, StreamIndex, StreamIsolatedTrade, StreamIsolatedTradeEvent,
-    StreamJsonRpcError, StreamLastPrice, StreamOhlc, StreamOhlcTimeframe, StreamRateLimit,
-    StreamResponseMetadata, StreamTicker, StreamTopic, StreamUpdate, StreamWalletDeposit,
-    StreamWalletWithdrawal, TimeResult, WhoamiResult,
-};
 pub use repositories::StreamRepository;
 pub use state::StreamConnectionStatus;
 
