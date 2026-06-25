@@ -12,9 +12,6 @@ Direct source code links for quick reference:
 | **API v3 - Authenticated Endpoints** | [v3_rest_auth.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/v3_rest_auth.rs) |
 | **Stream API v1 - Public Subscriptions** | [stream_v1_public.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/stream_v1_public.rs) |
 | **Stream API v1 - Authenticated Subscriptions** | [stream_v1_auth.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/stream_v1_auth.rs) |
-| **API v2 - Public Endpoints** (reference only, non-functional) | [v2_rest_public.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/v2_rest_public.rs) |
-| **API v2 - Authenticated Endpoints** (reference only, non-functional) | [v2_rest_auth.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/v2_rest_auth.rs) |
-| **API v2 - WebSocket** (reference only, non-functional) | [v2_ws.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/v2_ws.rs) |
 
 ## Prerequisites
 
@@ -27,11 +24,6 @@ API v3 authenticated examples (`v3_rest_auth` and `stream_v1_auth`) require:
 - `LNM_API_V3_KEY` - Your API v3 key
 - `LNM_API_V3_SECRET` - Your API v3 secret
 - `LNM_API_V3_PASSPHRASE` - Your API v3 passphrase
-
-API v2 authenticated examples (`v2_rest_auth`) require:
-- `LNM_API_V2_KEY` - Your API v2 key
-- `LNM_API_V2_SECRET` - Your API v2 secret
-- `LNM_API_V2_PASSPHRASE` - Your API v2 passphrase
 
 These environment variables should be set, or a `.env` file should be added in the project root.
 A [`.env.template`](https://github.com/flemosr/lnm-sdk/blob/main/.env.template) file is available.
@@ -83,36 +75,3 @@ private account topics.
 cargo run --example stream_v1_auth
 ```
 
-## API v2 (non-functional, reference only)
-
-LN Markets disabled API v2 on Mar 31 2026. The following examples will fail at runtime against the
-live service. They are currently retained for reference only.
-
-### v2_rest_public
-
-Demonstrates how to use the API v2 REST public client to fetch market data like futures ticker and
-price history.
-
-**Usage:**
-```bash
-cargo run --example v2_rest_public
-```
-
-### v2_rest_auth
-
-Demonstrates how to use the API v2 REST authenticated client to manage trades, including creating,
-updating, and closing positions.
-
-**Usage:**
-```bash
-cargo run --example v2_rest_auth
-```
-
-### v2_ws
-
-Demonstrates how to use the API v2 WebSocket client to subscribe to real-time market data channels.
-
-**Usage:**
-```bash
-cargo run --example v2_ws
-```
