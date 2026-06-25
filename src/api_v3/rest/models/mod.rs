@@ -1,7 +1,4 @@
 pub(in crate::api_v3) mod account;
-pub(in crate::api_v3) mod client_id;
-pub(in crate::api_v3) mod cross_leverage;
-pub(in crate::api_v3) mod cross_quantity;
 pub(in crate::api_v3) mod error;
 pub(in crate::api_v3) mod funding;
 pub(in crate::api_v3) mod ohlc_candle;

@@ -2,9 +2,10 @@ use std::{convert::TryFrom, fmt};
 
 use serde::{Deserialize, Serialize, de};
 
-use crate::shared::models::{SATS_PER_BTC, leverage::Leverage, margin::Margin, price::Price};
-
-use super::{cross_quantity::CrossQuantity, error::CrossLeverageValidationError};
+use super::{
+    SATS_PER_BTC, cross_quantity::CrossQuantity, error::CrossLeverageValidationError,
+    leverage::Leverage, margin::Margin, price::Price,
+};
 
 /// A validated leverage value for futures cross positions.
 ///

@@ -6,15 +6,14 @@ use std::{
 
 use serde::{Deserialize, Serialize, de};
 
-use crate::shared::models::{
+use super::{
     SATS_PER_BTC,
-    error::QuantityValidationError,
+    cross_leverage::CrossLeverage,
+    error::{CrossQuantityValidationError, QuantityValidationError},
     margin::Margin,
     price::Price,
     quantity::{OrderQuantity, QuantityLike},
 };
-
-use super::{cross_leverage::CrossLeverage, error::CrossQuantityValidationError};
 
 const MAX_QUANTITY_AT_MIN_LEVERAGE: u32 = 15_000_000;
 const MAX_QUANTITY_AT_MAX_LEVERAGE: u32 = 10_000_000;

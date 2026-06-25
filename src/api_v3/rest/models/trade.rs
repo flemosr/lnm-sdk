@@ -6,6 +6,9 @@ use uuid::Uuid;
 
 use crate::shared::models::{
     SATS_PER_BTC,
+    client_id::ClientId,
+    cross_leverage::CrossLeverage,
+    cross_quantity::CrossQuantity,
     error::MarginValidationError,
     leverage::Leverage,
     margin::Margin,
@@ -17,12 +20,7 @@ use crate::shared::models::{
     },
 };
 
-use super::{
-    client_id::ClientId,
-    cross_leverage::CrossLeverage,
-    cross_quantity::CrossQuantity,
-    error::{CrossExposureValidationError, FuturesIsolatedTradeRequestValidationError},
-};
+use super::error::{CrossExposureValidationError, FuturesIsolatedTradeRequestValidationError};
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]

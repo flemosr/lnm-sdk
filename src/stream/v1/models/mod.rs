@@ -6,8 +6,15 @@ pub(in crate::stream::v1) mod trade;
 pub(in crate::stream::v1) mod update;
 pub(in crate::stream::v1) mod wallet;
 
+pub use uuid::Uuid;
+
 pub use crate::shared::models::{
+    client_id::ClientId,
+    cross_leverage::CrossLeverage,
+    leverage::Leverage,
+    margin::Margin,
     price::Price,
+    quantity::OrderQuantity,
     trade::{TradeExecutionType, TradeSide},
 };
 

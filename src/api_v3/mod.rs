@@ -12,6 +12,7 @@ pub use rest::{
 pub mod error {
     pub use crate::shared::{
         models::error::{
+            ClientIdValidationError, CrossLeverageValidationError, CrossQuantityValidationError,
             LeverageValidationError, MarginValidationError, OhlcRangeParseError,
             PercentageCappedValidationError, PercentageValidationError, PriceValidationError,
             QuantityValidationError, TradeValidationError,
@@ -21,10 +22,7 @@ pub mod error {
 
     pub use super::rest::{
         error::RestApiV3Error,
-        models::error::{
-            ClientIdValidationError, CrossExposureValidationError, CrossLeverageValidationError,
-            CrossQuantityValidationError, FuturesIsolatedTradeRequestValidationError,
-        },
+        models::error::{CrossExposureValidationError, FuturesIsolatedTradeRequestValidationError},
     };
 }
 
@@ -33,6 +31,9 @@ pub mod models {
 
     pub use crate::shared::models::{
         SATS_PER_BTC,
+        client_id::ClientId,
+        cross_leverage::CrossLeverage,
+        cross_quantity::CrossQuantity,
         leverage::Leverage,
         margin::Margin,
         ohlc::{OhlcCandle, OhlcRange},
@@ -51,9 +52,6 @@ pub mod models {
 
     pub use super::rest::models::{
         account::Account,
-        client_id::ClientId,
-        cross_leverage::CrossLeverage,
-        cross_quantity::CrossQuantity,
         funding::{CrossFunding, FundingSettlement, IsolatedFunding},
         page::Page,
         ticker::Ticker,

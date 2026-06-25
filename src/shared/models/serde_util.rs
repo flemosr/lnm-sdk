@@ -132,7 +132,7 @@ pub(crate) mod price_option {
 pub(crate) mod client_id_option {
     use serde::{Deserialize, Deserializer};
 
-    use crate::api_v3::models::ClientId;
+    use crate::shared::models::client_id::ClientId;
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<ClientId>, D::Error>
     where

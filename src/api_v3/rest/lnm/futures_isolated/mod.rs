@@ -8,6 +8,7 @@ use uuid::Uuid;
 
 use crate::shared::{
     models::{
+        client_id::ClientId,
         leverage::Leverage,
         price::Price,
         trade::{TradeExecution, TradeSide, TradeSize},
@@ -19,7 +20,6 @@ use super::{
     super::{
         error::RestApiV3Error,
         models::{
-            client_id::ClientId,
             funding::IsolatedFunding,
             page::Page,
             trade::{FuturesIsolatedTradeRequestBody, Trade},

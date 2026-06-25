@@ -6,6 +6,8 @@ use uuid::Uuid;
 
 use crate::shared::{
     models::{
+        client_id::ClientId,
+        cross_leverage::CrossLeverage,
         leverage::Leverage,
         price::Price,
         quantity::OrderQuantity,
@@ -16,8 +18,6 @@ use crate::shared::{
 
 use super::models::{
     account::Account,
-    client_id::ClientId,
-    cross_leverage::CrossLeverage,
     funding::{CrossFunding, FundingSettlement, IsolatedFunding},
     ohlc_candle::{OhlcCandle, OhlcRange},
     oracle::{Index, LastPrice},

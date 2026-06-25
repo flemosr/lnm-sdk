@@ -8,6 +8,8 @@ use uuid::Uuid;
 
 use crate::shared::{
     models::{
+        client_id::ClientId,
+        cross_leverage::CrossLeverage,
         quantity::OrderQuantity,
         trade::{TradeExecution, TradeSide},
     },
@@ -17,8 +19,6 @@ use crate::shared::{
 use super::{
     super::{
         models::{
-            client_id::ClientId,
-            cross_leverage::CrossLeverage,
             funding::CrossFunding,
             page::Page,
             trade::{CrossOrder, CrossPosition, FuturesCrossOrderBody},

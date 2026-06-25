@@ -1,4 +1,4 @@
-use crate::{api_v3::models::CrossQuantity, shared::models::error::MarginValidationError};
+use crate::shared::models::{cross_quantity::CrossQuantity, error::MarginValidationError};
 
 use super::*;
 

@@ -3,6 +3,7 @@ use std::{env, time::Instant};
 use dotenv::dotenv;
 
 use crate::shared::models::{
+    client_id::ClientId,
     margin::Margin,
     price::{Percentage, PercentageCapped},
     quantity::OrderQuantity,
@@ -10,9 +11,7 @@ use crate::shared::models::{
 
 use super::super::{
     super::{
-        config::RestClientConfig,
-        models::{client_id::ClientId, ticker::Ticker},
-        repositories::FuturesDataRepository,
+        config::RestClientConfig, models::ticker::Ticker, repositories::FuturesDataRepository,
     },
     futures_data::LnmFuturesDataRepository,
 };

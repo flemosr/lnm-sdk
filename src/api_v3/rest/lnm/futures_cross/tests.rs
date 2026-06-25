@@ -3,14 +3,14 @@ use std::{env, time::Instant};
 use dotenv::dotenv;
 
 use crate::shared::models::{
-    price::PercentageCapped, quantity::OrderQuantity, trade::TradeExecutionType,
+    client_id::ClientId, cross_leverage::CrossLeverage, price::PercentageCapped,
+    quantity::OrderQuantity, trade::TradeExecutionType,
 };
 
 use super::super::{
     super::{
         config::RestClientConfig,
         models::{
-            cross_leverage::CrossLeverage,
             ticker::Ticker,
             trade::{CrossExposure, CrossOrder},
         },
