@@ -480,4 +480,6 @@ impl Drop for LnmStreamRepo {
 }
 
 #[cfg(test)]
+mod live_tests;
+#[cfg(test)]
 mod tests;
