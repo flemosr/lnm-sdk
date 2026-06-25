@@ -7,6 +7,13 @@ use super::{
     quantity::OrderQuantity,
 };
 
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum OhlcRangeParseError {
+    #[error("Unknown OHLC range: {value}")]
+    Unknown { value: String },
+}
+
 #[derive(Debug, Error)]
 #[non_exhaustive]
 pub enum QuantityValidationError {

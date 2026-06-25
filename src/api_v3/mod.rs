@@ -12,9 +12,9 @@ pub use rest::{
 pub mod error {
     pub use crate::shared::{
         models::error::{
-            LeverageValidationError, MarginValidationError, PercentageCappedValidationError,
-            PercentageValidationError, PriceValidationError, QuantityValidationError,
-            TradeValidationError,
+            LeverageValidationError, MarginValidationError, OhlcRangeParseError,
+            PercentageCappedValidationError, PercentageValidationError, PriceValidationError,
+            QuantityValidationError, TradeValidationError,
         },
         rest::error::RestApiError,
     };
@@ -35,8 +35,11 @@ pub mod models {
         SATS_PER_BTC,
         leverage::Leverage,
         margin::Margin,
+        ohlc::{OhlcCandle, OhlcRange},
+        oracle::{Index, LastPrice},
         price::{Percentage, PercentageCapped, Price},
         quantity::{OrderQuantity, QuantityLike},
+        ticker::TickerPrice,
         trade::{
             TradeExecution, TradeExecutionType, TradeSide, TradeSize, TradeStatus,
             util as trade_util,
@@ -52,10 +55,8 @@ pub mod models {
         cross_leverage::CrossLeverage,
         cross_quantity::CrossQuantity,
         funding::{CrossFunding, FundingSettlement, IsolatedFunding},
-        ohlc_candle::{OhlcCandle, OhlcRange},
-        oracle::{Index, LastPrice},
         page::Page,
-        ticker::{Ticker, TickerPrice},
+        ticker::Ticker,
         trade::{CrossExposure, CrossExposureRunning, CrossOrder, CrossPosition, Trade},
         transfer::CrossTransfer,
     };
