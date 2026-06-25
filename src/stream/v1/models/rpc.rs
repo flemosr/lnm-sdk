@@ -14,7 +14,7 @@ use super::{
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(untagged)]
-pub(in crate::stream::v1) enum JsonRpcId {
+enum JsonRpcId {
     String(String),
     Unsigned(u64),
     Signed(i64),
@@ -80,10 +80,7 @@ pub(in crate::stream::v1) struct StreamJsonRpcRequest {
 }
 
 impl StreamJsonRpcRequest {
-    pub(in crate::stream::v1) fn new(
-        method: StreamJsonRpcReqMethod,
-        params: Option<Value>,
-    ) -> Self {
+    pub fn new(method: StreamJsonRpcReqMethod, params: Option<Value>) -> Self {
         let mut random_bytes = [0u8; 16];
         rand::rng().fill(&mut random_bytes);
         let id = hex::encode(random_bytes);
@@ -92,7 +89,7 @@ impl StreamJsonRpcRequest {
     }
 
     #[cfg(test)]
-    pub(super) fn new_with_id(
+    fn new_with_id(
         method: StreamJsonRpcReqMethod,
         id: impl ToString,
         params: Option<Value>,
@@ -104,15 +101,15 @@ impl StreamJsonRpcRequest {
         }
     }
 
-    pub(in crate::stream::v1) fn id(&self) -> &String {
+    pub fn id(&self) -> &String {
         &self.id
     }
 
-    pub(in crate::stream::v1) fn method(&self) -> &StreamJsonRpcReqMethod {
+    pub fn method(&self) -> &StreamJsonRpcReqMethod {
         &self.method
     }
 
-    pub(in crate::stream::v1) fn try_to_bytes(&self) -> ConnectionResult<Vec<u8>> {
+    pub fn try_to_bytes(&self) -> ConnectionResult<Vec<u8>> {
         let request = JsonRpcRequestWire {
             jsonrpc: "2.0",
             method: self.method.as_str(),
@@ -127,7 +124,7 @@ impl StreamJsonRpcRequest {
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub(in crate::stream::v1) struct JsonRpcEnvelope {
+struct JsonRpcEnvelope {
     jsonrpc: String,
     id: Option<JsonRpcId>,
     method: Option<String>,
@@ -337,7 +334,7 @@ impl<'de> Deserialize<'de> for StreamJsonRpcMessage {
 }
 
 impl StreamJsonRpcMessage {
-    pub(in crate::stream::v1) fn into_rpc_result(
+    pub fn into_rpc_result(
         self,
         request: &StreamJsonRpcRequest,
     ) -> ConnectionResult<Option<StreamJsonRpcResult>> {

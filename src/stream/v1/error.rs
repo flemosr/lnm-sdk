@@ -12,10 +12,10 @@ use tokio::{
 };
 use tokio_rustls::rustls::pki_types::InvalidDnsNameError;
 
+pub use super::lnm::TopicStatus;
 pub use crate::shared::models::error::OhlcRangeParseError;
 
 use super::{
-    lnm::TopicStatus,
     models::{topic::StreamTopic, update::StreamUpdate},
     state::StreamConnectionStatus,
 };
@@ -158,7 +158,7 @@ pub enum StreamConnectionError {
 }
 
 impl StreamConnectionError {
-    pub(crate) fn is_reconnectable(&self) -> bool {
+    pub fn is_reconnectable(&self) -> bool {
         matches!(
             self,
             Self::WriteFrame(_)
@@ -201,7 +201,7 @@ pub enum StreamApiError {
     #[error("InvalidSubscriptionsTopicNotFound error, {0}")]
     InvalidSubscriptionsTopicNotFound(StreamTopic),
 
-    #[error("InvalidSubscriptionsTopicStatus error")]
+    #[error("InvalidSubscriptionsTopicStatus error for {topic}: {status}")]
     InvalidSubscriptionsTopicStatus {
         topic: StreamTopic,
         status: TopicStatus,

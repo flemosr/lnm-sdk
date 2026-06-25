@@ -1,5 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
+    fmt,
     sync::{Arc, Mutex as SyncMutex},
 };
 
@@ -37,11 +38,25 @@ use event_loop::{
     DisconnectTransmiter, RequestTransmiter, ResponseReceiver, ResponseTransmiter, StreamEventLoop,
 };
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+/// Subscription lifecycle status tracked for a Stream topic.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TopicStatus {
+    /// A subscribe request has been sent but not confirmed.
     SubscriptionPending,
+    /// The topic is currently subscribed.
     Subscribed,
+    /// An unsubscribe request has been sent but not confirmed.
     UnsubscriptionPending,
+}
+
+impl fmt::Display for TopicStatus {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::SubscriptionPending => write!(f, "SubscriptionPending"),
+            Self::Subscribed => write!(f, "Subscribed"),
+            Self::UnsubscriptionPending => write!(f, "UnsubscriptionPending"),
+        }
+    }
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -304,7 +319,7 @@ impl StreamRepository for LnmStreamRepo {
             if *topic_status != TopicStatus::SubscriptionPending {
                 return Err(StreamApiError::InvalidSubscriptionsTopicStatus {
                     topic: topic.clone(),
-                    status: topic_status.clone(),
+                    status: *topic_status,
                 });
             }
 
@@ -376,7 +391,7 @@ impl StreamRepository for LnmStreamRepo {
             if *topic_status != TopicStatus::UnsubscriptionPending {
                 return Err(StreamApiError::InvalidSubscriptionsTopicStatus {
                     topic: topic.clone(),
-                    status: topic_status.clone(),
+                    status: *topic_status,
                 });
             }
 
