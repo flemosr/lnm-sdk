@@ -431,18 +431,4 @@ fn authenticate_signature(secret: &str, timestamp: i64, nonce: &str) -> Connecti
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn authenticate_signature_matches_documented_hmac_shape() {
-        let signature = authenticate_signature("secret", 1747035005657, "nonce123")
-            .expect("signature must be generated");
-
-        let mut mac = Hmac::<Sha256>::new_from_slice(b"secret").unwrap();
-        mac.update(b"1747035005657nonce123");
-        let expected = BASE64.encode(mac.finalize().into_bytes());
-
-        assert_eq!(signature, expected);
-    }
-}
+mod tests;
