@@ -26,7 +26,7 @@ use super::super::super::{
 #[derive(Clone, Debug)]
 pub(super) enum LnmStreamResponse {
     Close,
-    JsonRpc(StreamJsonRpcMessage),
+    JsonRpc(Box<StreamJsonRpcMessage>),
     Ping(Vec<u8>),
     Pong,
 }
@@ -184,7 +184,7 @@ impl StreamConnectionIo for StreamApiConnection {
                     .map_err(StreamConnectionError::DecodeText)?;
                 let json_rpc_message = serde_json::from_str::<StreamJsonRpcMessage>(&text)
                     .map_err(StreamConnectionError::DecodeJson)?;
-                LnmStreamResponse::JsonRpc(json_rpc_message)
+                LnmStreamResponse::JsonRpc(Box::new(json_rpc_message))
             }
             OpCode::Close => LnmStreamResponse::Close,
             OpCode::Ping => LnmStreamResponse::Ping(frame.payload.to_vec()),

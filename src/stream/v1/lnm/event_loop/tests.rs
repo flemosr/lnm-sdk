@@ -129,7 +129,9 @@ impl StreamConnectionIo for FakeConnection {
         }
 
         if let Some(request) = self.last_request.take() {
-            return Ok(LnmStreamResponse::JsonRpc(response_for_request(&request)));
+            return Ok(LnmStreamResponse::JsonRpc(Box::new(response_for_request(
+                &request,
+            ))));
         }
 
         future::pending().await

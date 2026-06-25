@@ -183,7 +183,7 @@ impl StreamEventLoop {
 
                     match read_response_result? {
                         LnmStreamResponse::JsonRpc(json_rpc_message) => {
-                            self.handle_json_rpc_message(json_rpc_message, pending);
+                            self.handle_json_rpc_message(*json_rpc_message, pending);
                         }
                         LnmStreamResponse::Ping(payload) => {
                             ws.send_pong(payload).await?;
@@ -366,6 +366,7 @@ impl StreamEventLoop {
         loop {
             match ws.read_response().await? {
                 LnmStreamResponse::JsonRpc(json_rpc_message) => {
+                    let json_rpc_message = *json_rpc_message;
                     let response_id = match &json_rpc_message {
                         StreamJsonRpcMessage::Response { id, .. } => Some(id.clone()),
                         StreamJsonRpcMessage::Subscription(_) => None,
