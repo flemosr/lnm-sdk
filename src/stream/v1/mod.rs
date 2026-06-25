@@ -10,6 +10,11 @@ mod models;
 mod repositories;
 mod state;
 
+pub use crate::shared::models::{
+    error::OhlcRangeParseError,
+    price::Price,
+    trade::{TradeExecutionType, TradeSide},
+};
 pub use config::StreamClientConfig;
 use error::Result;
 use lnm::LnmStreamRepo;

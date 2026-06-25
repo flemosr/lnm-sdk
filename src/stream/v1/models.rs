@@ -8,6 +8,15 @@ use serde::{
 };
 use serde_json::{Value, json};
 
+use crate::shared::models::{
+    ohlc::{OhlcCandle, OhlcRange},
+    oracle::{Index, LastPrice},
+    price::Price,
+    serde_util,
+    ticker::TickerPrice,
+    trade::{TradeExecutionType, TradeSide},
+};
+
 use super::error::{ConnectionResult, StreamConnectionError};
 use super::state::StreamConnectionStatus;
 
@@ -114,98 +123,19 @@ impl fmt::Display for StreamJsonRpcError {
 }
 
 /// Stream v1 OHLC timeframe.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum StreamOhlcTimeframe {
-    OneMinute,
-    ThreeMinutes,
-    FiveMinutes,
-    TenMinutes,
-    FifteenMinutes,
-    ThirtyMinutes,
-    FortyFiveMinutes,
-    OneHour,
-    TwoHours,
-    ThreeHours,
-    FourHours,
-    OneDay,
-    OneWeek,
-    OneMonth,
-    ThreeMonths,
-}
+pub type StreamOhlcTimeframe = OhlcRange;
 
-impl StreamOhlcTimeframe {
-    fn as_str(&self) -> &'static str {
-        match self {
-            StreamOhlcTimeframe::OneMinute => "1m",
-            StreamOhlcTimeframe::ThreeMinutes => "3m",
-            StreamOhlcTimeframe::FiveMinutes => "5m",
-            StreamOhlcTimeframe::TenMinutes => "10m",
-            StreamOhlcTimeframe::FifteenMinutes => "15m",
-            StreamOhlcTimeframe::ThirtyMinutes => "30m",
-            StreamOhlcTimeframe::FortyFiveMinutes => "45m",
-            StreamOhlcTimeframe::OneHour => "1h",
-            StreamOhlcTimeframe::TwoHours => "2h",
-            StreamOhlcTimeframe::ThreeHours => "3h",
-            StreamOhlcTimeframe::FourHours => "4h",
-            StreamOhlcTimeframe::OneDay => "1d",
-            StreamOhlcTimeframe::OneWeek => "1w",
-            StreamOhlcTimeframe::OneMonth => "1month",
-            StreamOhlcTimeframe::ThreeMonths => "3months",
-        }
-    }
-}
+/// Inverse futures last trade price notification payload.
+pub type StreamLastPrice = LastPrice;
 
-impl fmt::Display for StreamOhlcTimeframe {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.as_str())
-    }
-}
+/// Inverse futures index price notification payload.
+pub type StreamIndex = Index;
 
-impl FromStr for StreamOhlcTimeframe {
-    type Err = StreamConnectionError;
+/// One inverse futures volume ladder bucket.
+pub type StreamBucket = TickerPrice;
 
-    fn from_str(value: &str) -> ConnectionResult<Self> {
-        match value {
-            "1m" => Ok(StreamOhlcTimeframe::OneMinute),
-            "3m" => Ok(StreamOhlcTimeframe::ThreeMinutes),
-            "5m" => Ok(StreamOhlcTimeframe::FiveMinutes),
-            "10m" => Ok(StreamOhlcTimeframe::TenMinutes),
-            "15m" => Ok(StreamOhlcTimeframe::FifteenMinutes),
-            "30m" => Ok(StreamOhlcTimeframe::ThirtyMinutes),
-            "45m" => Ok(StreamOhlcTimeframe::FortyFiveMinutes),
-            "1h" => Ok(StreamOhlcTimeframe::OneHour),
-            "2h" => Ok(StreamOhlcTimeframe::TwoHours),
-            "3h" => Ok(StreamOhlcTimeframe::ThreeHours),
-            "4h" => Ok(StreamOhlcTimeframe::FourHours),
-            "1d" => Ok(StreamOhlcTimeframe::OneDay),
-            "1w" => Ok(StreamOhlcTimeframe::OneWeek),
-            "1month" => Ok(StreamOhlcTimeframe::OneMonth),
-            "3months" => Ok(StreamOhlcTimeframe::ThreeMonths),
-            _ => Err(StreamConnectionError::UnknownOhlcTimeframe(
-                value.to_string(),
-            )),
-        }
-    }
-}
-
-impl Serialize for StreamOhlcTimeframe {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(self.as_str())
-    }
-}
-
-impl<'de> Deserialize<'de> for StreamOhlcTimeframe {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let value = String::deserialize(deserializer)?;
-        Self::from_str(&value).map_err(de::Error::custom)
-    }
-}
+/// Inverse futures OHLC candle notification payload.
+pub type StreamOhlc = OhlcCandle;
 
 /// Subscription topics supported by the Stream v1 API.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -289,7 +219,9 @@ impl FromStr for StreamTopic {
                 const OHLC_PREFIX: &str = "futures/inverse/btc_usd/ohlc/";
                 if let Some(timeframe) = value.strip_prefix(OHLC_PREFIX) {
                     return Ok(StreamTopic::FuturesInverseBtcUsdOhlc(
-                        StreamOhlcTimeframe::from_str(timeframe)?,
+                        StreamOhlcTimeframe::from_str(timeframe).map_err(|_| {
+                            StreamConnectionError::UnknownOhlcTimeframe(timeframe.to_string())
+                        })?,
                     ));
                 }
 
@@ -316,33 +248,6 @@ impl<'de> Deserialize<'de> for StreamTopic {
         let value = String::deserialize(deserializer)?;
         Self::from_str(&value).map_err(de::Error::custom)
     }
-}
-
-fn deserialize_timestamp_millis<'de, D>(
-    deserializer: D,
-) -> std::result::Result<DateTime<Utc>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let millis = i64::deserialize(deserializer)?;
-    DateTime::<Utc>::from_timestamp_millis(millis)
-        .ok_or_else(|| de::Error::custom(format!("invalid timestamp milliseconds: {millis}")))
-}
-
-fn deserialize_optional_timestamp_millis<'de, D>(
-    deserializer: D,
-) -> std::result::Result<Option<DateTime<Utc>>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let millis = Option::<i64>::deserialize(deserializer)?;
-    millis
-        .map(|millis| {
-            DateTime::<Utc>::from_timestamp_millis(millis).ok_or_else(|| {
-                de::Error::custom(format!("invalid timestamp milliseconds: {millis}"))
-            })
-        })
-        .transpose()
 }
 
 fn decode_subscription_data<T>(data: Value) -> ConnectionResult<T>
@@ -385,7 +290,7 @@ impl StreamAnnouncement {
 #[serde(rename_all = "camelCase")]
 pub struct StreamFundingRate {
     rate: f64,
-    #[serde(deserialize_with = "deserialize_timestamp_millis")]
+    #[serde(deserialize_with = "serde_util::datetime_rfc3339_or_millis::deserialize")]
     time: DateTime<Utc>,
 }
 
@@ -403,10 +308,10 @@ impl StreamFundingRate {
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StreamTicker {
-    #[serde(deserialize_with = "deserialize_timestamp_millis")]
+    #[serde(deserialize_with = "serde_util::datetime_rfc3339_or_millis::deserialize")]
     time: DateTime<Utc>,
-    last_price: Option<f64>,
-    index: Option<f64>,
+    last_price: Option<Price>,
+    index: Option<Price>,
     funding: StreamFundingRate,
 }
 
@@ -415,11 +320,11 @@ impl StreamTicker {
         self.time
     }
 
-    pub fn last_price(&self) -> Option<f64> {
+    pub fn last_price(&self) -> Option<Price> {
         self.last_price
     }
 
-    pub fn index(&self) -> Option<f64> {
+    pub fn index(&self) -> Option<Price> {
         self.index
     }
 
@@ -428,77 +333,11 @@ impl StreamTicker {
     }
 }
 
-/// Inverse futures last trade price notification payload.
-#[derive(Debug, Clone, PartialEq, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct StreamLastPrice {
-    #[serde(deserialize_with = "deserialize_timestamp_millis")]
-    time: DateTime<Utc>,
-    last_price: f64,
-}
-
-impl StreamLastPrice {
-    pub fn time(&self) -> DateTime<Utc> {
-        self.time
-    }
-
-    pub fn last_price(&self) -> f64 {
-        self.last_price
-    }
-}
-
-/// Inverse futures index price notification payload.
-#[derive(Debug, Clone, PartialEq, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct StreamIndex {
-    #[serde(deserialize_with = "deserialize_timestamp_millis")]
-    time: DateTime<Utc>,
-    index: f64,
-}
-
-impl StreamIndex {
-    pub fn time(&self) -> DateTime<Utc> {
-        self.time
-    }
-
-    pub fn index(&self) -> f64 {
-        self.index
-    }
-}
-
-/// One inverse futures volume ladder bucket.
-#[derive(Debug, Clone, PartialEq, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct StreamBucket {
-    min_size: f64,
-    max_size: f64,
-    ask_price: f64,
-    bid_price: f64,
-}
-
-impl StreamBucket {
-    pub fn min_size(&self) -> f64 {
-        self.min_size
-    }
-
-    pub fn max_size(&self) -> f64 {
-        self.max_size
-    }
-
-    pub fn ask_price(&self) -> f64 {
-        self.ask_price
-    }
-
-    pub fn bid_price(&self) -> f64 {
-        self.bid_price
-    }
-}
-
 /// Inverse futures volume ladder bucket notification payload.
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StreamBuckets {
-    #[serde(deserialize_with = "deserialize_timestamp_millis")]
+    #[serde(deserialize_with = "serde_util::datetime_rfc3339_or_millis::deserialize")]
     time: DateTime<Utc>,
     buckets: Vec<StreamBucket>,
 }
@@ -531,45 +370,6 @@ impl StreamFunding {
     }
 }
 
-/// Inverse futures OHLC candle notification payload.
-#[derive(Debug, Clone, PartialEq, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct StreamOhlc {
-    #[serde(deserialize_with = "deserialize_timestamp_millis")]
-    time: DateTime<Utc>,
-    open: f64,
-    high: f64,
-    low: f64,
-    close: f64,
-    volume: f64,
-}
-
-impl StreamOhlc {
-    pub fn time(&self) -> DateTime<Utc> {
-        self.time
-    }
-
-    pub fn open(&self) -> f64 {
-        self.open
-    }
-
-    pub fn high(&self) -> f64 {
-        self.high
-    }
-
-    pub fn low(&self) -> f64 {
-        self.low
-    }
-
-    pub fn close(&self) -> f64 {
-        self.close
-    }
-
-    pub fn volume(&self) -> f64 {
-        self.volume
-    }
-}
-
 /// Inverse futures isolated-margin trade event notification payload.
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -598,15 +398,18 @@ impl StreamIsolatedTradeEvent {
 #[serde(rename_all = "camelCase")]
 pub struct StreamIsolatedTrade {
     id: Option<String>,
-    side: Option<String>,
+    side: Option<TradeSide>,
     #[serde(rename = "type")]
-    trade_type: Option<String>,
+    trade_type: Option<TradeExecutionType>,
     quantity: Option<f64>,
     margin: Option<f64>,
     leverage: Option<f64>,
     price: Option<f64>,
     opening_fee: Option<f64>,
-    #[serde(default, deserialize_with = "deserialize_optional_timestamp_millis")]
+    #[serde(
+        default,
+        deserialize_with = "serde_util::datetime_option_rfc3339_or_millis::deserialize"
+    )]
     created_at: Option<DateTime<Utc>>,
     #[serde(default)]
     client_id: Option<String>,
@@ -617,12 +420,12 @@ impl StreamIsolatedTrade {
         self.id.as_deref()
     }
 
-    pub fn side(&self) -> Option<&str> {
-        self.side.as_deref()
+    pub fn side(&self) -> Option<TradeSide> {
+        self.side
     }
 
-    pub fn trade_type(&self) -> Option<&str> {
-        self.trade_type.as_deref()
+    pub fn trade_type(&self) -> Option<TradeExecutionType> {
+        self.trade_type
     }
 
     pub fn quantity(&self) -> Option<f64> {
@@ -682,15 +485,18 @@ impl StreamCrossOrderEvent {
 #[serde(rename_all = "camelCase")]
 pub struct StreamCrossOrder {
     id: Option<String>,
-    side: Option<String>,
+    side: Option<TradeSide>,
     #[serde(rename = "type")]
-    order_type: Option<String>,
+    order_type: Option<TradeExecutionType>,
     quantity: Option<f64>,
     price: Option<f64>,
     trading_fee: Option<f64>,
     #[serde(default)]
     client_id: Option<String>,
-    #[serde(default, deserialize_with = "deserialize_optional_timestamp_millis")]
+    #[serde(
+        default,
+        deserialize_with = "serde_util::datetime_option_rfc3339_or_millis::deserialize"
+    )]
     created_at: Option<DateTime<Utc>>,
 }
 
@@ -699,12 +505,12 @@ impl StreamCrossOrder {
         self.id.as_deref()
     }
 
-    pub fn side(&self) -> Option<&str> {
-        self.side.as_deref()
+    pub fn side(&self) -> Option<TradeSide> {
+        self.side
     }
 
-    pub fn order_type(&self) -> Option<&str> {
-        self.order_type.as_deref()
+    pub fn order_type(&self) -> Option<TradeExecutionType> {
+        self.order_type
     }
 
     pub fn quantity(&self) -> Option<f64> {
@@ -767,7 +573,10 @@ pub struct StreamCrossPosition {
     maintenance_margin: Option<f64>,
     running_margin: Option<f64>,
     delta_pl: Option<f64>,
-    #[serde(default, deserialize_with = "deserialize_optional_timestamp_millis")]
+    #[serde(
+        default,
+        deserialize_with = "serde_util::datetime_option_rfc3339_or_millis::deserialize"
+    )]
     updated_at: Option<DateTime<Utc>>,
 }
 
@@ -1559,7 +1368,7 @@ mod tests {
         };
 
         assert_eq!(last_price.time().timestamp_millis(), 0);
-        assert_eq!(last_price.last_price(), 100000.0);
+        assert_eq!(last_price.last_price().as_f64(), 100000.0);
     }
 
     #[test]
@@ -1584,7 +1393,7 @@ mod tests {
             panic!("expected ticker update");
         };
         assert_eq!(ticker.time().timestamp_millis(), 0);
-        assert_eq!(ticker.last_price(), Some(100000.0));
+        assert_eq!(ticker.last_price().unwrap().as_f64(), 100000.0);
         assert_eq!(ticker.index(), None);
         assert_eq!(ticker.funding().rate(), 0.01);
         assert_eq!(ticker.funding().time().timestamp_millis(), 60000);
@@ -1597,7 +1406,7 @@ mod tests {
             panic!("expected index update");
         };
         assert_eq!(index.time().timestamp_millis(), 0);
-        assert_eq!(index.index(), 100001.0);
+        assert_eq!(index.index().as_f64(), 100001.0);
 
         let update = decode_subscription_update(
             "futures/inverse/btc_usd/buckets",
@@ -1607,10 +1416,10 @@ mod tests {
             panic!("expected buckets update");
         };
         assert_eq!(buckets.time().timestamp_millis(), 0);
-        assert_eq!(buckets.buckets()[0].min_size(), 1.0);
-        assert_eq!(buckets.buckets()[0].max_size(), 2.0);
-        assert_eq!(buckets.buckets()[0].ask_price(), 3.0);
-        assert_eq!(buckets.buckets()[0].bid_price(), 4.0);
+        assert_eq!(buckets.buckets()[0].min_size(), 1);
+        assert_eq!(buckets.buckets()[0].max_size(), 2);
+        assert_eq!(buckets.buckets()[0].ask_price().as_f64(), 3.0);
+        assert_eq!(buckets.buckets()[0].bid_price().as_f64(), 4.0);
 
         let update = decode_subscription_update(
             "futures/inverse/btc_usd/funding",
@@ -1632,11 +1441,11 @@ mod tests {
         };
         assert_eq!(timeframe, StreamOhlcTimeframe::OneMinute);
         assert_eq!(candle.time().timestamp_millis(), 0);
-        assert_eq!(candle.open(), 1.0);
-        assert_eq!(candle.high(), 2.0);
-        assert_eq!(candle.low(), 3.0);
-        assert_eq!(candle.close(), 4.0);
-        assert_eq!(candle.volume(), 5.0);
+        assert_eq!(candle.open().as_f64(), 1.0);
+        assert_eq!(candle.high().as_f64(), 2.0);
+        assert_eq!(candle.low().as_f64(), 3.0);
+        assert_eq!(candle.close().as_f64(), 4.0);
+        assert_eq!(candle.volume(), 5);
     }
 
     #[test]
@@ -1651,8 +1460,8 @@ mod tests {
         assert_eq!(event.pair(), "btc_usd");
         assert_eq!(event.event(), "open");
         assert_eq!(event.trade().id(), Some("trade-1"));
-        assert_eq!(event.trade().side(), Some("buy"));
-        assert_eq!(event.trade().trade_type(), Some("limit"));
+        assert_eq!(event.trade().side(), Some(TradeSide::Buy));
+        assert_eq!(event.trade().trade_type(), Some(TradeExecutionType::Limit));
         assert_eq!(event.trade().quantity(), Some(1.0));
         assert_eq!(event.trade().margin(), Some(2.0));
         assert_eq!(event.trade().leverage(), Some(3.0));
@@ -1671,8 +1480,8 @@ mod tests {
         assert_eq!(event.pair(), "btc_usd");
         assert_eq!(event.event(), "new");
         assert_eq!(event.order().id(), Some("order-1"));
-        assert_eq!(event.order().side(), Some("buy"));
-        assert_eq!(event.order().order_type(), Some("limit"));
+        assert_eq!(event.order().side(), Some(TradeSide::Buy));
+        assert_eq!(event.order().order_type(), Some(TradeExecutionType::Limit));
         assert_eq!(event.order().quantity(), Some(1.0));
         assert_eq!(event.order().price(), Some(2.0));
         assert_eq!(event.order().trading_fee(), Some(3.0));
