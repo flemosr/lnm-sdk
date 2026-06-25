@@ -4,7 +4,6 @@ use hmac::digest::InvalidLength;
 use hyper::{Method, StatusCode, header::InvalidHeaderValue};
 use thiserror::Error;
 
-use crate::api_v2::rest::error::RestApiV2Error;
 use crate::api_v3::rest::error::RestApiV3Error;
 
 #[derive(Error, Debug)]
@@ -48,9 +47,6 @@ pub enum RestApiError {
 
     #[error("Request JSON serialization failed. Error: {0}")]
     RequestJsonSerializeFailed(serde_json::Error),
-
-    #[error(transparent)]
-    RestApiV2(#[from] RestApiV2Error),
 
     #[error(transparent)]
     RestApiV3(#[from] RestApiV3Error),

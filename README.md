@@ -2,12 +2,10 @@
 
 A Rust SDK for interacting with [LN Markets](https://lnmarkets.com/).
 
-> **Note:** This is an unofficial SDK. REST API v3 support is functional but not yet
-> feature-complete; for implementation status, see the
+> **Note:** This is an unofficial SDK. The currently supported API surfaces are REST API v3
+> and Stream API v1. REST API v3 support is functional but not yet feature-complete; for
+> implementation status, see the
 > [API v3 implementation docs](https://github.com/flemosr/lnm-sdk/blob/main/docs/api-v3-implementation.md).
->
-> LN Markets disabled API v2 on Mar 31 2026. An implementation (REST + WebSocket) is currently
-> retained in the `api_v2` module for reference only.
 
 [![Crates.io Badge](https://img.shields.io/crates/v/lnm-sdk)](https://crates.io/crates/lnm-sdk)
 [![Documentation Badge](https://docs.rs/lnm-sdk/badge.svg)](https://docs.rs/lnm-sdk/latest/lnm_sdk/)
