@@ -40,6 +40,49 @@ pub enum TopicStatus {
     UnsubscriptionPending,
 }
 
+#[derive(Clone, PartialEq, Eq)]
+struct StreamCredentials {
+    key: String,
+    secret: String,
+    passphrase: String,
+}
+
+impl StreamCredentials {
+    fn new(key: &str, secret: &str, passphrase: &str) -> Self {
+        Self {
+            key: key.to_string(),
+            secret: secret.to_string(),
+            passphrase: passphrase.to_string(),
+        }
+    }
+
+    fn authenticate_params(&self) -> ConnectionResult<serde_json::Value> {
+        let timestamp = Utc::now().timestamp_millis();
+        let mut nonce_bytes = [0u8; 16];
+        rand::rng().fill(&mut nonce_bytes);
+        let nonce = hex::encode(nonce_bytes);
+        let signature = self.authenticate_signature(timestamp, &nonce)?;
+
+        Ok(json!({
+            "key": self.key,
+            "timestamp": timestamp,
+            "nonce": nonce,
+            "signature": signature,
+            "passphrase": self.passphrase,
+        }))
+    }
+
+    fn authenticate_signature(&self, timestamp: i64, nonce: &str) -> ConnectionResult<String> {
+        let prehash = format!("{timestamp}{nonce}");
+        let mut mac = Hmac::<Sha256>::new_from_slice(self.secret.as_bytes())
+            .map_err(StreamConnectionError::InvalidSecretHmac)?;
+        mac.update(prehash.as_bytes());
+        let mac = mac.finalize().into_bytes();
+
+        Ok(BASE64.encode(mac))
+    }
+}
+
 pub(super) struct LnmStreamRepo {
     config: StreamClientConfig,
     event_loop_handle: SyncMutex<Option<JoinHandle<()>>>,
@@ -47,7 +90,8 @@ pub(super) struct LnmStreamRepo {
     request_tx: RequestTransmiter,
     response_tx: ResponseTransmiter,
     connection_status_manager: Arc<StreamConnectionStatusManager>,
-    subscriptions: AsyncMutex<HashMap<StreamTopic, TopicStatus>>,
+    credentials: Arc<AsyncMutex<Option<StreamCredentials>>>,
+    subscriptions: Arc<AsyncMutex<HashMap<StreamTopic, TopicStatus>>>,
 }
 
 impl LnmStreamRepo {
@@ -58,12 +102,16 @@ impl LnmStreamRepo {
             oneshot::Sender<ConnectionResult<StreamJsonRpcResult>>,
         )>(1_000);
         let (response_tx, _) = broadcast::channel::<StreamUpdate>(10_000);
+        let credentials = Arc::new(AsyncMutex::new(None));
+        let subscriptions = Arc::new(AsyncMutex::new(HashMap::new()));
 
         let (event_loop_handle, connection_status_manager) = StreamEventLoop::try_spawn(
             config.clone(),
             disconnect_rx,
             request_rx,
             response_tx.clone(),
+            credentials.clone(),
+            subscriptions.clone(),
         )
         .await
         .map_err(StreamApiError::FailedToSpawnEventLoop)?;
@@ -75,7 +123,8 @@ impl LnmStreamRepo {
             request_tx,
             response_tx,
             connection_status_manager,
-            subscriptions: AsyncMutex::new(HashMap::new()),
+            credentials,
+            subscriptions,
         })
     }
 
@@ -163,12 +212,23 @@ impl StreamRepository for LnmStreamRepo {
         secret: &str,
         passphrase: &str,
     ) -> Result<AuthenticateResult> {
-        let params =
-            authenticate_params(key, secret, passphrase).map_err(StreamApiError::RequestFailed)?;
+        let credentials = StreamCredentials::new(key, secret, passphrase);
+        let params = credentials
+            .authenticate_params()
+            .map_err(StreamApiError::RequestFailed)?;
         let request = StreamJsonRpcRequest::new(StreamJsonRpcReqMethod::Authenticate, Some(params));
 
         match self.send_request(request).await? {
-            StreamJsonRpcResult::Authenticate(result) => Ok(result),
+            StreamJsonRpcResult::Authenticate(result) => {
+                let mut credentials_lock = self.credentials.lock().await;
+                if result.authenticated() {
+                    *credentials_lock = Some(credentials);
+                } else {
+                    *credentials_lock = None;
+                }
+
+                Ok(result)
+            }
             _ => Err(StreamApiError::InvalidRpcResult("authenticate")),
         }
     }
@@ -398,36 +458,6 @@ impl Drop for LnmStreamRepo {
             join_handle.abort();
         }
     }
-}
-
-fn authenticate_params(
-    key: &str,
-    secret: &str,
-    passphrase: &str,
-) -> ConnectionResult<serde_json::Value> {
-    let timestamp = Utc::now().timestamp_millis();
-    let mut nonce_bytes = [0u8; 16];
-    rand::rng().fill(&mut nonce_bytes);
-    let nonce = hex::encode(nonce_bytes);
-    let signature = authenticate_signature(secret, timestamp, &nonce)?;
-
-    Ok(json!({
-        "key": key,
-        "signature": signature,
-        "timestamp": timestamp,
-        "passphrase": passphrase,
-        "nonce": nonce,
-    }))
-}
-
-fn authenticate_signature(secret: &str, timestamp: i64, nonce: &str) -> ConnectionResult<String> {
-    let prehash = format!("{timestamp}{nonce}");
-    let mut mac = Hmac::<Sha256>::new_from_slice(secret.as_bytes())
-        .map_err(StreamConnectionError::InvalidSecretHmac)?;
-    mac.update(prehash.as_bytes());
-    let mac = mac.finalize().into_bytes();
-
-    Ok(BASE64.encode(mac))
 }
 
 #[cfg(test)]

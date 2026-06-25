@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use tokio::{
-    sync::{broadcast, mpsc, oneshot},
+    sync::{Mutex as AsyncMutex, broadcast, mpsc, oneshot},
     task::JoinHandle,
     time,
 };
@@ -10,9 +10,12 @@ use crate::stream::v1::config::StreamClientConfig;
 
 use super::super::{
     error::{ConnectionResult, StreamConnectionError},
-    models::{StreamJsonRpcMessage, StreamJsonRpcRequest, StreamJsonRpcResult, StreamUpdate},
+    models::{
+        StreamJsonRpcMessage, StreamJsonRpcRequest, StreamJsonRpcResult, StreamTopic, StreamUpdate,
+    },
     state::{StreamConnectionStatus, StreamConnectionStatusManager},
 };
+use super::{StreamCredentials, TopicStatus};
 
 mod connection;
 
@@ -48,6 +51,8 @@ pub(super) struct StreamEventLoop {
     request_rx: RequestReceiver,
     response_tx: ResponseTransmiter,
     connection_status_manager: Arc<StreamConnectionStatusManager>,
+    credentials: Arc<AsyncMutex<Option<StreamCredentials>>>,
+    subscriptions: Arc<AsyncMutex<HashMap<StreamTopic, TopicStatus>>>,
 }
 
 impl StreamEventLoop {
@@ -57,6 +62,8 @@ impl StreamEventLoop {
         request_rx: RequestReceiver,
         response_tx: ResponseTransmiter,
         connection_status_manager: Arc<StreamConnectionStatusManager>,
+        credentials: Arc<AsyncMutex<Option<StreamCredentials>>>,
+        subscriptions: Arc<AsyncMutex<HashMap<StreamTopic, TopicStatus>>>,
     ) -> ConnectionResult<Self> {
         let ws = StreamApiConnection::new(config.endpoint()).await?;
 
@@ -67,6 +74,8 @@ impl StreamEventLoop {
             request_rx,
             response_tx,
             connection_status_manager,
+            credentials,
+            subscriptions,
         })
     }
 
@@ -177,6 +186,8 @@ impl StreamEventLoop {
         disconnect_rx: DisconnectReceiver,
         request_rx: RequestReceiver,
         response_tx: ResponseTransmiter,
+        credentials: Arc<AsyncMutex<Option<StreamCredentials>>>,
+        subscriptions: Arc<AsyncMutex<HashMap<StreamTopic, TopicStatus>>>,
     ) -> ConnectionResult<(JoinHandle<()>, Arc<StreamConnectionStatusManager>)> {
         let connection_status_manager = StreamConnectionStatusManager::new();
 
@@ -186,6 +197,8 @@ impl StreamEventLoop {
             request_rx,
             response_tx,
             connection_status_manager.clone(),
+            credentials,
+            subscriptions,
         )
         .await?;
 

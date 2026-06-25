@@ -1,10 +1,10 @@
 use std::{collections::HashMap, sync::Mutex as SyncMutex, time::Duration};
 
-use serde_json::Value;
+use serde_json::{Value, json};
 use tokio::sync::{Mutex as AsyncMutex, broadcast, mpsc::error::TryRecvError, oneshot};
 use tokio::time;
 
-use crate::stream::v1::models::StreamResponseMetadata;
+use crate::stream::v1::models::{StreamJsonRpcMessage, StreamResponseMetadata};
 
 use super::*;
 
@@ -28,7 +28,8 @@ fn test_repo() -> (Arc<LnmStreamRepo>, FakeRequestReceiver) {
         request_tx,
         response_tx,
         connection_status_manager: StreamConnectionStatusManager::new(),
-        subscriptions: AsyncMutex::new(HashMap::new()),
+        credentials: Arc::new(AsyncMutex::new(None)),
+        subscriptions: Arc::new(AsyncMutex::new(HashMap::new())),
     };
 
     (Arc::new(repo), request_rx)
@@ -76,6 +77,27 @@ fn assert_topics(request: &StreamJsonRpcRequest, expected: &[StreamTopic]) {
 
 fn stream_metadata() -> StreamResponseMetadata {
     StreamResponseMetadata::new(None, None, None, None)
+}
+
+fn result_for_request(request: &StreamJsonRpcRequest, result: Value) -> StreamJsonRpcResult {
+    StreamJsonRpcMessage::Response {
+        id: request.id().clone(),
+        result: Ok(result),
+        metadata: stream_metadata(),
+    }
+    .into_rpc_result(request)
+    .expect("response must decode")
+    .expect("response must contain a result")
+}
+
+fn authenticate_result(request: &StreamJsonRpcRequest, authenticated: bool) -> StreamJsonRpcResult {
+    result_for_request(
+        request,
+        json!({
+            "authenticated": authenticated,
+            "permissions": ["read", "trade"],
+        }),
+    )
 }
 
 async fn complete_subscribe(
@@ -130,7 +152,9 @@ async fn complete_unsubscribe(
 
 #[test]
 fn authenticate_signature_matches_documented_hmac_shape() {
-    let signature = authenticate_signature("secret", 1747035005657, "nonce123")
+    let credentials = StreamCredentials::new("key", "secret", "passphrase");
+    let signature = credentials
+        .authenticate_signature(1747035005657, "nonce123")
         .expect("signature must be generated");
 
     let mut mac = Hmac::<Sha256>::new_from_slice(b"secret").unwrap();
@@ -138,6 +162,57 @@ fn authenticate_signature_matches_documented_hmac_shape() {
     let expected = BASE64.encode(mac.finalize().into_bytes());
 
     assert_eq!(signature, expected);
+}
+
+#[tokio::test]
+async fn authenticate_stores_credentials_after_success() {
+    let (repo, mut request_rx) = test_repo();
+    let auth_repo = repo.clone();
+    let auth_handle =
+        tokio::spawn(async move { auth_repo.authenticate("key", "secret", "passphrase").await });
+    let (request, response_tx) = receive_request(&mut request_rx).await;
+
+    assert_eq!(request.method(), &StreamJsonRpcReqMethod::Authenticate);
+    response_tx
+        .send(Ok(authenticate_result(&request, true)))
+        .expect("authenticate response must be received");
+
+    let result = auth_handle
+        .await
+        .expect("authenticate task must complete")
+        .expect("authenticate must succeed");
+    assert!(result.authenticated());
+
+    let credentials = repo.credentials.lock().await;
+    let credentials = credentials
+        .as_ref()
+        .expect("credentials must be stored after successful authentication");
+    assert_eq!(credentials.key, "key");
+    assert_eq!(credentials.secret, "secret");
+    assert_eq!(credentials.passphrase, "passphrase");
+}
+
+#[tokio::test]
+async fn authenticate_clears_credentials_when_server_returns_unauthenticated() {
+    let (repo, mut request_rx) = test_repo();
+    *repo.credentials.lock().await = Some(StreamCredentials::new("old", "old", "old"));
+
+    let auth_repo = repo.clone();
+    let auth_handle =
+        tokio::spawn(async move { auth_repo.authenticate("key", "secret", "passphrase").await });
+    let (request, response_tx) = receive_request(&mut request_rx).await;
+
+    assert_eq!(request.method(), &StreamJsonRpcReqMethod::Authenticate);
+    response_tx
+        .send(Ok(authenticate_result(&request, false)))
+        .expect("authenticate response must be received");
+
+    let result = auth_handle
+        .await
+        .expect("authenticate task must complete")
+        .expect("authenticate must succeed");
+    assert!(!result.authenticated());
+    assert!(repo.credentials.lock().await.is_none());
 }
 
 #[tokio::test]
