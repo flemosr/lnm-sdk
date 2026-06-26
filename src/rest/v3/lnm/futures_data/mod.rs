@@ -18,7 +18,7 @@ use super::{
     signature::SignatureGeneratorV3,
 };
 
-pub(in crate::rest) struct LnmFuturesDataRepository {
+pub(in crate::rest::v3) struct LnmFuturesDataRepository {
     base: Arc<LnmRestBase<SignatureGeneratorV3>>,
 }
 

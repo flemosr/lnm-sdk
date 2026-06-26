@@ -10,7 +10,9 @@ pub use crate::shared::{
     rest::error::RestApiError,
 };
 
-pub use super::models::error::FuturesIsolatedTradeRequestValidationError;
+pub use super::models::error::{
+    CrossExposureValidationError, FuturesIsolatedTradeRequestValidationError,
+};
 
 #[derive(Error, Debug)]
 #[non_exhaustive]

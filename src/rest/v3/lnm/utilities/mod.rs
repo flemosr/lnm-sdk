@@ -13,7 +13,7 @@ use super::{
     signature::SignatureGeneratorV3,
 };
 
-pub(in crate::rest) struct LnmUtilitiesRepository {
+pub(in crate::rest::v3) struct LnmUtilitiesRepository {
     base: Arc<LnmRestBase<SignatureGeneratorV3>>,
 }
 

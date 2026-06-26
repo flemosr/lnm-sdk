@@ -1,7 +1,7 @@
 use crate::shared::rest::lnm::base::RestPath;
 
 #[derive(Clone)]
-pub(in crate::rest) enum RestPathV3 {
+pub(in crate::rest::v3) enum RestPathV3 {
     UtilitiesPing,
     UtilitiesTime,
     FuturesIsolatedTrade,

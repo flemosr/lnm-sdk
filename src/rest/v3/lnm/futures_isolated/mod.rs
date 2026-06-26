@@ -30,7 +30,7 @@ use super::{
     signature::SignatureGeneratorV3,
 };
 
-pub(in crate::rest) struct LnmFuturesIsolatedRepository {
+pub(in crate::rest::v3) struct LnmFuturesIsolatedRepository {
     base: Arc<LnmRestBase<SignatureGeneratorV3>>,
 }
 

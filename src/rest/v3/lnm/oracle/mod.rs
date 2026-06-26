@@ -13,7 +13,7 @@ use super::{
     super::repositories::OracleRepository, path::RestPathV3, signature::SignatureGeneratorV3,
 };
 
-pub(in crate::rest) struct LnmOracleRepository {
+pub(in crate::rest::v3) struct LnmOracleRepository {
     base: Arc<LnmRestBase<SignatureGeneratorV3>>,
 }
 
