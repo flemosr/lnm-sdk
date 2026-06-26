@@ -3,7 +3,7 @@
 use std::env;
 
 use dotenv::dotenv;
-use lnm_sdk::api_v3::rest::{RestClient, RestClientConfig};
+use lnm_sdk::api_v3::v3::{RestClient, RestClientConfig};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

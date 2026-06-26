@@ -4,7 +4,7 @@ use hmac::digest::InvalidLength;
 use hyper::{Method, StatusCode, header::InvalidHeaderValue};
 use thiserror::Error;
 
-use crate::api_v3::rest::error::RestApiV3Error;
+use crate::api_v3::v3::error::RestApiV3Error;
 
 #[derive(Error, Debug)]
 #[non_exhaustive]

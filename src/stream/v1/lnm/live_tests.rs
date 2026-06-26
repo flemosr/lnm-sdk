@@ -12,7 +12,7 @@ use tokio::{sync::broadcast, time};
 use uuid::Uuid;
 
 use crate::{
-    api_v3::rest::{RestClient, RestClientConfig},
+    api_v3::v3::{RestClient, RestClientConfig},
     shared::models::{
         client_id::ClientId,
         leverage::Leverage,
