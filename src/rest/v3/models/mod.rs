@@ -12,21 +12,17 @@ pub use crate::shared::models::{
     SATS_PER_BTC,
     client_id::ClientId,
     cross_leverage::CrossLeverage,
-    cross_quantity::CrossQuantity,
     leverage::Leverage,
     margin::Margin,
     ohlc::{OhlcCandle, OhlcRange},
     oracle::{Index, LastPrice},
     price::{Percentage, PercentageCapped, Price},
-    quantity::{OrderQuantity, QuantityLike},
+    quantity::{Quantity, cross::CrossQuantity, order::OrderQuantity},
     ticker::TickerPrice,
     trade::{
         TradeExecution, TradeExecutionType, TradeSide, TradeSize, TradeStatus, util as trade_util,
     },
 };
-
-#[allow(deprecated)]
-pub use crate::shared::models::quantity::Quantity;
 
 pub use account::Account;
 pub use funding::{CrossFunding, FundingSettlement, IsolatedFunding};

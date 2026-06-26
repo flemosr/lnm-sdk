@@ -6,13 +6,13 @@ use std::{
 
 use serde::{Deserialize, Serialize, de};
 
-use super::{
+use crate::shared::models::{
     SATS_PER_BTC,
     cross_leverage::CrossLeverage,
     error::{CrossQuantityValidationError, QuantityValidationError},
     margin::Margin,
     price::Price,
-    quantity::{OrderQuantity, QuantityLike},
+    quantity::{Quantity, order::OrderQuantity},
 };
 
 const MAX_QUANTITY_AT_MIN_LEVERAGE: u32 = 15_000_000;
@@ -280,7 +280,7 @@ impl CrossQuantity {
 
 impl crate::sealed::Sealed for CrossQuantity {}
 
-impl QuantityLike for CrossQuantity {
+impl Quantity for CrossQuantity {
     fn as_f64(&self) -> f64 {
         self.as_f64()
     }

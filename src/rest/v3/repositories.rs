@@ -12,7 +12,7 @@ use crate::shared::{
         ohlc::{OhlcCandle, OhlcRange},
         oracle::{Index, LastPrice},
         price::Price,
-        quantity::OrderQuantity,
+        quantity::order::OrderQuantity,
         trade::{TradeExecution, TradeSide, TradeSize},
     },
     rest::error::Result,

@@ -3,7 +3,6 @@ pub const SATS_PER_BTC: f64 = 100_000_000.;
 
 pub(crate) mod client_id;
 pub(crate) mod cross_leverage;
-pub(crate) mod cross_quantity;
 pub(crate) mod error;
 pub(crate) mod leverage;
 pub(crate) mod margin;

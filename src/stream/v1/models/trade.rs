@@ -8,7 +8,7 @@ use crate::shared::models::{
     leverage::Leverage,
     margin::Margin,
     price::Price,
-    quantity::OrderQuantity,
+    quantity::order::OrderQuantity,
     serde_util,
     trade::{TradeExecutionType, TradeSide},
 };

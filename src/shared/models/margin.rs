@@ -7,7 +7,7 @@ use super::{
     error::{MarginValidationError, TradeValidationError},
     leverage::Leverage,
     price::Price,
-    quantity::{OrderQuantity, QuantityLike},
+    quantity::{Quantity, order::OrderQuantity},
     trade::TradeSide,
 };
 
@@ -246,7 +246,7 @@ impl Margin {
     /// ```
     pub fn est_from_liquidation_price(
         side: TradeSide,
-        quantity: impl QuantityLike,
+        quantity: impl Quantity,
         price: Price,
         liquidation: Price,
     ) -> Result<Self, TradeValidationError> {

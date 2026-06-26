@@ -3,11 +3,11 @@ use thiserror::Error;
 use super::{
     client_id::ClientId,
     cross_leverage::CrossLeverage,
-    cross_quantity::CrossQuantity,
     leverage::Leverage,
     margin::Margin,
     price::{Percentage, PercentageCapped, Price},
-    quantity::OrderQuantity,
+    quantity::cross::CrossQuantity,
+    quantity::order::OrderQuantity,
 };
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]

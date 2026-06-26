@@ -4,7 +4,7 @@ use dotenv::dotenv;
 
 use crate::shared::models::{
     client_id::ClientId, cross_leverage::CrossLeverage, price::PercentageCapped,
-    quantity::OrderQuantity, trade::TradeExecutionType,
+    quantity::order::OrderQuantity, trade::TradeExecutionType,
 };
 
 use super::super::{

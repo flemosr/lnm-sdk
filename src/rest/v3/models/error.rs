@@ -2,8 +2,8 @@ use thiserror::Error;
 
 use crate::shared::models::{
     cross_leverage::CrossLeverage,
-    cross_quantity::CrossQuantity,
     error::{CrossQuantityValidationError, MarginValidationError, QuantityValidationError},
+    quantity::cross::CrossQuantity,
 };
 
 #[derive(Debug, Error)]

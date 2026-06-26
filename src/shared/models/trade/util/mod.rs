@@ -6,7 +6,7 @@ use super::super::{
     leverage::Leverage,
     margin::Margin,
     price::{PercentageCapped, Price},
-    quantity::{OrderQuantity, QuantityLike},
+    quantity::{Quantity, order::OrderQuantity},
     trade::{TradeSide, TradeSize},
 };
 
@@ -17,7 +17,7 @@ use super::super::{
 /// more conservative liquidation price that matches values from the LNM platform.
 pub fn est_liquidation_from_leverage(
     side: TradeSide,
-    quantity: impl QuantityLike,
+    quantity: impl Quantity,
     entry_price: Price,
     leverage: Leverage,
 ) -> Price {
@@ -55,7 +55,7 @@ pub fn est_liquidation_from_leverage(
 /// shared across exposure.
 pub fn est_liquidation_from_margin(
     side: TradeSide,
-    quantity: impl QuantityLike,
+    quantity: impl Quantity,
     entry_price: Price,
     margin: Margin,
 ) -> Price {
@@ -161,7 +161,7 @@ pub fn evaluate_open_trade_params(
 /// price.
 pub fn estimate_pl(
     side: TradeSide,
-    quantity: impl QuantityLike,
+    quantity: impl Quantity,
     start_price: Price,
     end_price: Price,
 ) -> f64 {
@@ -180,9 +180,9 @@ pub fn estimate_pl(
 ///
 /// Uses inverse-contract weighting, where quantities are weighted by inverse price.
 pub fn aggregate_cross_entry_price(
-    existing_quantity: impl QuantityLike,
+    existing_quantity: impl Quantity,
     existing_entry_price: Price,
-    added_quantity: impl QuantityLike,
+    added_quantity: impl Quantity,
     added_price: Price,
 ) -> Price {
     let existing_quantity = existing_quantity.as_f64();
@@ -200,7 +200,7 @@ pub fn aggregate_cross_entry_price(
 /// be to achieve that profit or loss.
 pub fn estimate_price_from_pl(
     side: TradeSide,
-    quantity: impl QuantityLike,
+    quantity: impl Quantity,
     start_price: Price,
     pl: f64,
 ) -> Price {
@@ -372,7 +372,7 @@ pub fn evaluate_cash_in(
 /// liquidation price to a target level, accounting for current profit/loss.
 pub fn evaluate_collateral_delta_for_liquidation(
     side: TradeSide,
-    quantity: impl QuantityLike,
+    quantity: impl Quantity,
     margin: Margin,
     price: Price,
     liquidation: Price,
@@ -398,7 +398,7 @@ pub fn evaluate_collateral_delta_for_liquidation(
 /// Calculates the trading fee in satoshis for an order at a given price.
 pub fn evaluate_order_fee(
     fee_perc: PercentageCapped,
-    quantity: impl QuantityLike,
+    quantity: impl Quantity,
     order_price: Price,
 ) -> u64 {
     let fee_calc = SATS_PER_BTC * fee_perc.as_f64() / 100.;
@@ -414,7 +414,7 @@ pub fn evaluate_order_fee(
 #[deprecated(note = "use evaluate_order_fee instead")]
 pub fn evaluate_closing_fee(
     fee_perc: PercentageCapped,
-    quantity: impl QuantityLike,
+    quantity: impl Quantity,
     close_price: Price,
 ) -> u64 {
     evaluate_order_fee(fee_perc, quantity, close_price)

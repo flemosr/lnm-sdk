@@ -2,20 +2,14 @@ use std::{convert::TryFrom, fmt};
 
 use serde::{Deserialize, Serialize, de};
 
-use super::{
+use crate::shared::models::{
     SATS_PER_BTC,
     error::QuantityValidationError,
     leverage::Leverage,
     margin::Margin,
     price::{PercentageCapped, Price},
+    quantity::Quantity,
 };
-
-// TODO: Consider renaming this trait to `Quantity` in a future release
-/// A validated quantity-like value used by trade calculations.
-pub trait QuantityLike: crate::sealed::Sealed + Clone + Copy + PartialEq + Eq {
-    /// Returns the quantity value as a `f64`.
-    fn as_f64(&self) -> f64;
-}
 
 /// A validated quantity value denominated in USD.
 ///
@@ -43,10 +37,6 @@ pub trait QuantityLike: crate::sealed::Sealed + Clone + Copy + PartialEq + Eq {
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct OrderQuantity(u32);
-
-/// Deprecated compatibility alias for [`OrderQuantity`].
-#[deprecated(note = "use OrderQuantity")]
-pub type Quantity = OrderQuantity;
 
 impl OrderQuantity {
     /// The minimum allowed quantity value (1 USD).
@@ -291,7 +281,7 @@ impl OrderQuantity {
 
 impl crate::sealed::Sealed for OrderQuantity {}
 
-impl QuantityLike for OrderQuantity {
+impl Quantity for OrderQuantity {
     fn as_f64(&self) -> f64 {
         self.as_f64()
     }

@@ -17,7 +17,7 @@ use crate::{
         client_id::ClientId,
         leverage::Leverage,
         price::PercentageCapped,
-        quantity::OrderQuantity,
+        quantity::order::OrderQuantity,
         trade::{TradeExecution, TradeSide},
     },
     stream::v1::{

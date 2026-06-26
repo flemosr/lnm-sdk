@@ -10,7 +10,7 @@ use crate::shared::{
     models::{
         client_id::ClientId,
         cross_leverage::CrossLeverage,
-        quantity::OrderQuantity,
+        quantity::order::OrderQuantity,
         trade::{TradeExecution, TradeSide},
     },
     rest::{error::Result, lnm::base::LnmRestBase},

@@ -7,7 +7,7 @@ use super::{
     leverage::Leverage,
     margin::Margin,
     price::Price,
-    quantity::OrderQuantity,
+    quantity::order::OrderQuantity,
 };
 
 /// Utility functions for trade calculations and validations.

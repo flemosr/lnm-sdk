@@ -6,7 +6,7 @@ use crate::shared::models::{
     client_id::ClientId,
     margin::Margin,
     price::{Percentage, PercentageCapped},
-    quantity::OrderQuantity,
+    quantity::order::OrderQuantity,
 };
 
 use super::super::{

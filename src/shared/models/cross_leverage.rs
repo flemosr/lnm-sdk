@@ -3,8 +3,8 @@ use std::{convert::TryFrom, fmt};
 use serde::{Deserialize, Serialize, de};
 
 use super::{
-    SATS_PER_BTC, cross_quantity::CrossQuantity, error::CrossLeverageValidationError,
-    leverage::Leverage, margin::Margin, price::Price,
+    SATS_PER_BTC, error::CrossLeverageValidationError, leverage::Leverage, margin::Margin,
+    price::Price, quantity::cross::CrossQuantity,
 };
 
 /// A validated leverage value for futures cross positions.

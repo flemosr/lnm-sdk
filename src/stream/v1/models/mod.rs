@@ -14,7 +14,7 @@ pub use crate::shared::models::{
     leverage::Leverage,
     margin::Margin,
     price::Price,
-    quantity::OrderQuantity,
+    quantity::order::OrderQuantity,
     trade::{TradeExecutionType, TradeSide},
 };
 

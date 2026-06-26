@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize, de};
 
 use super::{
     SATS_PER_BTC, error::LeverageValidationError, margin::Margin, price::Price,
-    quantity::OrderQuantity, serde_util,
+    quantity::order::OrderQuantity, serde_util,
 };
 
 /// A validated leverage value for trading positions.
