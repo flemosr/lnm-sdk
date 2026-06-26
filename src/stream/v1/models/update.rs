@@ -1,16 +1,18 @@
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 
-use super::super::{
-    error::{ConnectionResult, StreamConnectionError},
-    state::StreamConnectionStatus,
+use crate::shared::models::{
+    ohlc::{OhlcCandle, OhlcRange},
+    oracle::{Index, LastPrice},
 };
+
 use super::{
-    market::{
-        StreamAnnouncement, StreamBuckets, StreamFunding, StreamIndex, StreamLastPrice, StreamOhlc,
-        StreamTicker,
+    super::{
+        error::{ConnectionResult, StreamConnectionError},
+        state::StreamConnectionStatus,
     },
-    topic::{StreamOhlcTimeframe, StreamTopic},
+    market::{StreamAnnouncement, StreamBuckets, StreamFunding, StreamTicker},
+    topic::StreamTopic,
     trade::{StreamCrossOrderEvent, StreamCrossPositionEvent, StreamIsolatedTradeEvent},
     wallet::{StreamWalletDeposit, StreamWalletWithdrawal},
 };
@@ -27,13 +29,13 @@ where
 pub enum StreamUpdate {
     Announcements(StreamAnnouncement),
     FuturesInverseBtcUsdTicker(StreamTicker),
-    FuturesInverseBtcUsdLastPrice(StreamLastPrice),
-    FuturesInverseBtcUsdIndex(StreamIndex),
+    FuturesInverseBtcUsdLastPrice(LastPrice),
+    FuturesInverseBtcUsdIndex(Index),
     FuturesInverseBtcUsdBuckets(StreamBuckets),
     FuturesInverseBtcUsdFunding(StreamFunding),
     FuturesInverseBtcUsdOhlc {
-        timeframe: StreamOhlcTimeframe,
-        candle: StreamOhlc,
+        timeframe: OhlcRange,
+        candle: OhlcCandle,
     },
     FuturesInverseBtcUsdIsolatedTrades(StreamIsolatedTradeEvent),
     FuturesInverseBtcUsdCrossOrders(StreamCrossOrderEvent),
@@ -161,7 +163,7 @@ mod tests {
             json!({ "pair": "btc_usd", "current": { "rate": 0.0, "time": 0 } }),
         );
         assert_subscription_topic(
-            StreamTopic::FuturesInverseBtcUsdOhlc(StreamOhlcTimeframe::OneMinute),
+            StreamTopic::FuturesInverseBtcUsdOhlc(OhlcRange::OneMinute),
             json!({ "time": 0, "open": 1, "high": 2, "low": 3, "close": 4, "volume": 5 }),
         );
         assert_subscription_topic(

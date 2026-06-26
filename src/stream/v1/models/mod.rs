@@ -13,18 +13,20 @@ pub use crate::shared::models::{
     cross_leverage::CrossLeverage,
     leverage::Leverage,
     margin::Margin,
+    ohlc::{OhlcCandle, OhlcRange},
+    oracle::{Index, LastPrice},
     price::Price,
     quantity::order::OrderQuantity,
+    ticker::TickerPrice,
     trade::{TradeExecutionType, TradeSide},
 };
 
 pub use market::{
-    StreamAnnouncement, StreamBucket, StreamBuckets, StreamFunding, StreamFundingRate, StreamIndex,
-    StreamLastPrice, StreamOhlc, StreamTicker,
+    StreamAnnouncement, StreamBuckets, StreamFunding, StreamFundingRate, StreamTicker,
 };
 pub use metadata::{StreamRateLimit, StreamResponseMetadata};
 pub use rpc::{AuthenticateResult, HelloResult, TimeResult, WhoamiResult};
-pub use topic::{StreamOhlcTimeframe, StreamTopic};
+pub use topic::StreamTopic;
 pub use trade::{
     StreamCrossOrder, StreamCrossOrderEvent, StreamCrossPosition, StreamCrossPositionEvent,
     StreamIsolatedTrade, StreamIsolatedTradeEvent,

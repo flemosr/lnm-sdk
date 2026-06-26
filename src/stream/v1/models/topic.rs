@@ -7,9 +7,6 @@ use crate::shared::models::ohlc::OhlcRange;
 
 use super::super::error::{ConnectionResult, StreamConnectionError};
 
-/// Stream v1 OHLC timeframe.
-pub type StreamOhlcTimeframe = OhlcRange;
-
 /// Subscription topics supported by the Stream v1 API.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum StreamTopic {
@@ -22,7 +19,7 @@ pub enum StreamTopic {
     FuturesInverseBtcUsdIsolatedTrades,
     FuturesInverseBtcUsdCrossOrders,
     FuturesInverseBtcUsdCrossPosition,
-    FuturesInverseBtcUsdOhlc(StreamOhlcTimeframe),
+    FuturesInverseBtcUsdOhlc(OhlcRange),
     WalletDeposit,
     WalletWithdrawal,
 }
@@ -92,7 +89,7 @@ impl FromStr for StreamTopic {
                 const OHLC_PREFIX: &str = "futures/inverse/btc_usd/ohlc/";
                 if let Some(timeframe) = value.strip_prefix(OHLC_PREFIX) {
                     return Ok(StreamTopic::FuturesInverseBtcUsdOhlc(
-                        StreamOhlcTimeframe::from_str(timeframe).map_err(|_| {
+                        OhlcRange::from_str(timeframe).map_err(|_| {
                             StreamConnectionError::UnknownOhlcTimeframe(timeframe.to_string())
                         })?,
                     ));
@@ -139,7 +136,7 @@ mod tests {
 
     #[test]
     fn stream_topic_round_trips_dynamic_ohlc_topic() {
-        let topic = StreamTopic::FuturesInverseBtcUsdOhlc(StreamOhlcTimeframe::OneHour);
+        let topic = StreamTopic::FuturesInverseBtcUsdOhlc(OhlcRange::OneHour);
         let encoded = serde_json::to_string(&topic).expect("must serialize topic");
         assert_eq!(encoded, "\"futures/inverse/btc_usd/ohlc/1h\"");
 

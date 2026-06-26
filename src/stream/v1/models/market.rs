@@ -1,25 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
-use crate::shared::models::{
-    ohlc::OhlcCandle,
-    oracle::{Index, LastPrice},
-    price::Price,
-    serde_util,
-    ticker::TickerPrice,
-};
-
-/// Inverse futures last trade price notification payload.
-pub type StreamLastPrice = LastPrice;
-
-/// Inverse futures index price notification payload.
-pub type StreamIndex = Index;
-
-/// One inverse futures volume ladder bucket.
-pub type StreamBucket = TickerPrice;
-
-/// Inverse futures OHLC candle notification payload.
-pub type StreamOhlc = OhlcCandle;
+use crate::shared::models::{price::Price, serde_util, ticker::TickerPrice};
 
 /// Platform announcement notification payload.
 #[derive(Debug, Clone, PartialEq, Deserialize)]
@@ -103,7 +85,7 @@ impl StreamTicker {
 pub struct StreamBuckets {
     #[serde(deserialize_with = "serde_util::datetime_rfc3339_or_millis::deserialize")]
     time: DateTime<Utc>,
-    buckets: Vec<StreamBucket>,
+    buckets: Vec<TickerPrice>,
 }
 
 impl StreamBuckets {
@@ -111,7 +93,7 @@ impl StreamBuckets {
         self.time
     }
 
-    pub fn buckets(&self) -> &[StreamBucket] {
+    pub fn buckets(&self) -> &[TickerPrice] {
         &self.buckets
     }
 }
@@ -136,6 +118,8 @@ impl StreamFunding {
 
 #[cfg(test)]
 mod tests {
+    use crate::shared::models::{ohlc::OhlcCandle, oracle::Index};
+
     use super::*;
 
     #[test]
@@ -167,7 +151,7 @@ mod tests {
 
     #[test]
     fn stream_index_deserializes() {
-        let index: StreamIndex = serde_json::from_str(r#"{ "time": 0, "index": 100001 }"#)
+        let index: Index = serde_json::from_str(r#"{ "time": 0, "index": 100001 }"#)
             .expect("must deserialize index");
 
         assert_eq!(index.time().timestamp_millis(), 0);
@@ -202,7 +186,7 @@ mod tests {
 
     #[test]
     fn stream_ohlc_deserializes() {
-        let candle: StreamOhlc = serde_json::from_str(
+        let candle: OhlcCandle = serde_json::from_str(
             r#"{ "time": 0, "open": 1, "high": 2, "low": 3, "close": 4, "volume": 5 }"#,
         )
         .expect("must deserialize ohlc candle");

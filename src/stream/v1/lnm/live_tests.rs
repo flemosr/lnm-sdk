@@ -16,22 +16,20 @@ use crate::{
     shared::models::{
         client_id::ClientId,
         leverage::Leverage,
+        ohlc::OhlcRange,
         price::PercentageCapped,
         quantity::order::OrderQuantity,
         trade::{TradeExecution, TradeSide},
     },
     stream::v1::{
         StreamClient, StreamClientConfig, StreamConnection,
-        models::{
-            topic::{StreamOhlcTimeframe, StreamTopic},
-            update::StreamUpdate,
-        },
+        models::{topic::StreamTopic, update::StreamUpdate},
     },
 };
 
 const LIVE_TEST_CLIENT_NAME: &str = "lnm-sdk-live-tests";
 const LIVE_TEST_UPDATE_TIMEOUT: Duration = Duration::from_secs(120);
-const LIVE_TEST_OHLC_TIMEFRAME: StreamOhlcTimeframe = StreamOhlcTimeframe::OneMinute;
+const LIVE_TEST_OHLC_TIMEFRAME: OhlcRange = OhlcRange::OneMinute;
 const MIN_CROSS_MARGIN_SATS: u64 = 4_000;
 
 struct LiveCredentials {

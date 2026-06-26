@@ -5,7 +5,7 @@ use std::error::Error;
 use dotenv::dotenv;
 use lnm_sdk::stream::v1::{
     StreamClient, StreamClientConfig, StreamConnectionStatus,
-    models::{StreamOhlcTimeframe, StreamTopic, StreamUpdate},
+    models::{OhlcRange, StreamTopic, StreamUpdate},
 };
 
 #[tokio::main]
@@ -28,7 +28,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .subscribe(vec![
             StreamTopic::FuturesInverseBtcUsdLastPrice,
             StreamTopic::FuturesInverseBtcUsdIndex,
-            StreamTopic::FuturesInverseBtcUsdOhlc(StreamOhlcTimeframe::OneMinute),
+            StreamTopic::FuturesInverseBtcUsdOhlc(OhlcRange::OneMinute),
         ])
         .await?;
 
