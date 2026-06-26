@@ -5,7 +5,7 @@ A Rust SDK for interacting with [LN Markets](https://lnmarkets.com/).
 > **Note:** This is an unofficial SDK. The currently supported API surfaces are REST API v3
 > and Stream API v1. REST API v3 support is functional but not yet feature-complete; for
 > implementation status, see the
-> [API v3 implementation docs](https://github.com/flemosr/lnm-sdk/blob/main/docs/api-v3-implementation.md).
+> [REST v3 implementation docs](https://github.com/flemosr/lnm-sdk/blob/main/docs/rest-v3-implementation.md).
 
 [![Crates.io Badge](https://img.shields.io/crates/v/lnm-sdk)](https://crates.io/crates/lnm-sdk)
 [![Documentation Badge](https://docs.rs/lnm-sdk/badge.svg)](https://docs.rs/lnm-sdk/latest/lnm_sdk/)
@@ -31,10 +31,10 @@ lnm-sdk = "<lnm-sdk-version>"
 ## Usage
 
 This SDK provides strong type-safety with validated types for all parameters used in trade 
-operations. All necessary models can be imported via the `models` mod of the API version in question.
+operations. All necessary models can be imported via the `models` module under the relevant domain version.
 
 ```rust,ignore
-use lnm_sdk::api_v3::{RestClient, RestClientConfig, models::*, error::*};
+use lnm_sdk::rest::v3::{RestClient, RestClientConfig, models::*, error::*};
 ```
 
 Each `RestClient` includes an internal FIFO rate limiter that automatically paces requests to stay
@@ -57,7 +57,7 @@ Complete runnable examples are available in the
 ```rust,no_run
 use std::env;
 
-use lnm_sdk::api_v3::{RestClient, RestClientConfig};
+use lnm_sdk::rest::v3::{RestClient, RestClientConfig};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -78,15 +78,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-For more complete public API examples, see the
-[`v3_rest_public` example](https://github.com/flemosr/lnm-sdk/blob/main/examples/v3_rest_public.rs).
+For more complete public REST examples, see the
+[`rest_v3_public` example](https://github.com/flemosr/lnm-sdk/blob/main/examples/rest_v3_public.rs).
 
 ### REST API v3 - Authenticated
 
 ```rust,no_run
 use std::env;
 
-use lnm_sdk::api_v3::{
+use lnm_sdk::rest::v3::{
     RestClient, RestClientConfig,
     models::{Leverage, OrderQuantity, TradeExecution, TradeSide, TradeSize},
 };
@@ -139,7 +139,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 For more complete authenticated REST API examples, see the
-[`v3_rest_auth` example](https://github.com/flemosr/lnm-sdk/blob/main/examples/v3_rest_auth.rs).
+[`rest_v3_auth` example](https://github.com/flemosr/lnm-sdk/blob/main/examples/rest_v3_auth.rs).
 
 ### Stream API v1 - Public Subscriptions
 
@@ -199,6 +199,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .subscribe(vec![StreamTopic::FuturesInverseBtcUsdCrossOrders])
         .await?;
 
+    // ...
+    
     stream.disconnect().await?;
 
     Ok(())
