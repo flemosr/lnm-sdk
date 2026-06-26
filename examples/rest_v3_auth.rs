@@ -1,4 +1,4 @@
-//! Example demonstrating how to use the API v3 REST authenticated client.
+//! Example demonstrating how to use the REST API v3 authenticated client.
 
 use std::{env, num::NonZeroU64};
 

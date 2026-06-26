@@ -1,4 +1,4 @@
-//! Example demonstrating how to use the API v3 REST public client.
+//! Example demonstrating how to use the REST API v3 public client.
 
 use std::env;
 

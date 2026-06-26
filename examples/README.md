@@ -8,8 +8,8 @@ Direct source code links for quick reference:
 
 | Category | Raw Source |
 |----------|------------|
-| **API v3 - Public Endpoints** | [v3_rest_public.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/v3_rest_public.rs) |
-| **API v3 - Authenticated Endpoints** | [v3_rest_auth.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/v3_rest_auth.rs) |
+| **REST API v3 - Public Endpoints** | [rest_v3_public.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/rest_v3_public.rs) |
+| **REST API v3 - Authenticated Endpoints** | [rest_v3_auth.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/rest_v3_auth.rs) |
 | **Stream API v1 - Public Subscriptions** | [stream_v1_public.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/stream_v1_public.rs) |
 | **Stream API v1 - Authenticated Subscriptions** | [stream_v1_auth.rs](https://raw.githubusercontent.com/flemosr/lnm-sdk/refs/heads/main/examples/stream_v1_auth.rs) |
 
@@ -20,7 +20,7 @@ REST examples require:
 
 Stream examples use `wss://stream.lnmarkets.com/v1` via `StreamClientConfig::default()`.
 
-API v3 authenticated examples (`v3_rest_auth` and `stream_v1_auth`) require:
+Authenticated examples (`rest_v3_auth` and `stream_v1_auth`) require REST v3 API credentials:
 - `LNM_API_V3_KEY` - Your API v3 key
 - `LNM_API_V3_SECRET` - Your API v3 secret
 - `LNM_API_V3_PASSPHRASE` - Your API v3 passphrase
@@ -28,28 +28,28 @@ API v3 authenticated examples (`v3_rest_auth` and `stream_v1_auth`) require:
 These environment variables should be set, or a `.env` file should be added in the project root.
 A [`.env.template`](https://github.com/flemosr/lnm-sdk/blob/main/.env.template) file is available.
 
-## API v3
+## REST API v3
 
-The following examples demonstrate the current API v3 REST interface.
+The following examples demonstrate the current REST API v3 interface.
 
-### v3_rest_public
+### rest_v3_public
 
-Demonstrates how to use the API v3 REST public client to fetch market data, including utilities
+Demonstrates how to use the REST API v3 public client to fetch market data, including utilities
 endpoints, futures data, and oracle data.
 
 **Usage:**
 ```bash
-cargo run --example v3_rest_public
+cargo run --example rest_v3_public
 ```
 
-### v3_rest_auth
+### rest_v3_auth
 
-Demonstrates how to use the API v3 REST authenticated client to manage both isolated and
+Demonstrates how to use the REST API v3 authenticated client to manage both isolated and
 cross-margin futures positions, including placing orders, managing margin, and closing positions.
 
 **Usage:**
 ```bash
-cargo run --example v3_rest_auth
+cargo run --example rest_v3_auth
 ```
 
 ## Stream API v1
