@@ -2,9 +2,9 @@
 
 A Rust SDK for interacting with [LN Markets](https://lnmarkets.com/).
 
-> **Note:** This is an unofficial SDK. The currently supported API surfaces are REST API v3
-> and Stream API v1. REST API v3 support is functional but not yet feature-complete; for
-> implementation status, see the
+> **Note:** This is an unofficial SDK. The currently supported API surfaces are REST API v3 and
+> Stream API v1. REST API v3 support is functional but not yet feature-complete. For implementation
+> status, see the
 > [REST v3 implementation docs](https://github.com/flemosr/lnm-sdk/blob/main/docs/rest-v3-implementation.md).
 
 [![Crates.io Badge](https://img.shields.io/crates/v/lnm-sdk)](https://crates.io/crates/lnm-sdk)
@@ -33,7 +33,7 @@ lnm-sdk = "<lnm-sdk-version>"
 This SDK provides strong type-safety with validated types for all parameters used in trade 
 operations. All necessary models can be imported via the `models` module under the relevant domain version.
 
-```rust,ignore
+```rust,no_run
 use lnm_sdk::rest::v3::{RestClient, RestClientConfig, models::*, error::*};
 ```
 
@@ -43,7 +43,7 @@ behavior is enabled by default and can be configured or disabled via `RestClient
 
 Stream API v1 types are available through `lnm_sdk::stream::v1`.
 
-```rust,ignore
+```rust,no_run
 use lnm_sdk::stream::v1::{StreamClient, StreamClientConfig, models::*, error::*};
 ```
 
@@ -226,7 +226,7 @@ cargo test -- --include-ignored --test-threads=1
 
 This crate was originally developed as part of the
 [`quantoxide`](https://github.com/flemosr/quantoxide) repository before being extracted into a
-standalone repository on 2025-12-26 at `quantoxide` commit
+standalone repository on 2025-12-26 at commit
 [`0d78ee08`](https://github.com/flemosr/quantoxide/commit/0d78ee08). The full development history
 was preserved.
 
