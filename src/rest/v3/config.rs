@@ -7,6 +7,7 @@ use crate::shared::rest::lnm::rate_limit::RateLimiterConfig;
 /// Rate limit defaults were set in line with the [API v3 docs](https://api.lnmarkets.com/v3/#description/rate-limit).
 #[derive(Clone, Debug)]
 pub struct RestClientConfig {
+    endpoint: String,
     timeout: Duration,
     rate_limiter_active: bool,
     rate_limit_auth_requests_per_second: u32,
@@ -42,7 +43,13 @@ impl RestClientConfig {
             rate_limiter_active: true,
             rate_limit_auth_requests_per_second: rate_limit_auth_rps.get(),
             rate_limit_unauth_requests_per_second: rate_limit_unauth_rps.get(),
+            ..Default::default()
         }
+    }
+
+    /// Returns the REST API endpoint.
+    pub fn endpoint(&self) -> &str {
+        &self.endpoint
     }
 
     /// Returns the request timeout duration.
@@ -67,6 +74,14 @@ impl RestClientConfig {
     /// Only enforced when [`rate_limiter_active`](Self::rate_limiter_active) is `true`.
     pub fn rate_limit_unauth_requests_per_second(&self) -> u32 {
         self.rate_limit_unauth_requests_per_second
+    }
+
+    /// Sets the REST API endpoint.
+    ///
+    /// Default: `https://api.lnmarkets.com/v3`
+    pub fn with_endpoint(mut self, endpoint: impl ToString) -> Self {
+        self.endpoint = endpoint.to_string();
+        self
     }
 
     /// Sets the request timeout duration.
@@ -119,6 +134,7 @@ impl RateLimiterConfig for RestClientConfig {
 impl Default for RestClientConfig {
     fn default() -> Self {
         Self {
+            endpoint: "https://api.lnmarkets.com/v3".to_string(),
             timeout: Duration::from_secs(20),
             rate_limiter_active: true,
             rate_limit_auth_requests_per_second: 5,

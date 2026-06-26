@@ -1,4 +1,4 @@
-use std::{env, time::Instant};
+use std::time::Instant;
 
 use dotenv::dotenv;
 
@@ -8,10 +8,9 @@ use super::*;
 fn init_repository_from_env() -> LnmOracleRepository {
     dotenv().ok();
 
-    let domain =
-        env::var("LNM_API_DOMAIN").expect("LNM_API_DOMAIN environment variable must be set");
+    let config = RestClientConfig::default();
 
-    let base = LnmRestBase::new(RestClientConfig::default().timeout(), domain, None)
+    let base = LnmRestBase::new(config.timeout(), config.endpoint().to_string(), None)
         .expect("Can create `LnmApiBase`");
 
     LnmOracleRepository::new(base)

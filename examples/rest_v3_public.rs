@@ -1,7 +1,5 @@
 //! Example demonstrating how to use the REST API v3 public client.
 
-use std::env;
-
 use dotenv::dotenv;
 use lnm_sdk::rest::v3::{RestClient, RestClientConfig};
 
@@ -9,9 +7,7 @@ use lnm_sdk::rest::v3::{RestClient, RestClientConfig};
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
 
-    let domain = env::var("LNM_API_DOMAIN").expect("LNM_API_DOMAIN must be set");
-
-    let rest = RestClient::new(RestClientConfig::default(), &domain)?;
+    let rest = RestClient::new(RestClientConfig::default())?;
 
     // Utilities endpoints
 

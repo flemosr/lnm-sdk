@@ -35,7 +35,6 @@ const LIVE_TEST_OHLC_TIMEFRAME: StreamOhlcTimeframe = StreamOhlcTimeframe::OneMi
 const MIN_CROSS_MARGIN_SATS: u64 = 4_000;
 
 struct LiveCredentials {
-    domain: String,
     key: String,
     secret: String,
     passphrase: String,
@@ -45,8 +44,6 @@ fn live_credentials_from_env() -> LiveCredentials {
     dotenv().ok();
 
     LiveCredentials {
-        domain: env::var("LNM_API_DOMAIN")
-            .expect("LNM_API_DOMAIN environment variable must be set"),
         key: env::var("LNM_API_V3_KEY").expect("LNM_API_V3_KEY environment variable must be set"),
         secret: env::var("LNM_API_V3_SECRET")
             .expect("LNM_API_V3_SECRET environment variable must be set"),
@@ -58,7 +55,6 @@ fn live_credentials_from_env() -> LiveCredentials {
 fn init_rest_client(credentials: &LiveCredentials) -> Arc<RestClient> {
     RestClient::with_credentials(
         RestClientConfig::default(),
-        &credentials.domain,
         &credentials.key,
         &credentials.secret,
         &credentials.passphrase,

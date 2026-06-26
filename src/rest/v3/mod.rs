@@ -99,18 +99,20 @@ impl RestClient {
     /// use std::env;
     /// use lnm_sdk::rest::v3::{RestClient, RestClientConfig};
     ///
-    /// let domain = env::var("LNM_API_DOMAIN").unwrap();
-    ///
-    /// let client = RestClient::new(RestClientConfig::default(), domain)?;
+    /// let client = RestClient::new(RestClientConfig::default())?;
     /// # Ok(())
     /// # }
     /// ```
-    pub fn new(config: impl Into<RestClientConfig>, domain: impl ToString) -> Result<Arc<Self>> {
+    pub fn new(config: impl Into<RestClientConfig>) -> Result<Arc<Self>> {
         let config = config.into();
         let rate_limiter = config
             .rate_limiter_active()
             .then(|| RateLimiter::from(&config));
-        let base = LnmRestBase::new(config.timeout(), domain.to_string(), rate_limiter)?;
+        let base = LnmRestBase::new(
+            config.timeout(),
+            config.endpoint().to_string(),
+            rate_limiter,
+        )?;
 
         Ok(Self::new_inner(base))
     }
@@ -126,19 +128,17 @@ impl RestClient {
     /// use std::env;
     /// use lnm_sdk::rest::v3::{RestClient, RestClientConfig};
     ///
-    /// let domain = env::var("LNM_API_DOMAIN").unwrap();
     /// let key = env::var("LNM_API_KEY").unwrap();
     /// let secret = env::var("LNM_API_SECRET").unwrap();
     /// let pphrase = env::var("LNM_API_PASSPHRASE").unwrap();
     ///
     /// let config = RestClientConfig::default();
-    /// let client = RestClient::with_credentials(config, domain, key, secret, pphrase)?;
+    /// let client = RestClient::with_credentials(config, key, secret, pphrase)?;
     /// # Ok(())
     /// # }
     /// ```
     pub fn with_credentials(
         config: impl Into<RestClientConfig>,
-        domain: impl ToString,
         key: impl ToString,
         secret: impl ToString,
         passphrase: impl ToString,
@@ -149,7 +149,7 @@ impl RestClient {
             .then(|| RateLimiter::from(&config));
         let base = LnmRestBase::with_credentials(
             config.timeout(),
-            domain.to_string(),
+            config.endpoint().to_string(),
             key.to_string(),
             passphrase.to_string(),
             SignatureGeneratorV3::new(secret.to_string()),

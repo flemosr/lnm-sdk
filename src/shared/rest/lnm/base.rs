@@ -79,7 +79,7 @@ impl<S: SignatureGenerator> LnmRestCredentials<S> {
 }
 
 pub(crate) struct LnmRestBase<S: SignatureGenerator> {
-    domain: String,
+    endpoint: String,
     credentials: Option<LnmRestCredentials<S>>,
     client: Client,
     rate_limiter: Option<RateLimiter>,
@@ -88,7 +88,7 @@ pub(crate) struct LnmRestBase<S: SignatureGenerator> {
 impl<S: SignatureGenerator> LnmRestBase<S> {
     pub fn new(
         timeout: Duration,
-        domain: String,
+        endpoint: String,
         rate_limiter: Option<RateLimiter>,
     ) -> Result<Arc<Self>> {
         let client = Client::builder()
@@ -97,7 +97,7 @@ impl<S: SignatureGenerator> LnmRestBase<S> {
             .map_err(RestApiError::HttpClient)?;
 
         Ok(Arc::new(Self {
-            domain,
+            endpoint,
             credentials: None,
             client,
             rate_limiter,
@@ -106,7 +106,7 @@ impl<S: SignatureGenerator> LnmRestBase<S> {
 
     pub fn with_credentials(
         timeout: Duration,
-        domain: String,
+        endpoint: String,
         key: String,
         passphrase: String,
         signature_generator: S,
@@ -120,7 +120,7 @@ impl<S: SignatureGenerator> LnmRestBase<S> {
         let creds = LnmRestCredentials::new(key, passphrase, signature_generator);
 
         Ok(Arc::new(Self {
-            domain,
+            endpoint,
             credentials: Some(creds),
             client,
             rate_limiter,
@@ -132,7 +132,11 @@ impl<S: SignatureGenerator> LnmRestBase<S> {
     }
 
     fn build_url(&self, path: impl RestPath) -> Result<Url> {
-        let url_str = format!("https://{}{}", self.domain, path.to_path_string());
+        let url_str = format!(
+            "{}{}",
+            self.endpoint.trim_end_matches('/'),
+            path.to_path_string()
+        );
 
         Url::parse(&url_str).map_err(|e| RestApiError::UrlParse(e.to_string()))
     }

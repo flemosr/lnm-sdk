@@ -10,8 +10,7 @@ use super::*;
 fn init_repository_from_env(rate_limiter: Option<RateLimiter>) -> LnmAccountRepository {
     dotenv().ok();
 
-    let domain =
-        env::var("LNM_API_DOMAIN").expect("LNM_API_DOMAIN environment variable must be set");
+    let config = RestClientConfig::default();
     let key = env::var("LNM_API_V3_KEY").expect("LNM_API_V3_KEY environment variable must be set");
     let secret =
         env::var("LNM_API_V3_SECRET").expect("LNM_API_V3_SECRET environment variable must be set");
@@ -19,8 +18,8 @@ fn init_repository_from_env(rate_limiter: Option<RateLimiter>) -> LnmAccountRepo
         .expect("LNM_API_V3_PASSPHRASE environment variable must be set");
 
     let base = LnmRestBase::with_credentials(
-        RestClientConfig::default().timeout(),
-        domain,
+        config.timeout(),
+        config.endpoint().to_string(),
         key,
         passphrase,
         SignatureGeneratorV3::new(secret),

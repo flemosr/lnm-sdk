@@ -1,4 +1,4 @@
-use std::{env, sync::Arc, time::Instant};
+use std::{sync::Arc, time::Instant};
 
 use dotenv::dotenv;
 
@@ -12,11 +12,14 @@ fn init_repository_from_env_with_rate_limiter(
 ) -> LnmFuturesDataRepository {
     dotenv().ok();
 
-    let domain =
-        env::var("LNM_API_DOMAIN").expect("LNM_API_DOMAIN environment variable must be set");
+    let config = RestClientConfig::default();
 
-    let base = LnmRestBase::new(RestClientConfig::default().timeout(), domain, rate_limiter)
-        .expect("must create `LnmApiBase`");
+    let base = LnmRestBase::new(
+        config.timeout(),
+        config.endpoint().to_string(),
+        rate_limiter,
+    )
+    .expect("must create `LnmApiBase`");
 
     LnmFuturesDataRepository::new(base)
 }
@@ -24,10 +27,9 @@ fn init_repository_from_env_with_rate_limiter(
 fn init_repository_from_env() -> LnmFuturesDataRepository {
     dotenv().ok();
 
-    let domain =
-        env::var("LNM_API_DOMAIN").expect("LNM_API_DOMAIN environment variable must be set");
+    let config = RestClientConfig::default();
 
-    let base = LnmRestBase::new(RestClientConfig::default().timeout(), domain, None)
+    let base = LnmRestBase::new(config.timeout(), config.endpoint().to_string(), None)
         .expect("must create `LnmApiBase`");
 
     LnmFuturesDataRepository::new(base)

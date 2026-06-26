@@ -15,18 +15,11 @@ use lnm_sdk::rest::v3::{
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
 
-    let domain = env::var("LNM_API_DOMAIN").expect("LNM_API_DOMAIN must be set");
     let key = env::var("LNM_API_V3_KEY").expect("LNM_API_V3_KEY must be set");
     let secret = env::var("LNM_API_V3_SECRET").expect("LNM_API_V3_SECRET must be set");
     let passphrase = env::var("LNM_API_V3_PASSPHRASE").expect("LNM_API_V3_PASSPHRASE must be set");
 
-    let rest = RestClient::with_credentials(
-        RestClientConfig::default(),
-        &domain,
-        key,
-        secret,
-        passphrase,
-    )?;
+    let rest = RestClient::with_credentials(RestClientConfig::default(), key, secret, passphrase)?;
 
     // Account endpoints
 
