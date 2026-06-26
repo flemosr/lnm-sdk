@@ -7,8 +7,8 @@ use std::{
 use async_trait::async_trait;
 use base64::{Engine, engine::general_purpose::STANDARD as BASE64};
 use chrono::{DateTime, Utc};
-use hmac::{Hmac, Mac};
-use rand::Rng;
+use hmac::{Hmac, KeyInit, Mac};
+use rand::RngExt;
 use serde_json::json;
 use sha2::Sha256;
 use tokio::{
