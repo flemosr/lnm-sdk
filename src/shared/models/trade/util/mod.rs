@@ -50,9 +50,9 @@ pub fn est_liquidation_from_leverage(
 /// Estimates the liquidation price for a trade position from explicit collateral margin.
 ///
 /// Calculates the price at which a position would be liquidated using the supplied margin as the
-/// collateral backing the position. Unlike [`estimate_liquidation_price`], this does not derive the
-/// margin from leverage, so it can be used for cross-margin positions where account collateral is
-/// shared across exposure.
+/// collateral backing the position. Unlike [`est_liquidation_from_leverage`], this does not derive
+/// the margin from leverage, so it can be used for cross-margin positions where account collateral
+/// is shared across exposure.
 pub fn est_liquidation_from_margin(
     side: TradeSide,
     quantity: impl Quantity,

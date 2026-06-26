@@ -266,7 +266,7 @@ impl Margin {
             _ => {}
         }
 
-        // Calculate 'a' and 'b' from `trade_utils::estimate_liquidation_price`
+        // Calculate 'a' and 'b' from `trade_utils::est_liquidation_from_leverage`
 
         let a = 1.0 / price.as_f64();
 
