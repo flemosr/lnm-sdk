@@ -91,9 +91,9 @@ use lnm_sdk::rest::v3::{
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let rest = RestClient::with_credentials(
         RestClientConfig::default(),
-        env::var("LNM_API_V3_KEY")?,
-        env::var("LNM_API_V3_SECRET")?,
-        env::var("LNM_API_V3_PASSPHRASE")?,
+        env::var("LNM_API_KEY")?,
+        env::var("LNM_API_SECRET")?,
+        env::var("LNM_API_PASSPHRASE")?,
     )?;
 
     // Get account information
@@ -184,9 +184,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     stream
         .authenticate(
-            &env::var("LNM_API_V3_KEY")?,
-            &env::var("LNM_API_V3_SECRET")?,
-            &env::var("LNM_API_V3_PASSPHRASE")?,
+            &env::var("LNM_API_KEY")?,
+            &env::var("LNM_API_SECRET")?,
+            &env::var("LNM_API_PASSPHRASE")?,
         )
         .await?;
 

@@ -12,9 +12,9 @@ use lnm_sdk::stream::v1::{
 async fn main() -> Result<(), Box<dyn Error>> {
     dotenv().ok();
 
-    let key = env::var("LNM_API_V3_KEY").expect("LNM_API_V3_KEY must be set");
-    let secret = env::var("LNM_API_V3_SECRET").expect("LNM_API_V3_SECRET must be set");
-    let passphrase = env::var("LNM_API_V3_PASSPHRASE").expect("LNM_API_V3_PASSPHRASE must be set");
+    let key = env::var("LNM_API_KEY").expect("LNM_API_KEY must be set");
+    let secret = env::var("LNM_API_SECRET").expect("LNM_API_SECRET must be set");
+    let passphrase = env::var("LNM_API_PASSPHRASE").expect("LNM_API_PASSPHRASE must be set");
 
     let client = StreamClient::new(StreamClientConfig::default());
     let stream = client.connect().await?;

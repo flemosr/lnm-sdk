@@ -44,11 +44,11 @@ fn live_credentials_from_env() -> LiveCredentials {
     dotenv().ok();
 
     LiveCredentials {
-        key: env::var("LNM_API_V3_KEY").expect("LNM_API_V3_KEY environment variable must be set"),
-        secret: env::var("LNM_API_V3_SECRET")
-            .expect("LNM_API_V3_SECRET environment variable must be set"),
-        passphrase: env::var("LNM_API_V3_PASSPHRASE")
-            .expect("LNM_API_V3_PASSPHRASE environment variable must be set"),
+        key: env::var("LNM_API_KEY").expect("LNM_API_KEY environment variable must be set"),
+        secret: env::var("LNM_API_SECRET")
+            .expect("LNM_API_SECRET environment variable must be set"),
+        passphrase: env::var("LNM_API_PASSPHRASE")
+            .expect("LNM_API_PASSPHRASE environment variable must be set"),
     }
 }
 

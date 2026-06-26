@@ -22,11 +22,11 @@ fn init_repositories_from_env() -> (LnmFuturesIsolatedRepository, LnmFuturesData
     dotenv().ok();
 
     let config = RestClientConfig::default();
-    let key = env::var("LNM_API_V3_KEY").expect("LNM_API_V3_KEY environment variable must be set");
+    let key = env::var("LNM_API_KEY").expect("LNM_API_KEY environment variable must be set");
     let secret =
-        env::var("LNM_API_V3_SECRET").expect("LNM_API_V3_SECRET environment variable must be set");
-    let passphrase = env::var("LNM_API_V3_PASSPHRASE")
-        .expect("LNM_API_V3_PASSPHRASE environment variable must be set");
+        env::var("LNM_API_SECRET").expect("LNM_API_SECRET environment variable must be set");
+    let passphrase = env::var("LNM_API_PASSPHRASE")
+        .expect("LNM_API_PASSPHRASE environment variable must be set");
 
     let base = LnmRestBase::with_credentials(
         config.timeout(),

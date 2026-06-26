@@ -19,10 +19,10 @@ REST examples use `https://api.lnmarkets.com/v3` via `RestClientConfig::default(
 
 Stream examples use `wss://stream.lnmarkets.com/v1` via `StreamClientConfig::default()`.
 
-Authenticated examples (`rest_v3_auth` and `stream_v1_auth`) require REST v3 API credentials:
-- `LNM_API_V3_KEY` - Your API v3 key
-- `LNM_API_V3_SECRET` - Your API v3 secret
-- `LNM_API_V3_PASSPHRASE` - Your API v3 passphrase
+Authenticated examples (`rest_v3_auth` and `stream_v1_auth`) require LN Markets API credentials:
+- `LNM_API_KEY` - Your API key
+- `LNM_API_SECRET` - Your API secret
+- `LNM_API_PASSPHRASE` - Your API passphrase
 
 These environment variables should be set, or a `.env` file should be added in the project root.
 A [`.env.template`](https://github.com/flemosr/lnm-sdk/blob/main/.env.template) file is available.
