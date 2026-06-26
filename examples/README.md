@@ -15,8 +15,7 @@ Direct source code links for quick reference:
 
 ## Prerequisites
 
-REST examples require:
-- `LNM_API_DOMAIN` - The LN Markets API domain
+REST examples use `https://api.lnmarkets.com/v3` via `RestClientConfig::default()`.
 
 Stream examples use `wss://stream.lnmarkets.com/v1` via `StreamClientConfig::default()`.
 
