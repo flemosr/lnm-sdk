@@ -7,7 +7,7 @@ use std::{
 };
 
 use chrono::Utc;
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use tokio::{sync::broadcast, time};
 use uuid::Uuid;
 

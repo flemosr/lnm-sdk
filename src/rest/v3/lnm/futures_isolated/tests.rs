@@ -1,6 +1,6 @@
 use std::{env, time::Instant};
 
-use dotenv::dotenv;
+use dotenvy::dotenv;
 
 use crate::shared::models::{
     client_id::ClientId,

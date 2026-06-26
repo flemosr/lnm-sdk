@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use dotenv::dotenv;
+use dotenvy::dotenv;
 
 use super::super::super::config::RestClientConfig;
 use super::*;

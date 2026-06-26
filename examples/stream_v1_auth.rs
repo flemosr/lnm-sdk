@@ -2,7 +2,7 @@
 
 use std::{env, error::Error, io};
 
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use lnm_sdk::stream::v1::{
     StreamClient, StreamClientConfig, StreamConnectionStatus,
     models::{StreamTopic, StreamUpdate},

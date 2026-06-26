@@ -2,7 +2,7 @@
 
 use std::{env, num::NonZeroU64};
 
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use lnm_sdk::rest::v3::{
     RestClient, RestClientConfig,
     models::{

@@ -1,6 +1,6 @@
 use std::{sync::Arc, time::Instant};
 
-use dotenv::dotenv;
+use dotenvy::dotenv;
 
 use crate::shared::rest::lnm::rate_limit::RateLimiter;
 

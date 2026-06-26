@@ -1,6 +1,6 @@
 //! Example demonstrating how to use the REST API v3 public client.
 
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use lnm_sdk::rest::v3::{RestClient, RestClientConfig};
 
 #[tokio::main]
