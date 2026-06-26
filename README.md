@@ -55,15 +55,11 @@ Complete runnable examples are available in the
 ### REST API v3 - Public
 
 ```rust,no_run
-use std::env;
-
 use lnm_sdk::rest::v3::{RestClient, RestClientConfig};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let domain = env::var("LNM_API_DOMAIN").expect("LNM_API_DOMAIN must be set");
-
-    let rest = RestClient::new(RestClientConfig::default(), &domain)?;
+    let rest = RestClient::new(RestClientConfig::default())?;
 
     // Get the futures ticker
     let _ticker = rest.futures_data.get_ticker().await?;
@@ -95,7 +91,6 @@ use lnm_sdk::rest::v3::{
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let rest = RestClient::with_credentials(
         RestClientConfig::default(),
-        env::var("LNM_API_DOMAIN")?,
         env::var("LNM_API_V3_KEY")?,
         env::var("LNM_API_V3_SECRET")?,
         env::var("LNM_API_V3_PASSPHRASE")?,
