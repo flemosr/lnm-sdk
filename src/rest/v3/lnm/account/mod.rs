@@ -11,7 +11,7 @@ use super::{
     signature::SignatureGeneratorV3,
 };
 
-pub(in crate::api_v3) struct LnmAccountRepository {
+pub(in crate::rest) struct LnmAccountRepository {
     base: Arc<LnmRestBase<SignatureGeneratorV3>>,
 }
 

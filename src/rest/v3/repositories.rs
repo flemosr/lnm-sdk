@@ -9,6 +9,8 @@ use crate::shared::{
         client_id::ClientId,
         cross_leverage::CrossLeverage,
         leverage::Leverage,
+        ohlc::{OhlcCandle, OhlcRange},
+        oracle::{Index, LastPrice},
         price::Price,
         quantity::OrderQuantity,
         trade::{TradeExecution, TradeSide, TradeSize},
@@ -19,8 +21,6 @@ use crate::shared::{
 use super::models::{
     account::Account,
     funding::{CrossFunding, FundingSettlement, IsolatedFunding},
-    ohlc_candle::{OhlcCandle, OhlcRange},
-    oracle::{Index, LastPrice},
     page::Page,
     ticker::Ticker,
     trade::{CrossOrder, CrossPosition, Trade},

@@ -3,7 +3,7 @@ use std::fmt;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
-pub(in crate::api_v3) use crate::shared::models::ticker::TickerPrice;
+pub(in crate::rest) use crate::shared::models::ticker::TickerPrice;
 use crate::shared::models::{price::Price, serde_util};
 
 /// Real-time ticker data for Bitcoin futures from LN Markets.

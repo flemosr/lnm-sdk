@@ -11,7 +11,7 @@ use crate::shared::rest::{
 
 /// Signature generator for LNM API v3
 #[derive(Clone)]
-pub(in crate::api_v3) struct SignatureGeneratorV3 {
+pub(in crate::rest) struct SignatureGeneratorV3 {
     secret: String,
 }
 

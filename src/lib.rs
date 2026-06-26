@@ -10,7 +10,7 @@
 /// ```rust
 /// use lnm_sdk::api_v3::{RestClient, RestClientConfig, models::*, error::*};
 /// ```
-pub mod api_v3;
+pub mod rest;
 
 /// Stream API implementations.
 pub mod stream;

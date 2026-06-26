@@ -24,7 +24,7 @@ use super::error::{CrossExposureValidationError, FuturesIsolatedTradeRequestVali
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub(in crate::api_v3) struct FuturesIsolatedTradeRequestBody {
+pub(in crate::rest) struct FuturesIsolatedTradeRequestBody {
     leverage: Leverage,
     side: TradeSide,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -638,7 +638,7 @@ impl fmt::Display for Trade {
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub(in crate::api_v3) struct FuturesCrossOrderBody {
+pub(in crate::rest) struct FuturesCrossOrderBody {
     side: TradeSide,
     quantity: OrderQuantity,
     #[serde(rename = "type")]

@@ -2,45 +2,38 @@ use std::{num::NonZeroU64, sync::Arc};
 
 use async_trait::async_trait;
 use chrono::{DateTime, SecondsFormat, Utc};
-use reqwest::{self, Method};
+use hyper::Method;
 
-use crate::shared::rest::{error::Result, lnm::base::LnmRestBase};
-
-use super::{
-    super::{
-        models::{
-            funding::FundingSettlement,
-            ohlc_candle::{OhlcCandle, OhlcRange},
-            page::Page,
-            ticker::Ticker,
-        },
-        repositories::FuturesDataRepository,
-    },
-    path::RestPathV3,
-    signature::SignatureGeneratorV3,
+use crate::shared::{
+    models::oracle::{Index, LastPrice},
+    rest::{error::Result, lnm::base::LnmRestBase},
 };
 
-pub(in crate::api_v3) struct LnmFuturesDataRepository {
+use super::{
+    super::repositories::OracleRepository, path::RestPathV3, signature::SignatureGeneratorV3,
+};
+
+pub(in crate::rest) struct LnmOracleRepository {
     base: Arc<LnmRestBase<SignatureGeneratorV3>>,
 }
 
-impl LnmFuturesDataRepository {
+impl LnmOracleRepository {
     pub fn new(base: Arc<LnmRestBase<SignatureGeneratorV3>>) -> Self {
         Self { base }
     }
 }
 
-impl crate::sealed::Sealed for LnmFuturesDataRepository {}
+impl crate::sealed::Sealed for LnmOracleRepository {}
 
 #[async_trait]
-impl FuturesDataRepository for LnmFuturesDataRepository {
-    async fn get_funding_settlements(
+impl OracleRepository for LnmOracleRepository {
+    async fn get_index(
         &self,
         from: Option<DateTime<Utc>>,
         to: Option<DateTime<Utc>>,
         limit: Option<NonZeroU64>,
         cursor: Option<DateTime<Utc>>,
-    ) -> Result<Page<FundingSettlement>> {
+    ) -> Result<Vec<Index>> {
         let mut query_params = Vec::new();
 
         if let Some(from) = from {
@@ -62,27 +55,20 @@ impl FuturesDataRepository for LnmFuturesDataRepository {
         self.base
             .make_request_with_query_params(
                 Method::GET,
-                RestPathV3::FuturesDataFundingSettlements,
+                RestPathV3::OracleIndex,
                 query_params,
                 false,
             )
             .await
     }
 
-    async fn get_ticker(&self) -> Result<Ticker> {
-        self.base
-            .make_request_without_params(Method::GET, RestPathV3::FuturesDataTicker, false)
-            .await
-    }
-
-    async fn get_candles(
+    async fn get_last_price(
         &self,
         from: Option<DateTime<Utc>>,
         to: Option<DateTime<Utc>>,
         limit: Option<NonZeroU64>,
-        range: Option<OhlcRange>,
         cursor: Option<DateTime<Utc>>,
-    ) -> Result<Page<OhlcCandle>> {
+    ) -> Result<Vec<LastPrice>> {
         let mut query_params = Vec::new();
 
         if let Some(from) = from {
@@ -94,9 +80,6 @@ impl FuturesDataRepository for LnmFuturesDataRepository {
         if let Some(limit) = limit {
             query_params.push(("limit", limit.to_string()));
         }
-        if let Some(range) = range {
-            query_params.push(("range", range.to_string()));
-        }
         if let Some(cursor) = cursor {
             query_params.push((
                 "cursor",
@@ -107,7 +90,7 @@ impl FuturesDataRepository for LnmFuturesDataRepository {
         self.base
             .make_request_with_query_params(
                 Method::GET,
-                RestPathV3::FuturesDataGetCandles,
+                RestPathV3::OracleLastPrice,
                 query_params,
                 false,
             )
