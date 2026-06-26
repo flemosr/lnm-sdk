@@ -1,6 +1,6 @@
-# LNM SDK - API v3 Implementation Status
+# LNM SDK - REST v3 Implementation Status
 
-This document tracks the implementation status of all LN Markets API v3 endpoints in the `lnm-sdk`.
+This document tracks the implementation status of all LN Markets REST API v3 endpoints in the `lnm-sdk`.
 
 ## Legend
 
@@ -161,5 +161,5 @@ Authenticated and public endpoints for synthetic USD swaps.
 
 - REST base URL: `https://api.lnmarkets.com/v3/`
 - Working examples are available in:
-  - `lnm-sdk/examples/v3_rest_public.rs` (public endpoints)
-  - `lnm-sdk/examples/v3_rest_auth.rs` (authenticated endpoints)
+  - `lnm-sdk/examples/rest_v3_public.rs` (public endpoints)
+  - `lnm-sdk/examples/rest_v3_auth.rs` (authenticated endpoints)
