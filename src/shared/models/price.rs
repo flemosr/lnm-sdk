@@ -21,7 +21,7 @@ use super::{
 /// # Examples
 ///
 /// ```
-/// use lnm_sdk::api_v3::models::PercentageCapped;
+/// use lnm_sdk::rest::v3::models::PercentageCapped;
 ///
 /// // Create a bounded decimal percentage value
 /// let percentage = PercentageCapped::try_from(50.0).unwrap(); // 50%
@@ -52,7 +52,7 @@ impl PercentageCapped {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::PercentageCapped;
+    /// use lnm_sdk::rest::v3::models::PercentageCapped;
     ///
     /// // Value within range
     /// let percentage = PercentageCapped::bounded(50.0);
@@ -81,7 +81,7 @@ impl PercentageCapped {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::PercentageCapped;
+    /// use lnm_sdk::rest::v3::models::PercentageCapped;
     ///
     /// let percentage = PercentageCapped::try_from(25.5).unwrap();
     /// assert_eq!(percentage.as_f64(), 25.5);
@@ -209,7 +209,7 @@ impl fmt::Display for PercentageCapped {
 /// # Examples
 ///
 /// ```
-/// use lnm_sdk::api_v3::models::Percentage;
+/// use lnm_sdk::rest::v3::models::Percentage;
 ///
 /// // Create a bounded percentage value
 /// let percentage = Percentage::try_from(150.0).unwrap();
@@ -240,7 +240,7 @@ impl Percentage {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Percentage;
+    /// use lnm_sdk::rest::v3::models::Percentage;
     ///
     /// // Value within range
     /// let percentage = Percentage::bounded(50.0);
@@ -269,7 +269,7 @@ impl Percentage {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Percentage;
+    /// use lnm_sdk::rest::v3::models::Percentage;
     ///
     /// let percentage = Percentage::try_from(200.0).unwrap();
     /// assert_eq!(percentage.as_f64(), 200.0);
@@ -403,7 +403,7 @@ impl fmt::Display for Percentage {
 /// # Examples
 ///
 /// ```
-/// use lnm_sdk::api_v3::models::Price;
+/// use lnm_sdk::rest::v3::models::Price;
 ///
 /// // Create a price value from USD amount
 /// let price = Price::try_from(100_000.0).unwrap();
@@ -438,7 +438,7 @@ impl Price {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Price;
+    /// use lnm_sdk::rest::v3::models::Price;
     ///
     /// let price = Price::round_down(100_000.8).unwrap();
     /// assert_eq!(price.as_f64(), 100_000.5);
@@ -460,7 +460,7 @@ impl Price {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Price;
+    /// use lnm_sdk::rest::v3::models::Price;
     ///
     /// let price = Price::round_up(100_000.2).unwrap();
     /// assert_eq!(price.as_f64(), 100_000.5);
@@ -482,7 +482,7 @@ impl Price {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Price;
+    /// use lnm_sdk::rest::v3::models::Price;
     ///
     /// let price = Price::round(100_000.6).unwrap();
     /// assert_eq!(price.as_f64(), 100_000.5);
@@ -512,7 +512,7 @@ impl Price {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Price;
+    /// use lnm_sdk::rest::v3::models::Price;
     ///
     /// // Value within range
     /// let price = Price::bounded(100_000.0);
@@ -542,7 +542,7 @@ impl Price {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Price;
+    /// use lnm_sdk::rest::v3::models::Price;
     ///
     /// let price = Price::try_from(50_000.0).unwrap();
     /// assert_eq!(price.as_f64(), 50_000.0);
@@ -559,7 +559,7 @@ impl Price {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::{Price, PercentageCapped};
+    /// use lnm_sdk::rest::v3::models::{Price, PercentageCapped};
     ///
     /// let price = Price::try_from(100_000.0).unwrap();
     /// let discount = PercentageCapped::try_from(10.0).unwrap(); // 10% discount
@@ -584,7 +584,7 @@ impl Price {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::{Price, Percentage};
+    /// use lnm_sdk::rest::v3::models::{Price, Percentage};
     ///
     /// let price = Price::try_from(100_000.0).unwrap();
     /// let gain = Percentage::try_from(20.0).unwrap(); // 20% gain

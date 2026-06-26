@@ -22,7 +22,7 @@ use super::{
 /// # Examples
 ///
 /// ```
-/// use lnm_sdk::api_v3::models::Margin;
+/// use lnm_sdk::rest::v3::models::Margin;
 ///
 /// // Create a margin value from satoshis
 /// let margin = Margin::try_from(10_000).unwrap();
@@ -56,7 +56,7 @@ impl Margin {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Margin;
+    /// use lnm_sdk::rest::v3::models::Margin;
     ///
     /// // Values above minimum are rounded
     /// let m = Margin::bounded(5_000.7);
@@ -86,7 +86,7 @@ impl Margin {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Margin;
+    /// use lnm_sdk::rest::v3::models::Margin;
     ///
     /// let margin = Margin::try_from(10_000).unwrap();
     /// assert_eq!(margin.as_u64(), 10_000);
@@ -100,7 +100,7 @@ impl Margin {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Margin;
+    /// use lnm_sdk::rest::v3::models::Margin;
     ///
     /// let margin = Margin::try_from(10_000).unwrap();
     /// assert_eq!(margin.as_i64(), 10_000);
@@ -116,7 +116,7 @@ impl Margin {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Margin;
+    /// use lnm_sdk::rest::v3::models::Margin;
     ///
     /// let margin = Margin::try_from(10_000).unwrap();
     /// assert_eq!(margin.as_f64(), 10_000.0);
@@ -133,7 +133,7 @@ impl Margin {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Margin;
+    /// use lnm_sdk::rest::v3::models::Margin;
     ///
     /// let base = Margin::try_from(10_000).unwrap();
     ///
@@ -169,7 +169,7 @@ impl Margin {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Margin;
+    /// use lnm_sdk::rest::v3::models::Margin;
     ///
     /// let base = Margin::try_from(10_000).unwrap();
     ///
@@ -206,7 +206,7 @@ impl Margin {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::{Margin, OrderQuantity, Price, Leverage};
+    /// use lnm_sdk::rest::v3::models::{Margin, OrderQuantity, Price, Leverage};
     ///
     /// let quantity = OrderQuantity::try_from(1_000).unwrap();
     /// let price = Price::try_from(100_000.0).unwrap();
@@ -231,7 +231,7 @@ impl Margin {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::{Margin, OrderQuantity, Price, TradeSide};
+    /// use lnm_sdk::rest::v3::models::{Margin, OrderQuantity, Price, TradeSide};
     ///
     /// let quantity = OrderQuantity::try_from(1_000).unwrap();
     /// let entry_price = Price::try_from(100_000.0).unwrap();

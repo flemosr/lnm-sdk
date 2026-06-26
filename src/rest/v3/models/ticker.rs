@@ -11,8 +11,8 @@ use crate::shared::models::{price::Price, serde_util};
 /// # Examples
 ///
 /// ```no_run
-/// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-/// use lnm_sdk::api_v3::models::Ticker;
+/// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+/// use lnm_sdk::rest::v3::models::Ticker;
 ///
 /// let ticker: Ticker = rest
 ///     .futures_data

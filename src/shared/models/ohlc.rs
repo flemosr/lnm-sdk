@@ -109,8 +109,8 @@ impl<'de> Deserialize<'de> for OhlcRange {
 /// # Examples
 ///
 /// ```no_run
-/// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-/// use lnm_sdk::api_v3::models::{OhlcCandle, OhlcRange, Page};
+/// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+/// use lnm_sdk::rest::v3::models::{OhlcCandle, OhlcRange, Page};
 ///
 /// let candles: Page<OhlcCandle> = rest
 ///     .futures_data

@@ -14,8 +14,8 @@ use uuid::Uuid;
 /// # Examples
 ///
 /// ```no_run
-/// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-/// use lnm_sdk::api_v3::models::{CrossTransfer, Page};
+/// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+/// use lnm_sdk::rest::v3::models::{CrossTransfer, Page};
 ///
 /// // Get transfer history for cross margin account
 /// let transfers: Page<CrossTransfer> = rest
@@ -49,7 +49,7 @@ impl CrossTransfer {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(transfer: lnm_sdk::api_v3::models::CrossTransfer) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(transfer: lnm_sdk::rest::v3::models::CrossTransfer) -> Result<(), Box<dyn std::error::Error>> {
     /// println!("Transfer ID: {}", transfer.id());
     /// # Ok(())
     /// # }
@@ -63,7 +63,7 @@ impl CrossTransfer {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(transfer: lnm_sdk::api_v3::models::CrossTransfer) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(transfer: lnm_sdk::rest::v3::models::CrossTransfer) -> Result<(), Box<dyn std::error::Error>> {
     /// println!("Transfer amount: {}", transfer.amount());
     /// # Ok(())
     /// # }
@@ -77,7 +77,7 @@ impl CrossTransfer {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(transfer: lnm_sdk::api_v3::models::CrossTransfer) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(transfer: lnm_sdk::rest::v3::models::CrossTransfer) -> Result<(), Box<dyn std::error::Error>> {
     /// println!("Transfer time: {}", transfer.time());
     /// # Ok(())
     /// # }

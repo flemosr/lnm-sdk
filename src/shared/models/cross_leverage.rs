@@ -21,7 +21,7 @@ use super::{
 /// # Examples
 ///
 /// ```
-/// use lnm_sdk::api_v3::models::CrossLeverage;
+/// use lnm_sdk::rest::v3::models::CrossLeverage;
 ///
 /// // Create a leverage value from an integer
 /// let leverage = CrossLeverage::try_from(10).unwrap();
@@ -54,7 +54,7 @@ impl CrossLeverage {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::CrossLeverage;
+    /// use lnm_sdk::rest::v3::models::CrossLeverage;
     ///
     /// // Values within range are rounded
     /// let lev = CrossLeverage::bounded(25.7);
@@ -84,7 +84,7 @@ impl CrossLeverage {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::CrossLeverage;
+    /// use lnm_sdk::rest::v3::models::CrossLeverage;
     ///
     /// let leverage = CrossLeverage::try_from(25).unwrap();
     /// assert_eq!(leverage.as_u8(), 25);
@@ -98,7 +98,7 @@ impl CrossLeverage {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::CrossLeverage;
+    /// use lnm_sdk::rest::v3::models::CrossLeverage;
     ///
     /// let leverage = CrossLeverage::try_from(25).unwrap();
     /// assert_eq!(leverage.as_u64(), 25);
@@ -112,7 +112,7 @@ impl CrossLeverage {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::CrossLeverage;
+    /// use lnm_sdk::rest::v3::models::CrossLeverage;
     ///
     /// let leverage = CrossLeverage::try_from(25).unwrap();
     /// assert_eq!(leverage.as_i64(), 25);
@@ -126,7 +126,7 @@ impl CrossLeverage {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::CrossLeverage;
+    /// use lnm_sdk::rest::v3::models::CrossLeverage;
     ///
     /// let leverage = CrossLeverage::try_from(10).unwrap();
     /// assert_eq!(leverage.as_f64(), 10.0);
@@ -144,7 +144,7 @@ impl CrossLeverage {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::{CrossLeverage, CrossQuantity, Margin, Price};
+    /// use lnm_sdk::rest::v3::models::{CrossLeverage, CrossQuantity, Margin, Price};
     ///
     /// let quantity = CrossQuantity::try_from(1_000).unwrap(); // OrderQuantity in USD
     /// let running_margin = Margin::try_from(20_000).unwrap(); // Running margin in sats

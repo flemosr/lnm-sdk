@@ -97,7 +97,7 @@ impl RestClient {
     /// ```no_run
     /// # fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// use std::env;
-    /// use lnm_sdk::api_v3::{RestClient, RestClientConfig};
+    /// use lnm_sdk::rest::v3::{RestClient, RestClientConfig};
     ///
     /// let domain = env::var("LNM_API_DOMAIN").unwrap();
     ///
@@ -124,7 +124,7 @@ impl RestClient {
     /// ```no_run
     /// # fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// use std::env;
-    /// use lnm_sdk::api_v3::{RestClient, RestClientConfig};
+    /// use lnm_sdk::rest::v3::{RestClient, RestClientConfig};
     ///
     /// let domain = env::var("LNM_API_DOMAIN").unwrap();
     /// let key = env::var("LNM_API_KEY").unwrap();

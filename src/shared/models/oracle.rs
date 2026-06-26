@@ -12,8 +12,8 @@ use super::{price::Price, serde_util};
 /// # Examples
 ///
 /// ```no_run
-/// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-/// use lnm_sdk::api_v3::models::Index;
+/// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+/// use lnm_sdk::rest::v3::models::Index;
 ///
 /// let index_history: Vec<Index> = rest
 ///     .oracle
@@ -65,8 +65,8 @@ impl fmt::Display for Index {
 /// # Examples
 ///
 /// ```no_run
-/// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-/// use lnm_sdk::api_v3::models::LastPrice;
+/// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+/// use lnm_sdk::rest::v3::models::LastPrice;
 ///
 /// let price_history: Vec<LastPrice> = rest
 ///     .oracle

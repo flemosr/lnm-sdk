@@ -20,7 +20,7 @@ use super::{
 /// # Examples
 ///
 /// ```
-/// use lnm_sdk::api_v3::models::Leverage;
+/// use lnm_sdk::rest::v3::models::Leverage;
 ///
 /// // Create a leverage value from a float
 /// let leverage = Leverage::try_from(10.0).unwrap();
@@ -51,7 +51,7 @@ impl Leverage {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Leverage;
+    /// use lnm_sdk::rest::v3::models::Leverage;
     ///
     /// // Values within range are preserved
     /// let l = Leverage::bounded(25.0);
@@ -80,7 +80,7 @@ impl Leverage {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::Leverage;
+    /// use lnm_sdk::rest::v3::models::Leverage;
     ///
     /// let leverage = Leverage::try_from(25.0).unwrap();
     /// assert_eq!(leverage.as_f64(), 25.0);
@@ -98,7 +98,7 @@ impl Leverage {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::{Leverage, OrderQuantity, Margin, Price};
+    /// use lnm_sdk::rest::v3::models::{Leverage, OrderQuantity, Margin, Price};
     ///
     /// let quantity = OrderQuantity::try_from(1_000).unwrap(); // OrderQuantity in USD
     /// let margin = Margin::try_from(20_000).unwrap(); // Margin in sats

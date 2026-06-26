@@ -39,7 +39,7 @@ pub trait UtilitiesRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
     /// rest.utilities.ping().await?;
     /// # Ok(())
     /// # }
@@ -51,7 +51,7 @@ pub trait UtilitiesRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
     /// use chrono::{DateTime, Utc};
     ///
     /// let server_time: DateTime<Utc> = rest.utilities.time().await?;
@@ -76,10 +76,10 @@ pub trait FuturesIsolatedRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
     /// use std::num::NonZeroU64;
     /// # use uuid::Uuid;
-    /// use lnm_sdk::api_v3::models::Trade;
+    /// use lnm_sdk::rest::v3::models::Trade;
     ///
     /// # let trade_id = Uuid::new_v4();
     /// let amount = NonZeroU64::try_from(1000)?;
@@ -99,8 +99,8 @@ pub trait FuturesIsolatedRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::Trade;
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::Trade;
     ///
     /// let cancelled_trades: Vec<Trade> = rest.futures_isolated.cancel_all_trades().await?;
     /// # Ok(())
@@ -115,9 +115,9 @@ pub trait FuturesIsolatedRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
     /// # use uuid::Uuid;
-    /// use lnm_sdk::api_v3::models::Trade;
+    /// use lnm_sdk::rest::v3::models::Trade;
     ///
     /// # let trade_id = Uuid::new_v4();
     /// let cancelled_trade: Trade = rest.futures_isolated.cancel_trade(trade_id).await?;
@@ -135,10 +135,10 @@ pub trait FuturesIsolatedRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
     /// use std::num::NonZeroU64;
     /// # use uuid::Uuid;
-    /// use lnm_sdk::api_v3::models::Trade;
+    /// use lnm_sdk::rest::v3::models::Trade;
     ///
     /// # let trade_id = Uuid::new_v4();
     /// let amount = NonZeroU64::try_from(500)?;
@@ -158,9 +158,9 @@ pub trait FuturesIsolatedRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
     /// # use uuid::Uuid;
-    /// use lnm_sdk::api_v3::models::Trade;
+    /// use lnm_sdk::rest::v3::models::Trade;
     ///
     /// # let trade_id = Uuid::new_v4();
     /// let closed_trade: Trade = rest.futures_isolated.close_trade(trade_id).await?;
@@ -176,8 +176,8 @@ pub trait FuturesIsolatedRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::Trade;
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::Trade;
     ///
     /// let open_trades: Vec<Trade> = rest.futures_isolated.get_open_trades().await?;
     /// # Ok(())
@@ -192,8 +192,8 @@ pub trait FuturesIsolatedRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::Trade;
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::Trade;
     ///
     /// let running_trades: Vec<Trade> = rest.futures_isolated.get_running_trades().await?;
     /// # Ok(())
@@ -208,8 +208,8 @@ pub trait FuturesIsolatedRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::{Page, Trade};
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::{Page, Trade};
     ///
     /// let closed_trades: Page<Trade> = rest
     ///     .futures_isolated
@@ -233,8 +233,8 @@ pub trait FuturesIsolatedRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::{Page, Trade};
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::{Page, Trade};
     ///
     /// let canceled_trades: Page<Trade> = rest
     ///     .futures_isolated
@@ -259,8 +259,8 @@ pub trait FuturesIsolatedRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::{Price, Trade};
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::{Price, Trade};
     /// # use uuid::Uuid;
     ///
     /// # let trade_id = Uuid::new_v4();
@@ -282,8 +282,8 @@ pub trait FuturesIsolatedRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::{Price, Trade};
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::{Price, Trade};
     /// # use uuid::Uuid;
     ///
     /// # let trade_id = Uuid::new_v4();
@@ -304,8 +304,8 @@ pub trait FuturesIsolatedRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::{
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::{
     ///     Leverage, Price, OrderQuantity, Trade, TradeExecution, TradeSide, TradeSize,
     /// };
     ///
@@ -358,8 +358,8 @@ pub trait FuturesIsolatedRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::{IsolatedFunding, Page};
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::{IsolatedFunding, Page};
     ///
     /// let funding_fees: Page<IsolatedFunding> = rest
     ///     .futures_isolated
@@ -391,8 +391,8 @@ pub trait FuturesCrossRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::CrossOrder;
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::CrossOrder;
     ///
     /// let cancelled_orders: Vec<CrossOrder> = rest.futures_cross.cancel_all_orders().await?;
     /// # Ok(())
@@ -407,9 +407,9 @@ pub trait FuturesCrossRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
     /// # use uuid::Uuid;
-    /// use lnm_sdk::api_v3::models::CrossOrder;
+    /// use lnm_sdk::rest::v3::models::CrossOrder;
     ///
     /// # let order_id = Uuid::new_v4();
     /// let cancelled_order: CrossOrder = rest.futures_cross.cancel_order(order_id).await?;
@@ -425,8 +425,8 @@ pub trait FuturesCrossRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::{CrossOrder, Price, OrderQuantity, TradeExecution, TradeSide};
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::{CrossOrder, Price, OrderQuantity, TradeExecution, TradeSide};
     ///
     /// // Place a market buy order for 50 USD
     /// let order: CrossOrder = rest
@@ -467,8 +467,8 @@ pub trait FuturesCrossRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::CrossOrder;
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::CrossOrder;
     ///
     /// let open_orders: Vec<CrossOrder> = rest.futures_cross.get_open_orders().await?;
     /// # Ok(())
@@ -483,8 +483,8 @@ pub trait FuturesCrossRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::CrossPosition;
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::CrossPosition;
     ///
     /// let position: CrossPosition = rest.futures_cross.get_position().await?;
     /// # Ok(())
@@ -499,8 +499,8 @@ pub trait FuturesCrossRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::{CrossOrder, Page};
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::{CrossOrder, Page};
     ///
     /// let filled_orders: Page<CrossOrder> = rest
     ///     .futures_cross
@@ -525,8 +525,8 @@ pub trait FuturesCrossRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::CrossOrder;
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::CrossOrder;
     ///
     /// let closing_order: CrossOrder = rest.futures_cross.close_position().await?;
     /// # Ok(())
@@ -541,8 +541,8 @@ pub trait FuturesCrossRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::{CrossFunding, Page};
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::{CrossFunding, Page};
     ///
     /// let funding_fees: Page<CrossFunding> = rest
     ///     .futures_cross
@@ -567,8 +567,8 @@ pub trait FuturesCrossRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::{CrossTransfer, Page};
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::{CrossTransfer, Page};
     ///
     /// let transfers: Page<CrossTransfer> = rest
     ///     .futures_cross
@@ -592,9 +592,9 @@ pub trait FuturesCrossRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
     /// use std::num::NonZeroU64;
-    /// use lnm_sdk::api_v3::models::CrossPosition;
+    /// use lnm_sdk::rest::v3::models::CrossPosition;
     ///
     /// let amount = NonZeroU64::try_from(10_000)?;
     /// let position: CrossPosition = rest.futures_cross.deposit(amount).await?;
@@ -612,8 +612,8 @@ pub trait FuturesCrossRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::{CrossLeverage, CrossPosition};
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::{CrossLeverage, CrossPosition};
     ///
     /// let leverage = CrossLeverage::try_from(5)?;
     /// let position: CrossPosition = rest.futures_cross.set_leverage(leverage).await?;
@@ -629,9 +629,9 @@ pub trait FuturesCrossRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
     /// use std::num::NonZeroU64;
-    /// use lnm_sdk::api_v3::models::CrossPosition;
+    /// use lnm_sdk::rest::v3::models::CrossPosition;
     ///
     /// let amount = NonZeroU64::try_from(5_000)?;
     /// let position: CrossPosition = rest.futures_cross.withdraw(amount).await?;
@@ -654,8 +654,8 @@ pub trait FuturesDataRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::{FundingSettlement, Page};
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::{FundingSettlement, Page};
     ///
     /// let funding_settlements: Page<FundingSettlement> = rest
     ///     .futures_data
@@ -677,8 +677,8 @@ pub trait FuturesDataRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::Ticker;
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::Ticker;
     ///
     /// let ticker: Ticker = rest.futures_data.get_ticker().await?;
     /// # Ok(())
@@ -691,8 +691,8 @@ pub trait FuturesDataRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::{OhlcCandle, Page};
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::{OhlcCandle, Page};
     ///
     /// let candles: Page<OhlcCandle> = rest
     ///     .futures_data
@@ -758,8 +758,8 @@ pub trait AccountRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::Account;
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::Account;
     ///
     /// let account: Account = rest.account.get_account().await?;
     /// # Ok(())
@@ -901,8 +901,8 @@ pub trait OracleRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::Index;
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::Index;
     ///
     /// let index: Vec<Index> = rest.oracle.get_index(None, None, None, None).await?;
     /// # Ok(())
@@ -921,8 +921,8 @@ pub trait OracleRepository: crate::sealed::Sealed + Send + Sync {
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::LastPrice;
+    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::LastPrice;
     ///
     /// let last_price: Vec<LastPrice> = rest.oracle.get_last_price(None, None, None, None).await?;
     /// # Ok(())

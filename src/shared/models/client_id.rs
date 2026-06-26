@@ -16,7 +16,7 @@ use super::error::ClientIdValidationError;
 /// # Examples
 ///
 /// ```
-/// use lnm_sdk::api_v3::models::ClientId;
+/// use lnm_sdk::rest::v3::models::ClientId;
 ///
 /// // Create a client ID from a string
 /// let client_id = ClientId::try_from("my-order-123").unwrap();
@@ -44,7 +44,7 @@ impl ClientId {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::ClientId;
+    /// use lnm_sdk::rest::v3::models::ClientId;
     ///
     /// let client_id = ClientId::try_from("my-order-123").unwrap();
     /// assert_eq!(client_id.as_str(), "my-order-123");
@@ -58,7 +58,7 @@ impl ClientId {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::ClientId;
+    /// use lnm_sdk::rest::v3::models::ClientId;
     ///
     /// let client_id = ClientId::try_from("my-order-123").unwrap();
     /// let inner: String = client_id.into_inner();

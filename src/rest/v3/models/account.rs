@@ -8,8 +8,8 @@ use uuid::Uuid;
 /// # Examples
 ///
 /// ```no_run
-/// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-/// use lnm_sdk::api_v3::models::Account;
+/// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+/// use lnm_sdk::rest::v3::models::Account;
 ///
 /// let account: Account = rest
 ///     .account
@@ -47,7 +47,7 @@ impl Account {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(account: lnm_sdk::api_v3::models::Account) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(account: lnm_sdk::rest::v3::models::Account) -> Result<(), Box<dyn std::error::Error>> {
     /// let account_id = account.id();
     ///
     /// println!("Account ID: {}", account_id);
@@ -63,7 +63,7 @@ impl Account {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(account: lnm_sdk::api_v3::models::Account) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(account: lnm_sdk::rest::v3::models::Account) -> Result<(), Box<dyn std::error::Error>> {
     /// let username = account.username();
     ///
     /// println!("Username: {}", username);
@@ -79,7 +79,7 @@ impl Account {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(account: lnm_sdk::api_v3::models::Account) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(account: lnm_sdk::rest::v3::models::Account) -> Result<(), Box<dyn std::error::Error>> {
     /// let email = account.email();
     ///
     /// println!("Email: {}", email);
@@ -95,7 +95,7 @@ impl Account {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(account: lnm_sdk::api_v3::models::Account) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(account: lnm_sdk::rest::v3::models::Account) -> Result<(), Box<dyn std::error::Error>> {
     /// let synthetic_balance = account.synthetic_usd_balance();
     ///
     /// println!("Synthetic USD balance: {} cents", synthetic_balance);
@@ -111,7 +111,7 @@ impl Account {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(account: lnm_sdk::api_v3::models::Account) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(account: lnm_sdk::rest::v3::models::Account) -> Result<(), Box<dyn std::error::Error>> {
     /// let balance = account.balance();
     ///
     /// println!("Balance: {} sats", balance);
@@ -127,7 +127,7 @@ impl Account {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(account: lnm_sdk::api_v3::models::Account) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(account: lnm_sdk::rest::v3::models::Account) -> Result<(), Box<dyn std::error::Error>> {
     /// let fee_tier = account.fee_tier();
     ///
     /// println!("Fee tier: {}", fee_tier);
@@ -143,7 +143,7 @@ impl Account {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(account: lnm_sdk::api_v3::models::Account) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(account: lnm_sdk::rest::v3::models::Account) -> Result<(), Box<dyn std::error::Error>> {
     /// if let Some(public_key) = account.linking_public_key() {
     ///     println!("Linking public key: {}", public_key);
     /// }

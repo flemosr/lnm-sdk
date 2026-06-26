@@ -32,7 +32,7 @@ const QUANTITY_ROUNDING_MULTIPLE: u32 = 5;
 /// # Examples
 ///
 /// ```
-/// use lnm_sdk::api_v3::models::{CrossLeverage, CrossQuantity};
+/// use lnm_sdk::rest::v3::models::{CrossLeverage, CrossQuantity};
 ///
 /// // Create a cross quantity value from a USD amount
 /// let quantity = CrossQuantity::try_from(1_000).unwrap();
@@ -68,7 +68,7 @@ impl CrossQuantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::CrossQuantity;
+    /// use lnm_sdk::rest::v3::models::CrossQuantity;
     ///
     /// // Values within range are rounded
     /// let q = CrossQuantity::bounded(1_234.7);
@@ -101,7 +101,7 @@ impl CrossQuantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::{CrossLeverage, CrossQuantity};
+    /// use lnm_sdk::rest::v3::models::{CrossLeverage, CrossQuantity};
     ///
     /// let leverage = CrossLeverage::try_from(50).unwrap();
     /// assert_eq!(CrossQuantity::max(leverage).as_u64(), 12_525_255);
@@ -124,7 +124,7 @@ impl CrossQuantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::CrossQuantity;
+    /// use lnm_sdk::rest::v3::models::CrossQuantity;
     ///
     /// let quantity = CrossQuantity::try_from(1_000).unwrap();
     /// assert_eq!(quantity.as_u32(), 1_000);
@@ -138,7 +138,7 @@ impl CrossQuantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::CrossQuantity;
+    /// use lnm_sdk::rest::v3::models::CrossQuantity;
     ///
     /// let quantity = CrossQuantity::try_from(1_000).unwrap();
     /// assert_eq!(quantity.as_u64(), 1_000);
@@ -152,7 +152,7 @@ impl CrossQuantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::CrossQuantity;
+    /// use lnm_sdk::rest::v3::models::CrossQuantity;
     ///
     /// let quantity = CrossQuantity::try_from(1_000).unwrap();
     /// assert_eq!(quantity.as_i64(), 1_000);
@@ -166,7 +166,7 @@ impl CrossQuantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::CrossQuantity;
+    /// use lnm_sdk::rest::v3::models::CrossQuantity;
     ///
     /// let quantity = CrossQuantity::try_from(1_000).unwrap();
     /// assert_eq!(quantity.as_f64(), 1_000.0);
@@ -183,7 +183,7 @@ impl CrossQuantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::CrossQuantity;
+    /// use lnm_sdk::rest::v3::models::CrossQuantity;
     ///
     /// let base = CrossQuantity::try_from(1_000).unwrap();
     ///
@@ -219,7 +219,7 @@ impl CrossQuantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::CrossQuantity;
+    /// use lnm_sdk::rest::v3::models::CrossQuantity;
     ///
     /// let base = CrossQuantity::try_from(1_000).unwrap();
     ///
@@ -256,7 +256,7 @@ impl CrossQuantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::{CrossLeverage, CrossQuantity, Margin, Price};
+    /// use lnm_sdk::rest::v3::models::{CrossLeverage, CrossQuantity, Margin, Price};
     ///
     /// let running_margin = Margin::try_from(10_000).unwrap(); // Margin in sats
     /// let price = Price::try_from(100_000.0).unwrap(); // Price in USD/BTC

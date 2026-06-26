@@ -31,7 +31,7 @@ pub trait QuantityLike: crate::sealed::Sealed + Clone + Copy + PartialEq + Eq {
 /// # Examples
 ///
 /// ```
-/// use lnm_sdk::api_v3::models::OrderQuantity;
+/// use lnm_sdk::rest::v3::models::OrderQuantity;
 ///
 /// // Create a quantity value from USD amount
 /// let quantity = OrderQuantity::try_from(1_000).unwrap();
@@ -67,7 +67,7 @@ impl OrderQuantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::OrderQuantity;
+    /// use lnm_sdk::rest::v3::models::OrderQuantity;
     ///
     /// // Values within range are rounded
     /// let q = OrderQuantity::bounded(1_234.7);
@@ -97,7 +97,7 @@ impl OrderQuantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::OrderQuantity;
+    /// use lnm_sdk::rest::v3::models::OrderQuantity;
     ///
     /// let quantity = OrderQuantity::try_from(1_000).unwrap();
     /// assert_eq!(quantity.as_u32(), 1_000);
@@ -111,7 +111,7 @@ impl OrderQuantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::OrderQuantity;
+    /// use lnm_sdk::rest::v3::models::OrderQuantity;
     ///
     /// let quantity = OrderQuantity::try_from(1_000).unwrap();
     /// assert_eq!(quantity.as_u64(), 1_000);
@@ -125,7 +125,7 @@ impl OrderQuantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::OrderQuantity;
+    /// use lnm_sdk::rest::v3::models::OrderQuantity;
     ///
     /// let quantity = OrderQuantity::try_from(1_000).unwrap();
     /// assert_eq!(quantity.as_i64(), 1_000);
@@ -139,7 +139,7 @@ impl OrderQuantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::OrderQuantity;
+    /// use lnm_sdk::rest::v3::models::OrderQuantity;
     ///
     /// let quantity = OrderQuantity::try_from(1_000).unwrap();
     /// assert_eq!(quantity.as_f64(), 1_000.0);
@@ -156,7 +156,7 @@ impl OrderQuantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::OrderQuantity;
+    /// use lnm_sdk::rest::v3::models::OrderQuantity;
     ///
     /// let base = OrderQuantity::try_from(1_000).unwrap();
     ///
@@ -192,7 +192,7 @@ impl OrderQuantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::OrderQuantity;
+    /// use lnm_sdk::rest::v3::models::OrderQuantity;
     ///
     /// let base = OrderQuantity::try_from(1_000).unwrap();
     ///
@@ -229,7 +229,7 @@ impl OrderQuantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::{OrderQuantity, Margin, Price, Leverage};
+    /// use lnm_sdk::rest::v3::models::{OrderQuantity, Margin, Price, Leverage};
     ///
     /// let margin = Margin::try_from(10_000).unwrap(); // Margin in sats
     /// let price = Price::try_from(100_000.0).unwrap(); // Price in USD/BTC
@@ -257,7 +257,7 @@ impl OrderQuantity {
     /// # Examples
     ///
     /// ```
-    /// use lnm_sdk::api_v3::models::{OrderQuantity, Price, PercentageCapped};
+    /// use lnm_sdk::rest::v3::models::{OrderQuantity, Price, PercentageCapped};
     ///
     /// let balance = 10_000_000; // In sats
     /// let market_price = Price::try_from(100_000.0).unwrap(); // Price in USD/BTC

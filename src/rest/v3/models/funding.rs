@@ -10,8 +10,8 @@ use uuid::Uuid;
 /// # Examples
 ///
 /// ```no_run
-/// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-/// use lnm_sdk::api_v3::models::{CrossFunding, Page};
+/// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+/// use lnm_sdk::rest::v3::models::{CrossFunding, Page};
 ///
 /// let funding_fees: Page<CrossFunding> = rest
 ///     .futures_cross
@@ -76,8 +76,8 @@ impl fmt::Display for CrossFunding {
 /// # Examples
 ///
 /// ```no_run
-/// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-/// use lnm_sdk::api_v3::models::{IsolatedFunding, Page};
+/// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+/// use lnm_sdk::rest::v3::models::{IsolatedFunding, Page};
 ///
 /// let funding_fees: Page<IsolatedFunding> = rest
 ///     .futures_isolated
@@ -149,8 +149,8 @@ impl fmt::Display for IsolatedFunding {
 /// # Examples
 ///
 /// ```no_run
-/// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-/// use lnm_sdk::api_v3::models::{FundingSettlement, Page};
+/// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+/// use lnm_sdk::rest::v3::models::{FundingSettlement, Page};
 ///
 /// let settlements: Page<FundingSettlement> = rest
 ///     .futures_data

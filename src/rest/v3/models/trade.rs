@@ -97,8 +97,8 @@ impl FuturesIsolatedTradeRequestBody {
 /// # Examples
 ///
 /// ```no_run
-/// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-/// use lnm_sdk::api_v3::models::{
+/// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+/// use lnm_sdk::rest::v3::models::{
 ///     Leverage, Margin, Trade, TradeExecution, TradeSide, TradeSize,
 /// };
 ///
@@ -166,7 +166,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// let trade_id = trade.id();
     ///
     /// println!("Trade ID: {}", trade_id);
@@ -182,7 +182,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// let exec_type = trade.trade_type();
     ///
     /// println!("Trade execution type: {:?}", exec_type);
@@ -198,7 +198,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// let side = trade.side();
     ///
     /// println!("Trade side: {:?}", side);
@@ -215,7 +215,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// let fee = trade.opening_fee();
     ///
     /// println!("Opening fee: {} sats", fee);
@@ -232,7 +232,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// let fee = trade.closing_fee();
     ///
     /// println!("Closing fee: {} sats", fee);
@@ -248,7 +248,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// let margin = trade.maintenance_margin();
     ///
     /// println!("Maintenance margin: {} sats", margin);
@@ -264,7 +264,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// let quantity = trade.quantity();
     ///
     /// println!("Trade quantity: {}", quantity);
@@ -280,7 +280,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// let margin = trade.margin();
     ///
     /// println!("Trade margin: {}", margin);
@@ -296,7 +296,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// let leverage = trade.leverage();
     ///
     /// println!("Trade leverage: {}", leverage);
@@ -312,7 +312,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// let price = trade.price();
     ///
     /// println!("Trade price: {}", price);
@@ -328,7 +328,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// let liq_price = trade.liquidation();
     ///
     /// println!("Liquidation price: {}", liq_price);
@@ -344,7 +344,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// if let Some(sl) = trade.stoploss() {
     ///     println!("Stop loss: {}", sl);
     /// }
@@ -360,7 +360,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// if let Some(tp) = trade.takeprofit() {
     ///     println!("Take profit: {}", tp);
     /// }
@@ -376,7 +376,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// if let Some(exit) = trade.exit_price() {
     ///     println!("Exit price: {}", exit);
     /// }
@@ -395,7 +395,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// let pl = trade.pl();
     ///
     /// if pl > 0 {
@@ -415,7 +415,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// let created_at = trade.created_at();
     ///
     /// println!("Trade created at: {}", created_at);
@@ -431,7 +431,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// if let Some(filled_at) = trade.filled_at() {
     ///     println!("Trade filled at: {}", filled_at);
     /// }
@@ -447,7 +447,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// if let Some(closed_at) = trade.closed_at() {
     ///     println!("Trade closed at: {}", closed_at);
     /// }
@@ -463,7 +463,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// if let Some(entry) = trade.entry_price() {
     ///     println!("Entry price: {}", entry);
     /// }
@@ -479,7 +479,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// if let Some(entry_margin) = trade.entry_margin() {
     ///     println!("Entry margin: {}", entry_margin);
     /// }
@@ -495,7 +495,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// if trade.open() {
     ///     println!("Trade is open (limit order not filled)");
     /// }
@@ -511,7 +511,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// if trade.running() {
     ///     println!("Trade is actively running");
     /// }
@@ -527,7 +527,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// if trade.canceled() {
     ///     println!("Trade was canceled");
     /// }
@@ -543,7 +543,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// if trade.closed() {
     ///     println!("Trade has been closed");
     /// }
@@ -561,7 +561,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// let total_fees = trade.sum_funding_fees();
     ///
     /// println!("Total funding fees paid: {} sats", total_fees);
@@ -577,7 +577,7 @@ impl Trade {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(trade: lnm_sdk::api_v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(trade: lnm_sdk::rest::v3::models::Trade) -> Result<(), Box<dyn std::error::Error>> {
     /// if let Some(client_id) = trade.client_id() {
     ///     println!("Client ID: {}", client_id);
     /// }
@@ -680,8 +680,8 @@ impl FuturesCrossOrderBody {
 /// # Examples
 ///
 /// ```no_run
-/// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-/// use lnm_sdk::api_v3::models::{
+/// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+/// use lnm_sdk::rest::v3::models::{
 ///     CrossOrder, OrderQuantity, TradeExecution, TradeSide,
 /// };
 ///
@@ -728,7 +728,7 @@ impl CrossOrder {
     /// # Examples
     ///
     /// ```
-    /// # fn example(order: lnm_sdk::api_v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(order: lnm_sdk::rest::v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
     /// let order_id = order.id();
     ///
     /// println!("Order ID: {}", order_id);
@@ -744,7 +744,7 @@ impl CrossOrder {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(order: lnm_sdk::api_v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(order: lnm_sdk::rest::v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
     /// let exec_type = order.trade_type();
     ///
     /// println!("Order execution type: {:?}", exec_type);
@@ -760,7 +760,7 @@ impl CrossOrder {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(order: lnm_sdk::api_v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(order: lnm_sdk::rest::v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
     /// let side = order.side();
     ///
     /// println!("Order side: {:?}", side);
@@ -776,7 +776,7 @@ impl CrossOrder {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(order: lnm_sdk::api_v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(order: lnm_sdk::rest::v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
     /// let quantity = order.quantity();
     ///
     /// println!("Order quantity: {}", quantity);
@@ -792,7 +792,7 @@ impl CrossOrder {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(order: lnm_sdk::api_v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(order: lnm_sdk::rest::v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
     /// let price = order.price();
     ///
     /// println!("Order price: {}", price);
@@ -808,7 +808,7 @@ impl CrossOrder {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(order: lnm_sdk::api_v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(order: lnm_sdk::rest::v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
     /// let fee = order.trading_fee();
     ///
     /// println!("Trading fee: {} sats", fee);
@@ -824,7 +824,7 @@ impl CrossOrder {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(order: lnm_sdk::api_v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(order: lnm_sdk::rest::v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
     /// let created_at = order.created_at();
     ///
     /// println!("Order created at: {}", created_at);
@@ -840,7 +840,7 @@ impl CrossOrder {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(order: lnm_sdk::api_v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(order: lnm_sdk::rest::v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
     /// if let Some(filled_at) = order.filled_at() {
     ///     println!("Order filled at: {}", filled_at);
     /// }
@@ -856,7 +856,7 @@ impl CrossOrder {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(order: lnm_sdk::api_v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(order: lnm_sdk::rest::v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
     /// if let Some(canceled_at) = order.canceled_at() {
     ///     println!("Order canceled at: {}", canceled_at);
     /// }
@@ -872,7 +872,7 @@ impl CrossOrder {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(order: lnm_sdk::api_v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(order: lnm_sdk::rest::v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
     /// if order.open() {
     ///     println!("Order is open (limit order not filled)");
     /// }
@@ -888,7 +888,7 @@ impl CrossOrder {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(order: lnm_sdk::api_v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(order: lnm_sdk::rest::v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
     /// if order.filled() {
     ///     println!("Order has been filled");
     /// }
@@ -904,7 +904,7 @@ impl CrossOrder {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(order: lnm_sdk::api_v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(order: lnm_sdk::rest::v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
     /// if order.canceled() {
     ///     println!("Order was canceled");
     /// }
@@ -920,7 +920,7 @@ impl CrossOrder {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(order: lnm_sdk::api_v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(order: lnm_sdk::rest::v3::models::CrossOrder) -> Result<(), Box<dyn std::error::Error>> {
     /// if let Some(client_id) = order.client_id() {
     ///     println!("Client ID: {}", client_id);
     /// }
@@ -1133,8 +1133,8 @@ impl CrossExposure {
 /// # Examples
 ///
 /// ```no_run
-/// # async fn example(rest: lnm_sdk::api_v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-/// use lnm_sdk::api_v3::models::CrossPosition;
+/// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
+/// use lnm_sdk::rest::v3::models::CrossPosition;
 ///
 /// let position: CrossPosition = rest
 ///     .futures_cross
@@ -1176,7 +1176,7 @@ impl CrossPosition {
     /// # Examples
     ///
     /// ```
-    /// # fn example(position: lnm_sdk::api_v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(position: lnm_sdk::rest::v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
     /// let position_id = position.id();
     ///
     /// println!("Position ID: {}", position_id);
@@ -1192,7 +1192,7 @@ impl CrossPosition {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(position: lnm_sdk::api_v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(position: lnm_sdk::rest::v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
     /// let margin = position.margin();
     ///
     /// println!("Position margin: {}", margin);
@@ -1211,7 +1211,7 @@ impl CrossPosition {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(position: lnm_sdk::api_v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(position: lnm_sdk::rest::v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
     /// let quantity = position.quantity();
     ///
     /// println!("Position quantity: {}", quantity);
@@ -1234,8 +1234,8 @@ impl CrossPosition {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(position: lnm_sdk::api_v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::api_v3::models::CrossExposure;
+    /// # fn example(position: lnm_sdk::rest::v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
+    /// use lnm_sdk::rest::v3::models::CrossExposure;
     ///
     /// match position.exposure()? {
     ///     CrossExposure::Neutral => {
@@ -1276,7 +1276,7 @@ impl CrossPosition {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(position: lnm_sdk::api_v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(position: lnm_sdk::rest::v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
     /// let leverage = position.leverage();
     ///
     /// println!("Position leverage: {}", leverage);
@@ -1292,7 +1292,7 @@ impl CrossPosition {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(position: lnm_sdk::api_v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(position: lnm_sdk::rest::v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
     /// if let Some(entry_price) = position.entry_price() {
     ///     println!("Entry price: {}", entry_price);
     /// }
@@ -1308,7 +1308,7 @@ impl CrossPosition {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(position: lnm_sdk::api_v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(position: lnm_sdk::rest::v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
     /// let running_margin = position.running_margin();
     ///
     /// println!("Running margin: {}", running_margin);
@@ -1324,7 +1324,7 @@ impl CrossPosition {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(position: lnm_sdk::api_v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(position: lnm_sdk::rest::v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
     /// let initial_margin = position.initial_margin();
     ///
     /// println!("Initial margin: {}", initial_margin);
@@ -1340,7 +1340,7 @@ impl CrossPosition {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(position: lnm_sdk::api_v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(position: lnm_sdk::rest::v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
     /// let maintenance_margin = position.maintenance_margin();
     ///
     /// println!("Maintenance margin: {}", maintenance_margin);
@@ -1356,7 +1356,7 @@ impl CrossPosition {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(position: lnm_sdk::api_v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(position: lnm_sdk::rest::v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
     /// if let Some(liq_price) = position.liquidation() {
     ///     println!("Liquidation price: {}", liq_price);
     /// }
@@ -1373,7 +1373,7 @@ impl CrossPosition {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(position: lnm_sdk::api_v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(position: lnm_sdk::rest::v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
     /// let fees = position.trading_fees();
     ///
     /// println!("Trading fees: {} sats", fees);
@@ -1393,7 +1393,7 @@ impl CrossPosition {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(position: lnm_sdk::api_v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(position: lnm_sdk::rest::v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
     /// let fees = position.funding_fees();
     ///
     /// println!("Funding fees: {} sats", fees);
@@ -1409,7 +1409,7 @@ impl CrossPosition {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(position: lnm_sdk::api_v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(position: lnm_sdk::rest::v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
     /// let total_pl = position.total_pl();
     ///
     /// if total_pl > 0 {
@@ -1429,7 +1429,7 @@ impl CrossPosition {
     /// # Examples
     ///
     /// ```no_run
-    /// # fn example(position: lnm_sdk::api_v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn example(position: lnm_sdk::rest::v3::models::CrossPosition) -> Result<(), Box<dyn std::error::Error>> {
     /// let delta_pl = position.delta_pl();
     ///
     /// if delta_pl > 0 {
