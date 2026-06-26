@@ -35,7 +35,8 @@ use super::{
 mod event_loop;
 
 use event_loop::{
-    DisconnectTransmiter, RequestTransmiter, ResponseReceiver, ResponseTransmiter, StreamEventLoop,
+    DisconnectTransmitter, RequestTransmitter, ResponseReceiver, ResponseTransmitter,
+    StreamEventLoop,
 };
 
 /// Subscription lifecycle status tracked for a Stream topic.
@@ -105,9 +106,9 @@ impl StreamCredentials {
 pub(super) struct LnmStreamRepo {
     config: StreamClientConfig,
     event_loop_handle: SyncMutex<Option<JoinHandle<()>>>,
-    disconnect_tx: DisconnectTransmiter,
-    request_tx: RequestTransmiter,
-    response_tx: ResponseTransmiter,
+    disconnect_tx: DisconnectTransmitter,
+    request_tx: RequestTransmitter,
+    response_tx: ResponseTransmitter,
     connection_status_manager: Arc<StreamConnectionStatusManager>,
     credentials: Arc<AsyncMutex<Option<StreamCredentials>>>,
     subscriptions: Arc<AsyncMutex<HashMap<StreamTopic, TopicStatus>>>,

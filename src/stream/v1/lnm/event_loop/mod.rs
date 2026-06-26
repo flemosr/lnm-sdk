@@ -35,10 +35,10 @@ type PendingMap = HashMap<
     ),
 >;
 
-pub(super) type DisconnectTransmiter = mpsc::Sender<()>;
+pub(super) type DisconnectTransmitter = mpsc::Sender<()>;
 type DisconnectReceiver = mpsc::Receiver<()>;
 
-pub(super) type RequestTransmiter = mpsc::Sender<(
+pub(super) type RequestTransmitter = mpsc::Sender<(
     StreamJsonRpcRequest,
     oneshot::Sender<ConnectionResult<StreamJsonRpcResult>>,
 )>;
@@ -47,7 +47,7 @@ type RequestReceiver = mpsc::Receiver<(
     oneshot::Sender<ConnectionResult<StreamJsonRpcResult>>,
 )>;
 
-pub(super) type ResponseTransmiter = broadcast::Sender<StreamUpdate>;
+pub(super) type ResponseTransmitter = broadcast::Sender<StreamUpdate>;
 pub(super) type ResponseReceiver = broadcast::Receiver<StreamUpdate>;
 
 #[async_trait]
@@ -70,7 +70,7 @@ pub(super) struct StreamEventLoop {
     connector: Arc<dyn StreamConnector>,
     disconnect_rx: DisconnectReceiver,
     request_rx: RequestReceiver,
-    response_tx: ResponseTransmiter,
+    response_tx: ResponseTransmitter,
     connection_status_manager: Arc<StreamConnectionStatusManager>,
     credentials: Arc<AsyncMutex<Option<StreamCredentials>>>,
     subscriptions: Arc<AsyncMutex<HashMap<StreamTopic, TopicStatus>>>,
@@ -81,7 +81,7 @@ impl StreamEventLoop {
         config: StreamClientConfig,
         disconnect_rx: DisconnectReceiver,
         request_rx: RequestReceiver,
-        response_tx: ResponseTransmiter,
+        response_tx: ResponseTransmitter,
         connection_status_manager: Arc<StreamConnectionStatusManager>,
         credentials: Arc<AsyncMutex<Option<StreamCredentials>>>,
         subscriptions: Arc<AsyncMutex<HashMap<StreamTopic, TopicStatus>>>,
@@ -442,7 +442,7 @@ impl StreamEventLoop {
         config: StreamClientConfig,
         disconnect_rx: DisconnectReceiver,
         request_rx: RequestReceiver,
-        response_tx: ResponseTransmiter,
+        response_tx: ResponseTransmitter,
         credentials: Arc<AsyncMutex<Option<StreamCredentials>>>,
         subscriptions: Arc<AsyncMutex<HashMap<StreamTopic, TopicStatus>>>,
     ) -> ConnectionResult<(JoinHandle<()>, Arc<StreamConnectionStatusManager>)> {

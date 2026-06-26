@@ -191,8 +191,8 @@ fn test_event_loop(
     subscriptions: Arc<AsyncMutex<HashMap<StreamTopic, TopicStatus>>>,
 ) -> (
     StreamEventLoop,
-    DisconnectTransmiter,
-    RequestTransmiter,
+    DisconnectTransmitter,
+    RequestTransmitter,
     ResponseReceiver,
 ) {
     let (disconnect_tx, disconnect_rx) = mpsc::channel::<()>(1);
