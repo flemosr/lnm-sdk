@@ -2,7 +2,7 @@ use std::{convert::TryFrom, fmt};
 
 use serde::{Deserialize, Serialize, de};
 
-use crate::shared::models::{
+use super::super::{
     SATS_PER_BTC,
     error::QuantityValidationError,
     leverage::Leverage,

@@ -6,7 +6,7 @@ use std::{
 
 use serde::{Deserialize, Serialize, de};
 
-use crate::shared::models::{
+use super::super::{
     SATS_PER_BTC,
     cross_leverage::CrossLeverage,
     error::{CrossQuantityValidationError, QuantityValidationError},
