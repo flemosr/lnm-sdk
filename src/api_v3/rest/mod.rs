@@ -5,20 +5,20 @@ use crate::shared::rest::{
     lnm::{base::LnmRestBase, rate_limit::RateLimiter},
 };
 
-pub(super) mod config;
-pub(crate) mod error;
+mod config;
+pub mod error;
 mod lnm;
-pub(super) mod models;
-pub(super) mod repositories;
+pub mod models;
+mod repositories;
 
-use config::RestClientConfig;
+pub use config::RestClientConfig;
 use lnm::{
     account::LnmAccountRepository, futures_cross::LnmFuturesCrossRepository,
     futures_data::LnmFuturesDataRepository, futures_isolated::LnmFuturesIsolatedRepository,
     oracle::LnmOracleRepository, signature::SignatureGeneratorV3,
     utilities::LnmUtilitiesRepository,
 };
-use repositories::{
+pub use repositories::{
     AccountRepository, FuturesCrossRepository, FuturesDataRepository, FuturesIsolatedRepository,
     OracleRepository, UtilitiesRepository,
 };

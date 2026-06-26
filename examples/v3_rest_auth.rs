@@ -3,7 +3,7 @@
 use std::{env, num::NonZeroU64};
 
 use dotenv::dotenv;
-use lnm_sdk::api_v3::{
+use lnm_sdk::api_v3::rest::{
     RestClient, RestClientConfig,
     models::{
         ClientId, CrossLeverage, Leverage, Margin, OrderQuantity, Percentage, PercentageCapped,
