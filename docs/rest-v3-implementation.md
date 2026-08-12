@@ -74,18 +74,13 @@ Authenticated endpoints for cross margin futures trading.
 Public endpoints for futures market data.
 
 - [x] `get_funding_settlements()` - Get funding settlement history (paginated)
-- [x] `get_ticker()` - Get the futures ticker
+- [x] `get_ticker()` - Get the futures ticker (current index and last price)
 - [x] `get_candles()` - Get candles (OHLCs) history for a given range (paginated)
 - [ ] `get_leaderboard()` - Get the 10 first users by P&L (day/week/month/all-time)
 
----
-
-### Oracle Repository
-
-Public endpoints for oracle price data.
-
-- [x] `get_index()` - Samples index history (paginated)
-- [x] `get_last_price()` - Samples last price history (paginated)
+The REST oracle endpoints (`get_index()` / `get_last_price()`) were removed by LN Markets on
+2026-07-17. Current index and last price values are served by `get_ticker()`; historical data is
+available via `get_candles()`.
 
 ---
 
