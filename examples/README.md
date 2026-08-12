@@ -34,7 +34,7 @@ The following examples demonstrate the current REST API v3 interface.
 ### rest_v3_public
 
 Demonstrates how to use the REST API v3 public client to fetch market data, including utilities
-endpoints, futures data, and oracle data.
+endpoints and futures data.
 
 **Usage:**
 ```bash

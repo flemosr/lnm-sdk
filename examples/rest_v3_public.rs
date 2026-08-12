@@ -31,9 +31,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         funding_settlements.data().len()
     );
 
-    // Get the futures ticker
+    // Get the futures ticker (index and last price)
     let ticker = rest.futures_data.get_ticker().await?;
-    println!("Got futures ticker. Index: {}", ticker.index());
+    println!(
+        "Got futures ticker. Index: {}, last price: {}",
+        ticker.index(),
+        ticker.last_price()
+    );
 
     // Get candles (OHLCs) history
     let candles = rest
@@ -41,16 +45,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .get_candles(None, None, None, None, None)
         .await?;
     println!("Got candles. Len: {}", candles.data().len());
-
-    // Oracle endpoints
-
-    // Get index history
-    let index = rest.oracle.get_index(None, None, None, None).await?;
-    println!("Got index history. Len: {}", index.len());
-
-    // Get last price history
-    let last_price = rest.oracle.get_last_price(None, None, None, None).await?;
-    println!("Got last price history. Len: {}", last_price.len());
 
     Ok(())
 }
