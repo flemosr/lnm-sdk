@@ -7,25 +7,20 @@ use super::{price::Price, serde_util};
 
 /// Index price data point.
 ///
-/// Represents the index price at a specific point in time.
+/// Represents the index price at a specific point in time. This model is delivered as the payload
+/// of the Stream API's `futures/inverse/btc_usd/index` topic.
 ///
 /// # Examples
 ///
-/// ```no_run
-/// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-/// use lnm_sdk::rest::v3::models::Index;
+/// ```
+/// use lnm_sdk::stream::v1::models::StreamUpdate;
 ///
-/// let index_history: Vec<Index> = rest
-///     .oracle
-///     .get_index(None, None, None, None)
-///     .await?;
-///
-/// for index in index_history {
-///     println!("Time: {}", index.time());
-///     println!("Index: {}", index.index());
+/// fn handle_update(update: StreamUpdate) {
+///     if let StreamUpdate::FuturesInverseBtcUsdIndex(index) = update {
+///         println!("Time: {}", index.time());
+///         println!("Index: {}", index.index());
+///     }
 /// }
-/// # Ok(())
-/// # }
 /// ```
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct Index {
@@ -62,23 +57,20 @@ impl fmt::Display for Index {
 
 /// Last traded price data point.
 ///
+/// Represents the last traded price at a specific point in time. This model is delivered as the
+/// payload of the Stream API's `futures/inverse/btc_usd/lastPrice` topic.
+///
 /// # Examples
 ///
-/// ```no_run
-/// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-/// use lnm_sdk::rest::v3::models::LastPrice;
+/// ```
+/// use lnm_sdk::stream::v1::models::StreamUpdate;
 ///
-/// let price_history: Vec<LastPrice> = rest
-///     .oracle
-///     .get_last_price(None, None, None, None)
-///     .await?;
-///
-/// for price in price_history {
-///     println!("Time: {}", price.time());
-///     println!("Last price: {}", price.last_price());
+/// fn handle_update(update: StreamUpdate) {
+///     if let StreamUpdate::FuturesInverseBtcUsdLastPrice(last_price) = update {
+///         println!("Time: {}", last_price.time());
+///         println!("Last price: {}", last_price.last_price());
+///     }
 /// }
-/// # Ok(())
-/// # }
 /// ```
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]

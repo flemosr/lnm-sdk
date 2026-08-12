@@ -33,8 +33,6 @@ pub(in crate::rest::v3) enum RestPathV3 {
     FuturesDataTicker,
     FuturesDataGetCandles,
     Account,
-    OracleIndex,
-    OracleLastPrice,
 }
 
 impl RestPath for RestPathV3 {
@@ -77,8 +75,6 @@ impl RestPath for RestPathV3 {
             RestPathV3::FuturesDataTicker => "/futures/ticker".into(),
             RestPathV3::FuturesDataGetCandles => "/futures/candles".into(),
             RestPathV3::Account => "/account".into(),
-            RestPathV3::OracleIndex => "/oracle/index".into(),
-            RestPathV3::OracleLastPrice => "/oracle/last-price".into(),
         }
     }
 }

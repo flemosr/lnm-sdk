@@ -15,7 +15,6 @@ pub use crate::shared::models::{
     leverage::Leverage,
     margin::Margin,
     ohlc::{OhlcCandle, OhlcRange},
-    oracle::{Index, LastPrice},
     price::{Percentage, PercentageCapped, Price},
     quantity::{Quantity, cross::CrossQuantity, order::OrderQuantity},
     ticker::TickerPrice,

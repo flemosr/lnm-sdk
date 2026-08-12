@@ -10,7 +10,6 @@ use crate::shared::{
         cross_leverage::CrossLeverage,
         leverage::Leverage,
         ohlc::{OhlcCandle, OhlcRange},
-        oracle::{Index, LastPrice},
         price::Price,
         quantity::order::OrderQuantity,
         trade::{TradeExecution, TradeSide, TradeSize},
@@ -887,52 +886,4 @@ pub trait WithdrawalsRepository: crate::sealed::Sealed + Send + Sync {
     async fn withdrawal_lightning(&self) -> Result<()> {
         todo!()
     }
-}
-
-/// Methods for interacting with [LNM's v3 API]'s REST Oracle endpoints.
-///
-/// This trait is sealed and not meant to be implemented outside of `lnm-sdk`.
-///
-/// [LNM's v3 API]: https://api.lnmarkets.com/v3/
-#[async_trait]
-pub trait OracleRepository: crate::sealed::Sealed + Send + Sync {
-    /// Samples index history (default 100, max 1000 entries).
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::rest::v3::models::Index;
-    ///
-    /// let index: Vec<Index> = rest.oracle.get_index(None, None, None, None).await?;
-    /// # Ok(())
-    /// # }
-    /// ```
-    async fn get_index(
-        &self,
-        from: Option<DateTime<Utc>>,
-        to: Option<DateTime<Utc>>,
-        limit: Option<NonZeroU64>,
-        cursor: Option<DateTime<Utc>>,
-    ) -> Result<Vec<Index>>;
-
-    /// Samples last price history at most 1000 entries between two given timestamps.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// # async fn example(rest: lnm_sdk::rest::v3::RestClient) -> Result<(), Box<dyn std::error::Error>> {
-    /// use lnm_sdk::rest::v3::models::LastPrice;
-    ///
-    /// let last_price: Vec<LastPrice> = rest.oracle.get_last_price(None, None, None, None).await?;
-    /// # Ok(())
-    /// # }
-    /// ```
-    async fn get_last_price(
-        &self,
-        from: Option<DateTime<Utc>>,
-        to: Option<DateTime<Utc>>,
-        limit: Option<NonZeroU64>,
-        cursor: Option<DateTime<Utc>>,
-    ) -> Result<Vec<LastPrice>>;
 }
